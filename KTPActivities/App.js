@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, SafeAreaView, Image} from 'react-native';
+import { StyleSheet, Text, View, Button, SafeAreaView, Image, TouchableOpacity} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
@@ -38,14 +38,12 @@ const HomeScreen = ({navigation}) => {
         }
       />
     </View>
-    <View style={home.Button}>
-    <Button 
-      title="Log in"
-      color = "black"
-      onPress = {() => 
-      navigation.navigate('Login')}
-    />
-    </View>
+    <View style={{ flexDirection: 'row', margin: 5}}>
+    <Text style={{color: 'white'}}>Already have an account? </Text>
+    <TouchableOpacity  onPress={() => navigation.navigate('Login')}>
+        <Text style={home.loginButton}>Log In</Text>
+    </TouchableOpacity>
+</View>
     
   </SafeAreaView>
   );
@@ -91,6 +89,11 @@ const home = StyleSheet.create({
     width: 300,
     padding: 6,
   },
+  loginButton: {
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+    color: '#fff',
+  }
 });
 
 const login = StyleSheet.create({
