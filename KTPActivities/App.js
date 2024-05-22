@@ -4,7 +4,8 @@ import { StyleSheet, Text, View, Button, SafeAreaView, Image, TouchableOpacity, 
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
-const Stack = createNativeStackNavigator();
+
+import HomeSignup from './pages/signup/homeSignup';
 
 const App = () => {
   return(
