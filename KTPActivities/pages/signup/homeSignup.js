@@ -51,7 +51,6 @@ const home = StyleSheet.create({
   },
   Button: {
     marginTop: 12,
-    backgroundColor: '#fff',
     borderRadius: 8,
     width: 300,
     padding: 6,
