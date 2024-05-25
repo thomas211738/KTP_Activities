@@ -2,10 +2,18 @@ import { config } from 'dotenv';
 config();
 import express from 'express';
 import mongoose from 'mongoose';
+import cors from 'cors';
+import usersRoute from './routes/userRoutes.js';
+
 
 const app = express();
+app.use(express.json());
+app.use(cors());
+
 const mongoDBURL = process.env.mongoDBURL;
 const PORT = process.env.PORT;
+
+app.use('/users', usersRoute);
 
 app.get('/', (request, response) => {
     console.log(request);
