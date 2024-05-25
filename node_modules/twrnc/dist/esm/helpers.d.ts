@@ -1,0 +1,15 @@
+import type { Style, Direction, CompleteStyle, ParseContext } from './types';
+import { Unit } from './types';
+export declare function complete(style: Style): CompleteStyle;
+export declare function parseNumericValue(value: string, context?: ParseContext): [number, Unit] | null;
+export declare function getCompleteStyle(prop: string, value: string | number | undefined, context?: ParseContext): CompleteStyle | null;
+export declare function mergeStyle(prop: string, value: string | number | undefined, style: Style): Style;
+export declare function getStyle(prop: string, value: string | number | undefined): Style | null;
+export declare function parseStyleVal(value: string | number | undefined, context?: ParseContext): null | string | number;
+export declare function toStyleVal(number: number, unit: Unit, context?: ParseContext): string | number | null;
+export declare function toPx(value: string): number | null;
+export declare function getDirection(string?: string): Direction;
+export declare function parseAndConsumeDirection(utilityFragment: string): [string, Direction];
+export declare function parseUnconfigged(value: string, context?: ParseContext): string | number | null;
+export declare function unconfiggedStyle(prop: string, value: string, context?: ParseContext): CompleteStyle | null;
+export declare const warn: (...args: any[]) => void;

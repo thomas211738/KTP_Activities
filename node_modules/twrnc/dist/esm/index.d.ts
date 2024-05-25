@@ -1,0 +1,10 @@
+import type { TailwindFn, RnColorScheme, ClassInput, Style } from './types';
+import type { TwConfig } from './tw-config';
+import plugin from './plugin';
+declare const create: (twConfig?: TwConfig) => TailwindFn;
+export type { TailwindFn, TwConfig, RnColorScheme, ClassInput, Style };
+export { useDeviceContext, useAppColorScheme } from './hooks';
+declare const tailwind: TailwindFn;
+declare const style: (...inputs: ClassInput[]) => Style;
+export default tailwind;
+export { create, plugin, style };

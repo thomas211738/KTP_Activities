@@ -28,8 +28,8 @@ const HomeScreen = ({navigation}) => {
         <Text style={home.loginButton}>Log In</Text>
     </TouchableOpacity>
     </View>
-    
     </SafeAreaView>
+    
   );
 }
 const home = StyleSheet.create({
