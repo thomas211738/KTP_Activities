@@ -12,7 +12,7 @@ const App = () => {
   return(
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Home" component={HomeScreen} options={{title: 'Welcome'}}/>
+        <Stack.Screen name="Home" component={HomeScreen}/>
         <Stack.Screen name="Login" component={LoginPage}/>
         <Stack.Screen name="Signup" component={SignupPage}/>
         <Stack.Screen name="information" component={InformationPage}/>
