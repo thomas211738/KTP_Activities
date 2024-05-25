@@ -4,6 +4,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import usersRoute from './routes/userRoutes.js';
+import eventsRoute from './routes/eventsRoutes.js';
 
 
 const app = express();
@@ -14,6 +15,8 @@ const mongoDBURL = process.env.mongoDBURL;
 const PORT = process.env.PORT;
 
 app.use('/users', usersRoute);
+app.use('/events', eventsRoute);
+
 
 app.get('/', (request, response) => {
     console.log(request);
