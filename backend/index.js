@@ -9,6 +9,7 @@ import eventsRoute from './routes/eventsRoutes.js';
 
 const app = express();
 app.use(express.json());
+
 app.use(cors());
 
 const mongoDBURL = process.env.mongoDBURL;
