@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { Alert, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { AgendaList,WeekCalendar, CalendarProvider, ExpandableCalendar } from 'react-native-calendars';
+import { AgendaList,WeekCalendar,AgendaSchedule, CalendarProvider, ExpandableCalendar } from 'react-native-calendars';
 import Entypo from '@expo/vector-icons/Entypo';
 import { MaterialIcons } from '@expo/vector-icons';
+
 interface State {
   items?: AgendaSchedule;
 }

@@ -1,4 +1,5 @@
 
+import { Link,Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { StyleSheet, Text, View, Button, SafeAreaView, Image, TouchableOpacity} from 'react-native';
@@ -14,19 +15,12 @@ const HomeScreen = ({navigation}) => {
       <StatusBar style="auto" />
     </View>
     <View style = {home.Button}>
-    <Button 
-        title="Sign Up"
-        color="black"
-        onPress = {() =>
-          navigation.navigate('Signup')
-        }
-      />
+    <Link href="/signup"> Signup </Link>
     </View>
     <View style={{ flexDirection: 'row', margin: 5}}>
     <Text style={{color: 'white'}}>Already have an account? </Text>
-    <TouchableOpacity  onPress={() => navigation.navigate('Login')}>
-        <Text style={home.loginButton}>Log In</Text>
-    </TouchableOpacity>
+    <Link href="/calender"> Login </Link>
+
     </View>
     </SafeAreaView>
     

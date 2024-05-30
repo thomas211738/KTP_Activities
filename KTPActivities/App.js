@@ -8,13 +8,14 @@ import LoginPage from './pages/login/loginPage';
 import SignupPage from './pages/signup/signUp';
 import InformationPage from './pages/events/events';
 import AgendaScreen from './agendaScreen';
+import Layout from './app/_layout'
 
 const App = () => {
   return(
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name="Home" component={HomeScreen}/>
-        <Stack.Screen name="Login" component={AgendaScreen}/>
+        <Stack.Screen name="Login" component={Layout}/>
         <Stack.Screen name="Signup" component={SignupPage}/>
         <Stack.Screen name="Upcoming Events" component={InformationPage}/>
       </Stack.Navigator>
