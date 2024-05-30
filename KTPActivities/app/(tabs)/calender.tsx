@@ -1,17 +1,15 @@
-
 import React from 'react';
-import { View, Text,ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Entypo from '@expo/vector-icons/Entypo';
 import { MaterialIcons } from '@expo/vector-icons';
+import { format, parseISO } from 'date-fns';
 
-import {BACKEND_URL} from "@env";
+import { BACKEND_URL } from '@env';
 
-
-const InformationPage = ({navigation}) => {
+const InformationPage = ({ navigation }) => {
   const [events, setEvents] = useState([]);
-
 
   useEffect(() => {
     axios
@@ -24,15 +22,26 @@ const InformationPage = ({navigation}) => {
       });
   }, []);
 
+  const formatDate = (dateString) => {
+    const date = parseISO(dateString);
+    return format(date, 'EEEE, MMMM d');
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {events.map((event, index) => (
-        <View key={index} style={styles.eventContainer}>
-          <Text style={styles.eventTitle}>{event.Name}</Text>
-          <Text style={styles.eventText}><Text style={styles.label}>Day:</Text> {event.Day}</Text>
-          <Text style={styles.eventText}><MaterialIcons name="access-time-filled" size={15} color="black" /> {event.Time}     <Entypo name="location-pin" size={15} color="black" />{event.Location}</Text>
-          <Text style={styles.eventText}><Text style={styles.label}>Description:</Text> {event.Description}</Text>
+        <View key={index} style={styles.eventWrapper}>
+          <Text style={styles.eventDate}>{formatDate(event.Day)}</Text>
+          <View style={styles.eventContainer}>
+            <Text style={styles.eventTitle}>{event.Name}</Text>
+            <Text style={styles.eventText}>
+              <MaterialIcons name="access-time-filled" size={15} color="black" /> {event.Time}{'                    '}
+              <Entypo name="location-pin" size={17} color="black" />{event.Location}
+            </Text>
+            <Text style={styles.eventText}>
+               {event.Description}
+            </Text>
+          </View>
         </View>
       ))}
     </ScrollView>
@@ -45,10 +54,18 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#f5f5f5',
   },
+  eventWrapper: {
+    marginBottom: 16,
+  },
+  eventDate: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
   eventContainer: {
     backgroundColor: '#fff',
     padding: 16,
-    marginBottom: 16,
     borderRadius: 8,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -65,7 +82,8 @@ const styles = StyleSheet.create({
   eventText: {
     fontSize: 16,
     color: '#555',
-    padding: 2
+    padding: 2,
+    marginTop: 2,
   },
   label: {
     fontWeight: 'bold',
