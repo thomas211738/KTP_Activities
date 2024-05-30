@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import usersRoute from './routes/userRoutes.js';
 import eventsRoute from './routes/eventsRoutes.js';
+import taskRoute from './routes/taskRoutes.js';
 
 
 const app = express();
@@ -17,6 +18,7 @@ const PORT = process.env.PORT;
 
 app.use('/users', usersRoute);
 app.use('/events', eventsRoute);
+app.use('/tasks', taskRoute);
 
 
 app.get('/', (request, response) => {
