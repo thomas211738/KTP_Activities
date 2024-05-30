@@ -14,7 +14,7 @@ const userSchema = mongoose.Schema(
         type: String,
         required: true,
     },
-    GardYear: {
+    GradYear: {
         type: Number,
         required: true,
     },
