@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View, Button, ScrollView, SafeAreaView, Image, TextInput } from 'react-native';
 import { Link } from 'expo-router';
+import { MultiSelect } from 'react-native-element-dropdown';
+
 //SIGNUP PAGE
 const SignupPage = ({ navigation }) => {
   const [text1, setText1] = React.useState('');
