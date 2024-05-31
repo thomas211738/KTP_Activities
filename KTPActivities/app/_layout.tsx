@@ -12,6 +12,7 @@ export default function Layout() {
         />
         <Stack.Screen
           name="signup"
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="(tabs)"

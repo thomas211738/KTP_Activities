@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TextInput, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
@@ -8,6 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import colleges from './components/buinfo';
 import { gradyears } from './components/buinfo';
+import { useNavigation } from '@react-navigation/native';
+
 
 
 const SignupPage = ({ navigation }) => {
@@ -18,7 +20,21 @@ const SignupPage = ({ navigation }) => {
   const [userColleges, setUserColleges] = useState([]);
   const [userMajor, setUserMajor] = useState('');
   const [userMinor, setUserMinor] = useState('');
+  const [isFormValid, setIsFormValid] = useState(false);
 
+  const navigate = useNavigation();
+
+
+  useEffect(() => {
+    const checkFormValid = () => {
+      if (userFirstName && userLastName && userBUEmail && userGradYear && userColleges.length > 0 && userMajor) {
+        setIsFormValid(true);
+      } else {
+        setIsFormValid(false);
+      }
+    };
+    checkFormValid();
+  }, [userFirstName, userLastName, userBUEmail, userGradYear, userColleges, userMajor]);
 
 
   const renderItem = (item) => {
@@ -28,6 +44,13 @@ const SignupPage = ({ navigation }) => {
       </View>
     );
   };
+
+  const handleFinishPress = () => {
+    if (isFormValid) {
+      navigate.navigate('calender'); 
+    }
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -150,9 +173,13 @@ const SignupPage = ({ navigation }) => {
           </View>
         </View>
         <View style={styles.bottom}>
-          <View style={styles.button}>
-            <Link href="/calender"> Login </Link>
-          </View>
+          <TouchableOpacity
+            style={[styles.button, !isFormValid && styles.buttonDisabled]}
+            disabled={!isFormValid}
+            onPress={handleFinishPress}
+          >
+            <Text style={styles.buttonText}>Finish</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -199,11 +226,19 @@ const styles = StyleSheet.create({
     height: 100,
   },
   button: {
-    marginTop: 30,
-    backgroundColor: '#fff',
+    marginTop: 20,
+    backgroundColor: '#4CAF50',
     borderRadius: 8,
     width: 300,
-    padding: 6,
+    padding: 10,
+    alignItems: 'center',
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
