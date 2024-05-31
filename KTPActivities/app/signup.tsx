@@ -16,6 +16,9 @@ const SignupPage = ({ navigation }) => {
   const [userBUEmail, setuserBUEmail] = useState('');
   const [userGradYear, setUserGradYear] = useState('');
   const [userColleges, setUserColleges] = useState([]);
+  const [userMajor, setUserMajor] = useState('');
+  const [userMinor, setUserMinor] = useState('');
+
 
 
   const renderItem = (item) => {
@@ -74,7 +77,6 @@ const SignupPage = ({ navigation }) => {
               placeholderStyle={dropdownstyles.placeholderStyle}
               itemTextStyle={dropdownstyles.itemTextStyle}
               selectedTextStyle={dropdownstyles.selectedTextStyle}
-              
               inputSearchStyle={dropdownstyles.inputSearchStyle}
               iconStyle={dropdownstyles.iconStyle}
               data={gradyears}
@@ -95,6 +97,7 @@ const SignupPage = ({ navigation }) => {
           <View style={styles.box}>
           <Text style={styles.boxTitle}>Select College(s)</Text>
             <MultiSelect
+              confirmSelectItem={true}
               maxHeight={200}
               style={dropdownstyles.dropdown}
               placeholderStyle={dropdownstyles.placeholderStyle}
@@ -125,7 +128,26 @@ const SignupPage = ({ navigation }) => {
               placeholder="Select your college(s)"
             />
           </View>
-          
+          <View style={styles.box}>
+            <Text style={styles.boxTitle}>Major</Text>
+            <TextInput
+              style={styles.boxEntry}
+              onChangeText={setUserMajor}
+              value={userMajor}
+              placeholder="Enter your major"
+              placeholderTextColor="white"
+            />
+          </View>
+          <View style={styles.box}>
+            <Text style={styles.boxTitle}>Minor (optional)</Text>
+            <TextInput
+              style={styles.boxEntry}
+              onChangeText={setUserMinor}
+              value={userMinor}
+              placeholder="Enter your minor"
+              placeholderTextColor="white"
+            />
+          </View>
         </View>
         <View style={styles.bottom}>
           <View style={styles.button}>
