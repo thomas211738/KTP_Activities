@@ -28,7 +28,7 @@ const userSchema = mongoose.Schema(
     },
     Minors: {
         type: [String],
-        required: true,
+        required: false,
     },
     Position: {
         type: Number,
