@@ -4,21 +4,24 @@ import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TextInput, Tou
 import { Link } from 'expo-router';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import colleges from './components/buinfo';
-
+import { gradyears } from './components/buinfo';
 
 
 const SignupPage = ({ navigation }) => {
-  const [text1, setText1] = useState('');
-  const [text2, setText2] = useState('');
-  const [text3, setText3] = useState('');
-  const [selected, setSelected] = useState([]);
+  const [userFirstName, setuserFirstName] = useState('');
+  const [userLastName, setuserLastName] = useState('');
+  const [userBUEmail, setuserBUEmail] = useState('');
+  const [userGradYear, setUserGradYear] = useState('');
+  const [userColleges, setUserColleges] = useState([]);
+
 
   const renderItem = (item) => {
     return (
       <View style={dropdownstyles.item}>
-        <Text style={dropdownstyles.selectedTextStyle}>{item.label}</Text>
+        <Text style={dropdownstyles.itemTextStyle}>{item.label}</Text>
       </View>
     );
   };
@@ -37,8 +40,8 @@ const SignupPage = ({ navigation }) => {
             <Text style={styles.boxTitle}>First Name</Text>
             <TextInput
               style={styles.boxEntry}
-              onChangeText={setText1}
-              value={text1}
+              onChangeText={setuserFirstName}
+              value={userFirstName}
               placeholder="Enter your first name"
               placeholderTextColor="white"
             />
@@ -47,8 +50,8 @@ const SignupPage = ({ navigation }) => {
             <Text style={styles.boxTitle}>Last Name</Text>
             <TextInput
               style={styles.boxEntry}
-              onChangeText={setText2}
-              value={text2}
+              onChangeText={setuserLastName}
+              value={userLastName}
               placeholder="Enter your last name"
               placeholderTextColor="white"
             />
@@ -57,10 +60,36 @@ const SignupPage = ({ navigation }) => {
             <Text style={styles.boxTitle}>BU Email</Text>
             <TextInput
               style={styles.boxEntry}
-              onChangeText={setText3}
-              value={text3}
+              onChangeText={setuserBUEmail}
+              value={userBUEmail}
               placeholder="Enter your @bu.edu email"
               placeholderTextColor="white"
+            />
+          </View>
+          <View style={styles.box}>
+          <Text style={styles.boxTitle}>Graduation Year</Text>
+            <Dropdown
+              maxHeight={200}
+              style={dropdownstyles.dropdown}
+              placeholderStyle={dropdownstyles.placeholderStyle}
+              itemTextStyle={dropdownstyles.itemTextStyle}
+              selectedTextStyle={dropdownstyles.selectedTextStyle}
+              
+              inputSearchStyle={dropdownstyles.inputSearchStyle}
+              iconStyle={dropdownstyles.iconStyle}
+              data={gradyears}
+              labelField="label"
+              valueField="value"
+              value={userGradYear}
+              onChange={(item) => {
+                setUserGradYear(item);
+              }}
+              renderLeftIcon={() => (
+                <Ionicons style={dropdownstyles.icon} name="school" size={20} color="white" />
+              )}
+              renderItem={renderItem}
+              activeColor="lightgray"
+              placeholder="Select your graduation year"
             />
           </View>
           <View style={styles.box}>
@@ -70,14 +99,15 @@ const SignupPage = ({ navigation }) => {
               style={dropdownstyles.dropdown}
               placeholderStyle={dropdownstyles.placeholderStyle}
               selectedTextStyle={dropdownstyles.selectedTextStyle}
+              itemTextStyle={dropdownstyles.itemTextStyle}
               inputSearchStyle={dropdownstyles.inputSearchStyle}
               iconStyle={dropdownstyles.iconStyle}
               data={colleges}
               labelField="label"
               valueField="value"
-              value={selected}
+              value={userColleges}
               onChange={(item) => {
-                setSelected(item);
+                setUserColleges(item);
               }}
               renderLeftIcon={() => (
                 <FontAwesome6 style={dropdownstyles.icon} name="school" size={15} color="white" />
@@ -169,9 +199,13 @@ const dropdownstyles = StyleSheet.create({
     fontSize: 14,
     color: 'white',
   },
-  selectedTextStyle: {
+  itemTextStyle: {
     fontSize: 14,
     color: 'black',
+  },
+  selectedTextStyle: {
+    fontSize: 14,
+    color: 'white',
   },
   iconStyle: {
     width: 20,
