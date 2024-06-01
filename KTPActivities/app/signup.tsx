@@ -95,6 +95,7 @@ const SignupPage = ({ navigation }) => {
           <View style={styles.box}>
           <Text style={styles.boxTitle}>Graduation Year</Text>
             <Dropdown
+              confirmSelectItem={true}
               maxHeight={200}
               style={dropdownstyles.dropdown}
               placeholderStyle={dropdownstyles.placeholderStyle}
@@ -178,7 +179,6 @@ const SignupPage = ({ navigation }) => {
             disabled={!isFormValid}
             onPress={handleFinishPress}
           >
-            <Link href="/calender"/>
             <Text style={styles.buttonText}>Finish</Text>
           </TouchableOpacity>
         </View>
@@ -190,7 +190,7 @@ const SignupPage = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#5E89B2',
+    backgroundColor: '#5E89B3',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -228,17 +228,19 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
-    backgroundColor: '#4CAF50',
     borderRadius: 8,
+    backgroundColor: '#3D3D3D',
     width: 300,
+    height: 40,
     padding: 10,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: 'darkgray',
   },
   buttonText: {
-    color: 'white',
+    color: 'black',
     fontWeight: 'bold',
   },
 });
@@ -271,23 +273,22 @@ const dropdownstyles = StyleSheet.create({
   },
   inputSearchStyle: {
     height: 40,
-    fontSize: 16,
+    fontSize: 20,
     color: 'white',
   },
   icon: {
     marginRight: 5,
   },
   item: {
-    padding: 17,
+    padding: 10,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+
   },
   selectedStyle: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 14,
+    borderRadius: 20,
     backgroundColor: '#3D3D3D',
     shadowColor: '#000',
     marginTop: 8,
@@ -300,7 +301,7 @@ const dropdownstyles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
-    elevation: 2,
+    elevation: 5,
   },
   textSelectedStyle: {
     marginRight: 5,
