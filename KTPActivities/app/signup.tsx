@@ -47,7 +47,7 @@ const SignupPage = ({ navigation }) => {
 
   const handleFinishPress = () => {
     if (isFormValid) {
-      navigate.navigate('calender'); 
+      navigate.navigate('(tabs)'); 
     }
   };
 
@@ -178,6 +178,7 @@ const SignupPage = ({ navigation }) => {
             disabled={!isFormValid}
             onPress={handleFinishPress}
           >
+            <Link href="/calender"/>
             <Text style={styles.buttonText}>Finish</Text>
           </TouchableOpacity>
         </View>
