@@ -6,6 +6,7 @@ import cors from 'cors';
 import usersRoute from './routes/userRoutes.js';
 import eventsRoute from './routes/eventsRoutes.js';
 import taskRoute from './routes/taskRoutes.js';
+import alertsRoute from './routes/alertsRoutes.js';
 
 
 const app = express();
@@ -19,6 +20,7 @@ const PORT = process.env.PORT;
 app.use('/users', usersRoute);
 app.use('/events', eventsRoute);
 app.use('/tasks', taskRoute);
+app.use('/alerts', alertsRoute);
 
 
 app.get('/', (request, response) => {
