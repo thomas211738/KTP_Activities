@@ -27,21 +27,36 @@ const InformationPage = ({ navigation }) => {
     return format(date, 'EEEE, MMMM d');
   };
 
+  const groupEventsByDate = (events) => {
+    return events.reduce((groups, event) => {
+      const date = formatDate(event.Day);
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(event);
+      return groups;
+    }, {});
+  };
+
+  const groupedEvents = groupEventsByDate(events);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {events.map((event, index) => (
-        <View key={index} style={styles.eventWrapper}>
-          <Text style={styles.eventDate}>{formatDate(event.Day)}</Text>
-          <View style={styles.eventContainer}>
-            <Text style={styles.eventTitle}>{event.Name}</Text>
-            <Text style={styles.eventText}>
-              <MaterialIcons name="access-time-filled" size={15} color="black" /> {event.Time}{'                    '}
-              <Entypo name="location-pin" size={17} color="black" />{event.Location}
-            </Text>
-            <Text style={styles.eventText}>
-               {event.Description}
-            </Text>
-          </View>
+      {Object.keys(groupedEvents).map((date, index) => (
+        <View key={index} style={styles.dateGroup}>
+          <Text style={styles.eventDate}>{date}</Text>
+          {groupedEvents[date].map((event, eventIndex) => (
+            <View key={eventIndex} style={styles.eventWrapper}>
+              <View style={styles.eventContainer}>
+                <Text style={styles.eventTitle}>{event.Name}</Text>
+                <Text style={styles.eventText}>
+                  <MaterialIcons name="access-time-filled" size={15} color="black" /> {event.Time}{' '}
+                  <Entypo name="location-pin" size={17} color="black" /> {event.Location}
+                </Text>
+                <Text style={styles.eventText}>{event.Description}</Text>
+              </View>
+            </View>
+          ))}
         </View>
       ))}
     </ScrollView>
@@ -53,6 +68,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 16,
     backgroundColor: '#f5f5f5',
+  },
+  dateGroup: {
+    marginBottom: 16,
   },
   eventWrapper: {
     marginBottom: 16,
