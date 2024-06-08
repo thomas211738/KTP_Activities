@@ -3,10 +3,13 @@ import { Link,Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { StyleSheet, Text, View, Button, SafeAreaView, Image, TouchableOpacity} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
 
 
 //HOME SCREEN
 const HomeScreen = ({navigation}) => {
+  const mynavigation = useNavigation();
   return (
     <SafeAreaView style = {home.container}>
     <View style = {home.container}>
@@ -19,8 +22,8 @@ const HomeScreen = ({navigation}) => {
     </View>
     <View style={{ flexDirection: 'row', margin: 5}}>
     <Text style={{color: 'white'}}>Already have an account? </Text>
-    <Link href="/calender"> Login </Link>
 
+    <Button title="Login" onPress={() => mynavigation.navigate('(tabs)')} />
     </View>
     </SafeAreaView>
     

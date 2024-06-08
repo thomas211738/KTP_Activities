@@ -5,7 +5,7 @@ import React from 'react';
 export default function Tab() {
   return (
     <View style={styles.container}>
-      <Text>Tab alerts</Text>
+      <Text>pledge Tab people</Text>
     </View>
   );
 }
