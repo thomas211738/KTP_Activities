@@ -14,6 +14,10 @@ const userSchema = mongoose.Schema(
         type: String,
         required: true,
     },
+    PhoneNumber: {
+        type: String,
+        required: true,
+    },
     GradYear: {
         type: Number,
         required: true,
