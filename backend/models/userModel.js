@@ -22,12 +22,20 @@ const userSchema = mongoose.Schema(
         type: [String],
         required: true,
     },
-    Majors: {
+    Major: {
         type: [String],
         required: true,
     },
-    Minors: {
+    Minor: {
         type: [String],
+        required: false,
+    },
+    PhoneNumber: {
+        type: String,
+        required: true,
+    },
+    Birthday: { 
+        type: String,
         required: true,
     },
     Position: {
