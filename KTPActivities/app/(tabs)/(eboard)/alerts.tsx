@@ -1,19 +1,10 @@
-import { View, Text, StyleSheet } from 'react-native';
-import React from 'react';
+import React from "react";
+import AlertsTab from "../../components/alertsPage";
 
-
-export default function Tab() {
-  return (
-    <View style={styles.container}>
-      <Text>Eboard Tab alerts</Text>
-    </View>
-  );
+const alerts = () => {
+  return(
+    <AlertsTab />
+  )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+export default alerts;
