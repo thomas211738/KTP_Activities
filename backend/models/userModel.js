@@ -18,6 +18,10 @@ const userSchema = mongoose.Schema(
         type: String,
         required: true,
     },
+    Birthday: {
+        type: String,
+        required: false,
+    },
     GradYear: {
         type: Number,
         required: true,
