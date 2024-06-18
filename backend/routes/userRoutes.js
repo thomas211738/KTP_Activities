@@ -41,8 +41,9 @@ router.post("/", async (request, response) => {
             PhoneNumber,
             GradYear,
             Colleges,
-            Majors,
-            Minors,
+            Major,
+            Minor,
+            Birthday,
             Position,
         } = request.body;
 
@@ -53,13 +54,14 @@ router.post("/", async (request, response) => {
             !request.body.PhoneNumber ||
             !request.body.GradYear ||
             !request.body.Colleges ||
-            !request.body.Majors ||
-            !request.body.Minors ||
+            !request.body.Major ||
+            !request.body.Minor ||
+            !request.body.Birthday ||
             !request.body.Position
         ) {
             return response.status(400).send({
                 message:
-                    "Send all required fields: BUEmail, FirstName, LastName, PhoneNumber, GradYear, Colleges, Majors, Minors, Position",
+                    "Send all required fields: BUEmail, FirstName, LastName, PhoneNumber, GradYear, Colleges, Majors, Birthday, Position",
             });
         } else if (request.body.Position > 4 || request.body.Position < 0){
             return response.status(401).send({
@@ -74,8 +76,9 @@ router.post("/", async (request, response) => {
             PhoneNumber,
             GradYear,
             Colleges,
-            Majors,
-            Minors,
+            Major,
+            Minor,
+            Birthday,
             Position,
         });
         await newUser.save();
@@ -98,13 +101,14 @@ router.put("/:id", async (request, response) => {
             !request.body.GradYear ||
             !request.body.PhoneNumber ||
             !request.body.Colleges ||
-            !request.body.Majors ||
-            !request.body.Minors ||
+            !request.body.Major ||
+            !request.body.Minor ||
+            !request.body.Birthday ||
             !request.body.Position
         ) {
             return response.status(400).send({
                 message:
-                    "Send all required fields: BUEmail, FirstName, LastName, PhoneNumber, GradYear, Colleges, Majors, Minors, Position",
+                    "Send all required fields: BUEmail, FirstName, LastName, PhoneNumber, GradYear, Colleges, Majors, Birthday, Position",
             });
         } else if (request.body.Position > 4 || request.body.Position < 0){
             return response.status(401).send({
