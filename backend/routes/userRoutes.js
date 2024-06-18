@@ -43,7 +43,6 @@ router.post("/", async (request, response) => {
             Colleges,
             Major,
             Minor,
-            PhoneNumber,
             Birthday,
             Position,
         } = request.body;
@@ -58,7 +57,6 @@ router.post("/", async (request, response) => {
             !request.body.Major ||
             !request.body.Minor ||
             !request.body.PhoneNumber ||
-            !request.body.Birthday ||
             !request.body.Position
         ) {
             return response.status(400).send({
@@ -107,7 +105,6 @@ router.put("/:id", async (request, response) => {
             !request.body.Major ||
             !request.body.Minor ||
             !request.body.PhoneNumber ||
-            !request.body.Birthday ||
             !request.body.Position
         ) {
             return response.status(400).send({
