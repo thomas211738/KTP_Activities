@@ -26,11 +26,11 @@ const userSchema = mongoose.Schema(
         type: [String],
         required: true,
     },
-    Majors: {
+    Major: {
         type: [String],
         required: true,
     },
-    Minors: {
+    Minor: {
         type: [String],
         required: false,
     },
