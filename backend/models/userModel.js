@@ -14,6 +14,10 @@ const userSchema = mongoose.Schema(
         type: String,
         required: true,
     },
+    PhoneNumber: {
+        type: String,
+        required: true,
+    },
     GradYear: {
         type: Number,
         required: true,
@@ -29,14 +33,6 @@ const userSchema = mongoose.Schema(
     Minor: {
         type: [String],
         required: false,
-    },
-    PhoneNumber: {
-        type: String,
-        required: true,
-    },
-    Birthday: { 
-        type: String,
-        required: true,
     },
     Position: {
         type: Number,

@@ -38,6 +38,7 @@ router.post("/", async (request, response) => {
             BUEmail,
             FirstName,
             LastName,
+            PhoneNumber,
             GradYear,
             Colleges,
             Major,
@@ -51,6 +52,7 @@ router.post("/", async (request, response) => {
             !request.body.BUEmail ||
             !request.body.FirstName ||
             !request.body.LastName ||
+            !request.body.PhoneNumber ||
             !request.body.GradYear ||
             !request.body.Colleges ||
             !request.body.Major ||
@@ -73,6 +75,7 @@ router.post("/", async (request, response) => {
             BUEmail,
             FirstName,
             LastName,
+            PhoneNumber,
             GradYear,
             Colleges,
             Major,
@@ -99,6 +102,7 @@ router.put("/:id", async (request, response) => {
             !request.body.FirstName ||
             !request.body.LastName ||
             !request.body.GradYear ||
+            !request.body.PhoneNumber ||
             !request.body.Colleges ||
             !request.body.Major ||
             !request.body.Minor ||

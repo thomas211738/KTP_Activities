@@ -1,39 +1,38 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
-import React from 'react';
 
-export default function TabLayout() {
+import React from 'react'
+import { Stack } from 'expo-router/stack';
+
+
+const _layout = () => {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: 'royalblue' }}>
-      <Tabs.Screen
-        name="calender"
-        options={{
-          title: 'Calender',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="home" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="alerts"
-        options={{
-          title: 'Alerts',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="people"
-        options={{
-          title: 'People',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <FontAwesome size={28} name="cog" color={color} />,
-        }}
-      />
-
-    </Tabs>
-  );
+    <Stack>
+        <Stack.Screen
+          name="index"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="(rush)"
+        //   options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="(pledge)"
+        //   options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="(brother)"
+        //   options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="(eboard)"
+        //   options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="(super)"
+        //   options={{ headerShown: false }}
+        />
+    </Stack>
+   
+  )
 }
+
+export default _layout
