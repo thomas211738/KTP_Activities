@@ -7,14 +7,30 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
+import { BACKEND_URL } from '@env';
+import axios from "axios";
+
 
 const people = () => {
   const [activeView, setActiveView] = useState("For you");
   const [activeTab, setActiveTab] = useState("For you");
-  const [directory, setDirectory] = useState([]);
+  const [directory, setDirectory] = useState();
+
+  useEffect(() => {
+    const fetchDirectory = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/users`);
+        setDirectory(response.data.data); 
+        console.log(response.data.data);
+      } catch(err) {
+        console.log(err.message);
+      }
+    }
+    fetchDirectory();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
