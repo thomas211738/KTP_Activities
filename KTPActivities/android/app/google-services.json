@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "771690908503",
+    "project_id": "kappa-theta",
+    "storage_bucket": "kappa-theta.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:771690908503:android:6649630af8ffd927568c12",
+        "android_client_info": {
+          "package_name": "com.KTPActivities"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "771690908503-iask2j5gdk51108dakvmtuk2jjlrg7qj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.KTPActivities",
+            "certificate_hash": "6d3a67043ff67af1ac4ed2be0c033a6988024039"
+          }
+        },
+        {
+          "client_id": "771690908503-quj8ttpuuibuumef934jq5ojrk58nc86.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVCn5YuM3FB1r8aFabaSv-n5dl7BI_13o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "771690908503-quj8ttpuuibuumef934jq5ojrk58nc86.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "771690908503-33ut1klakba9qfhgkensqrub49c1pe2d.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.anonymous.KTPActivities"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

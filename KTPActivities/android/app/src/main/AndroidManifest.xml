@@ -25,8 +25,84 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.KTPActivities"/>
+        <data android:scheme="KTPActivities"/>
+        <data android:scheme="com.anonymous.KTPActivities"/>
+        <data android:scheme="exp+ktpactivities"/>
       </intent-filter>
     </activity>
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false"/>
   </application>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  package="com.KTPActivities"&gt;
+  
+  
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
 </manifest>

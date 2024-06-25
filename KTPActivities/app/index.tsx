@@ -1,62 +1,79 @@
 
-import { Link,Redirect } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+
 import React from 'react';
-import { StyleSheet, Text, View, Button, SafeAreaView, Image, TouchableOpacity} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { ActivityIndicator, View} from 'react-native';
+import * as WebBrowser from "expo-web-browser";
+import * as Google from "expo-auth-session/providers/google";
+import {
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithCredential,
+} from "firebase/auth";
+import { auth } from "./firebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import SignInScreen from './signin';
+import _layout from './(tabs)/_layout';
+import { Stack } from 'expo-router/stack';
+import { Redirect } from 'expo-router';
+import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID } from '@env';
 
 
+WebBrowser.maybeCompleteAuthSession();
 
 //HOME SCREEN
 const HomeScreen = ({navigation}) => {
-  const mynavigation = useNavigation();
-  return (
-    <SafeAreaView style = {home.container}>
-    <View style = {home.container}>
-      <Image source={require('../img/ktplogopng.png')} style={home.logo} />
-      <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
-      <StatusBar style="auto" />
-    </View>
-    <View style = {home.Button}>
-    <Link href="/signup"> Signup </Link>
-    </View>
-    <View style={{ flexDirection: 'row', margin: 5}}>
-    <Text style={{color: 'white'}}>Already have an account? </Text>
 
-    <Button title="Login" onPress={() => mynavigation.navigate('(tabs)')} />
-    </View>
-    </SafeAreaView>
-    
-  );
+  const [userInfo, setUserInfo] = React.useState();
+  const [loading, setLoading] = React.useState(false);
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    iosClientId: GOOGLE_AUTH_IOS_CLIENT_ID,
+    androidClientId: GOOGLE_AUTH_ANDROID_CLIENT_ID,
+  });
+
+  const getLocalUser = async () => {
+    try {
+      setLoading(true);
+      const userJSON = await AsyncStorage.getItem("@user");
+      const userData = userJSON ? JSON.parse(userJSON) : null;
+      setUserInfo(userData);
+    } catch (e) {
+      console.log(e, "Error getting local user");
+    } finally {
+      setLoading(false);
+    }2
+  };
+
+  React.useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+      signInWithCredential(auth, credential);
+    }
+  }, [response]);
+
+  React.useEffect(() => {
+    getLocalUser();
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        await AsyncStorage.setItem("@user", JSON.stringify(user));
+        console.log(JSON.stringify(user, null, 2));
+        setUserInfo(user);
+      } else {
+        console.log("user not authenticated");
+      }
+    });
+    return () => unsub();
+  }, []);
+
+
+  if (loading)
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size={"large"} />
+      </View>
+    );
+
+  return userInfo ? <Redirect href="/(tabs)" /> : <SignInScreen promptAsync={promptAsync} />;
+  
 }
-const home = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#5E89B2',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 200,
-    height: 200,
-  },
-  text: {
-    padding: 12,
-    borderRadius: 8, 
-    color: '#fff',
-    textAlign: 'center',
-  },
-  Button: {
-    marginTop: 12,
-    borderRadius: 8,
-    width: 300,
-    padding: 6,
-  },
-  loginButton: {
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
-    color: '#fff',
-  }
-});
-
 export default HomeScreen

@@ -30,6 +30,15 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "78d7b599-c910-4187-ba8e-3aa9aba9eec9"
+      }
+    },
+    "scheme": "KTPActivities"
   }
 }
