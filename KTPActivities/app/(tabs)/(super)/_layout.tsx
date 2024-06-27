@@ -1,4 +1,4 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import {FontAwesome} from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Entypo } from '@expo/vector-icons';
