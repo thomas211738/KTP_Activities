@@ -1,7 +1,8 @@
 import { View, Text, SafeAreaView, Image, StatusBar, Button, StyleSheet} from 'react-native'
 import React from 'react'
-import { Link,Redirect } from 'expo-router';
+import { Link } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
+import GoogleButton from './components/googleButton';
 
 
 export default function SignInScreen({ promptAsync }) {
@@ -13,18 +14,13 @@ export default function SignInScreen({ promptAsync }) {
         <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
         <StatusBar style="auto" />
         </View>
-        <View style = {home.Button}>
+        {/* <View style = {home.Button}>
         <Link href="/signup"> Signup </Link>
         </View>
         <View style={{ flexDirection: 'row', margin: 5}}>
-        <Text style={{color: 'white'}}>Already have an account? </Text>
-
         <Button title="Login" onPress={() => mynavigation.navigate('(tabs)')} />
-        </View>
-        <Button
-            title="Sign in with Google"
-            onPress={() => promptAsync()}
-        />
+        </View> */}
+        <GoogleButton promptAsync={() => promptAsync()} />
         </SafeAreaView>
   );
 }
@@ -41,6 +37,7 @@ const home = StyleSheet.create({
       height: 200,
     },
     text: {
+      fontWeight: 'bold',
       padding: 12,
       borderRadius: 8, 
       color: '#fff',

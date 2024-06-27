@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { ActivityIndicator, View} from 'react-native';
 import * as WebBrowser from "expo-web-browser";
@@ -13,7 +12,6 @@ import { auth } from "./firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignInScreen from './signin';
 import _layout from './(tabs)/_layout';
-import { Stack } from 'expo-router/stack';
 import { Redirect } from 'expo-router';
 import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID } from '@env';
 
@@ -73,7 +71,7 @@ const HomeScreen = ({navigation}) => {
       </View>
     );
 
-  return userInfo ? <Redirect href="/(tabs)" /> : <SignInScreen promptAsync={promptAsync} />;
+  return userInfo ? <Redirect href="/(tabs)/(rush)/calender" /> : <SignInScreen promptAsync={promptAsync} />;
   
 }
 export default HomeScreen

@@ -1,10 +1,21 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Button} from 'react-native';
 import React from 'react';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth } from "./../../firebaseConfig";
+import { signOut } from "firebase/auth";
+import { router } from 'expo-router';
 
 export default function Tab() {
   return (
     <View style={styles.container}>
-      <Text>rush Tab profile</Text>
+       <Button
+        title="Sign Out"
+        onPress={async () => {
+          await signOut(auth);
+          await AsyncStorage.removeItem("@user");
+          router.replace("/");
+        }}
+      />
     </View>
   );
 }

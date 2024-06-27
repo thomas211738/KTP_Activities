@@ -12,7 +12,7 @@ const _layout = () => {
         />
         <Stack.Screen
           name="(rush)"
-        //   options={{ headerShown: false }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="(pledge)"

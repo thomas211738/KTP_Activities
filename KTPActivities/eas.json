@@ -8,7 +8,12 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "simulator": true,
+        "cocoapods": "1.15.2"
+      }
+      
     },
     "production": {}
   },

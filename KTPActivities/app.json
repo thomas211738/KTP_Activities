@@ -39,6 +39,15 @@
         "projectId": "78d7b599-c910-4187-ba8e-3aa9aba9eec9"
       }
     },
-    "scheme": "KTPActivities"
+    "scheme": [
+      "ktpactivities"
+    ],
+    "owner": "boston-ktp",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/78d7b599-c910-4187-ba8e-3aa9aba9eec9"
+    }
   }
 }
