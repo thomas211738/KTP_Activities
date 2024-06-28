@@ -11,9 +11,10 @@ import {
 import { auth } from "./firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignInScreen from './signin';
-import _layout from './(tabs)/_layout';
 import { Redirect } from 'expo-router';
 import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID } from '@env';
+import { ValidateUser } from './auth';
+import SnackBar from 'react-native-snackbar-component';
 
 
 WebBrowser.maybeCompleteAuthSession();
@@ -34,6 +35,7 @@ const HomeScreen = ({navigation}) => {
       const userJSON = await AsyncStorage.getItem("@user");
       const userData = userJSON ? JSON.parse(userJSON) : null;
       setUserInfo(userData);
+
     } catch (e) {
       console.log(e, "Error getting local user");
     } finally {
@@ -46,6 +48,8 @@ const HomeScreen = ({navigation}) => {
       const { id_token } = response.params;
       const credential = GoogleAuthProvider.credential(id_token);
       signInWithCredential(auth, credential);
+
+
     }
   }, [response]);
 
@@ -54,8 +58,10 @@ const HomeScreen = ({navigation}) => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         await AsyncStorage.setItem("@user", JSON.stringify(user));
-        console.log(JSON.stringify(user, null, 2));
+        console.log(user.providerData[0]);
         setUserInfo(user);
+        ValidateUser(user.providerData[0].email).then(result => console.log(result));
+
       } else {
         console.log("user not authenticated");
       }

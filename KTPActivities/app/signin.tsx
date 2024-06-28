@@ -11,7 +11,7 @@ export default function SignInScreen({ promptAsync }) {
     <SafeAreaView style = {home.container}>
         <View style = {home.container}>
         <Image source={require('../img/ktplogopng.png')} style={home.logo} />
-        <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
+        <Text style={home.text}>hi to join Boston University's premier professional technology fraternity?</Text>
         <StatusBar style="auto" />
         </View>
         {/* <View style = {home.Button}>

@@ -15,7 +15,6 @@ const index = () => {
     <Button title="Brother" onPress={() => mynavigation.navigate('(brother)')} />
     <Button title="Eboard" onPress={() => mynavigation.navigate('(eboard)')} />
     <Button title="Super" onPress={() => mynavigation.navigate('(super)')} />
-  
     </View>
     
   )

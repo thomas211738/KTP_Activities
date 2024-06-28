@@ -6,7 +6,11 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "ios": {
+        "simulator": true,
+        "cocoapods": "1.15.2"
+      }
     },
     "preview": {
       "distribution": "internal",
