@@ -20,7 +20,7 @@
     "cssnano": "^7.0.1",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
-    "expo": "^51.0.14",
+    "expo": "^51.0.0",
     "expo-app-loading": "^1.1.2",
     "expo-application": "~5.9.1",
     "expo-auth-session": "~5.5.2",

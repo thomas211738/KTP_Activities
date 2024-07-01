@@ -1,5 +1,4 @@
-
-
+import axios from 'axios';
 import React from 'react';
 import { ActivityIndicator, View} from 'react-native';
 import * as WebBrowser from "expo-web-browser";
@@ -15,7 +14,7 @@ import SignInScreen from './signin';
 import _layout from './(tabs)/_layout';
 import { Stack } from 'expo-router/stack';
 import { Redirect } from 'expo-router';
-import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID } from '@env';
+import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID, BACKEND_URL } from '@env';
 
 
 WebBrowser.maybeCompleteAuthSession();
@@ -25,6 +24,7 @@ const HomeScreen = ({navigation}) => {
 
   const [userInfo, setUserInfo] = React.useState();
   const [loading, setLoading] = React.useState(false);
+  const [pos, setPos] = React.useState(0);
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     iosClientId: GOOGLE_AUTH_IOS_CLIENT_ID,
     androidClientId: GOOGLE_AUTH_ANDROID_CLIENT_ID,
@@ -36,11 +36,13 @@ const HomeScreen = ({navigation}) => {
       const userJSON = await AsyncStorage.getItem("@user");
       const userData = userJSON ? JSON.parse(userJSON) : null;
       setUserInfo(userData);
+      const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${userData.email}`);
+      setPos(userPositionJSON.data[0].Position);
     } catch (e) {
       console.log(e, "Error getting local user");
     } finally {
       setLoading(false);
-    }2
+    }
   };
 
   React.useEffect(() => {
@@ -56,6 +58,8 @@ const HomeScreen = ({navigation}) => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         await AsyncStorage.setItem("@user", JSON.stringify(user));
+        const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${user.email}`);
+        setPos(userPositionJSON.data[0].Position);
         console.log(JSON.stringify(user, null, 2));
         setUserInfo(user);
       } else {
@@ -73,7 +77,7 @@ const HomeScreen = ({navigation}) => {
       </View>
     );
 
-  return userInfo ? <Redirect href="/(tabs)" /> : <SignInScreen promptAsync={promptAsync} />;
+  return userInfo ? <Redirect href={`/(tabs)?position=${pos}`} /> : <SignInScreen promptAsync={promptAsync} />;
   
 }
 export default HomeScreen

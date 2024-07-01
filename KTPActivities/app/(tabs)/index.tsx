@@ -1,16 +1,19 @@
-import { View, Button } from 'react-native'
+import { View, Button, Text } from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "./../firebaseConfig";
 import { signOut } from "firebase/auth";
-import { router } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 
 
 
 const index = () => {
     const mynavigation = useNavigation();
+    const router = useRouter();
+    const { position } = useLocalSearchParams<{ position: string }>();
+    
   return (
     <View>
     <Button title="Rush" onPress={() => mynavigation.navigate('(rush)')} />
@@ -26,6 +29,7 @@ const index = () => {
           router.replace("/");
         }}
       />
+      <Text>Current position is {position}</Text>
     </View>
     
   )
