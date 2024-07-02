@@ -1,27 +1,33 @@
 import { View, Text, SafeAreaView, Image, StatusBar, Button, StyleSheet} from 'react-native'
 import React from 'react'
-import { Link } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
 import GoogleButton from './components/googleButton';
+import { RootSiblingParent } from 'react-native-root-siblings';
+
+
 
 
 export default function SignInScreen({ promptAsync }) {
     const mynavigation = useNavigation();
+    
     return (
-    <SafeAreaView style = {home.container}>
-        <View style = {home.container}>
-        <Image source={require('../img/ktplogopng.png')} style={home.logo} />
-        <Text style={home.text}>hi to join Boston University's premier professional technology fraternity?</Text>
-        <StatusBar style="auto" />
-        </View>
-        {/* <View style = {home.Button}>
-        <Link href="/signup"> Signup </Link>
-        </View>
-        <View style={{ flexDirection: 'row', margin: 5}}>
-        <Button title="Login" onPress={() => mynavigation.navigate('(tabs)')} />
-        </View> */}
-        <GoogleButton promptAsync={() => promptAsync()} />
-        </SafeAreaView>
+        <RootSiblingParent>
+            <SafeAreaView style = {home.container}>
+            <View style = {home.container}>
+            <Image source={require('../img/ktplogopng.png')} style={home.logo} />
+            <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
+            <StatusBar style="auto" />
+            </View>
+            {/* <View style = {home.Button}>
+            <Link href="/signup"> Signup </Link>
+            </View>
+            <View style={{ flexDirection: 'row', margin: 5}}>
+            <Button title="Login" onPress={() => mynavigation.navigate('(tabs)')} />
+            </View> */}
+
+            <GoogleButton promptAsync={() => promptAsync()} />
+            </SafeAreaView>
+        </RootSiblingParent>
   );
 }
 

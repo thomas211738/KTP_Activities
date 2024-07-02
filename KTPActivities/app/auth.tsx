@@ -1,25 +1,24 @@
 import axios from "axios"
+import { BACKEND_URL } from "@env"
 
 
 export async function ValidateUser(userEmail) {
     try {
-        const response = await axios.get('http://localhost:5555/users');
+        const response = await axios.get(`${BACKEND_URL}/users`);
         const users = response.data.data;
 
-        const userFound = users.some(user => user.BUEmail.toLowerCase() === userEmail);
+        const user = users.find(user => user.BUEmail.toLowerCase() === userEmail);
 
-        if (userFound) {
-            return 'User found';
+        if (user) {
+            return { status: 1, user: user, allUsers: users };
         } else {
             const domain = userEmail.split('@');
             if (domain[1] !== 'bu.edu') {
-                return 'User not using BU email';
+                return { status: -1, user: null, allUsers: users };
             }
 
-            return 'User not found';
+            return { status: 0, user: null, allUsers: users };
         }
-        
-
     } catch (error) {
         console.error('Error fetching users:', error);
         return 'Error occurred';

@@ -1,40 +1,40 @@
 
 import React, { useState , useEffect} from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, Image, TextInput, TouchableOpacity } from 'react-native';
-import { Link } from 'expo-router';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import colleges from './components/buinfo';
 import { gradyears } from './components/buinfo';
-import { useNavigation } from '@react-navigation/native';
+import { useLocalSearchParams, router } from 'expo-router';
+import axios from 'axios';
+import {BACKEND_URL} from '@env';
 
 
 
-const SignupPage = ({ navigation }) => {
+const SignupPage = () => {
   const [userFirstName, setuserFirstName] = useState('');
   const [userLastName, setuserLastName] = useState('');
-  const [userBUEmail, setuserBUEmail] = useState('');
   const [userGradYear, setUserGradYear] = useState('');
   const [userColleges, setUserColleges] = useState([]);
-  const [userMajor, setUserMajor] = useState('');
-  const [userMinor, setUserMinor] = useState('');
+  const [userMajor, setUserMajor] = useState("");
+  const [userMinor, setUserMinor] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
-
-  const navigate = useNavigation();
+  const [position, setPosition] = useState("0");
+  const { email } = useLocalSearchParams();
 
 
   useEffect(() => {
     const checkFormValid = () => {
-      if (userFirstName && userLastName && userBUEmail && userGradYear && userColleges.length > 0 && userMajor) {
+      if (userFirstName && userLastName && userGradYear && userColleges.length > 0 && userMajor) {
         setIsFormValid(true);
       } else {
         setIsFormValid(false);
       }
     };
     checkFormValid();
-  }, [userFirstName, userLastName, userBUEmail, userGradYear, userColleges, userMajor]);
+  }, [userFirstName, userLastName, userGradYear, userColleges, userMajor]);
 
 
   const renderItem = (item) => {
@@ -47,7 +47,26 @@ const SignupPage = ({ navigation }) => {
 
   const handleFinishPress = () => {
     if (isFormValid) {
-      navigate.navigate('(tabs)'); 
+      const new_user = {
+        BUEmail: email,
+        FirstName: userFirstName,
+        LastName: userLastName,
+        GradYear: userGradYear,
+        Colleges: userColleges,
+        Major: userMajor,
+        Position: position,
+      };
+      console.log(new_user);
+
+      axios
+      .post(`${BACKEND_URL}/users`, new_user)
+      .then(() => {
+        router.replace("/(tabs)/(rush)/calender");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
     }
   };
 
@@ -83,13 +102,12 @@ const SignupPage = ({ navigation }) => {
             />
           </View>
           <View style={styles.box}>
-            <Text style={styles.boxTitle}>BU Email</Text>
+            <Text style={styles.boxTitle}>Email</Text>
             <TextInput
               style={styles.boxEntry}
-              onChangeText={setuserBUEmail}
-              value={userBUEmail}
-              placeholder="Enter your @bu.edu email"
-              placeholderTextColor="white"
+              placeholder={email}
+              placeholderTextColor="gray"
+              readOnly={true}
             />
           </View>
           <View style={styles.box}>
@@ -108,7 +126,7 @@ const SignupPage = ({ navigation }) => {
               valueField="value"
               value={userGradYear}
               onChange={(item) => {
-                setUserGradYear(item);
+                setUserGradYear(String(item.label));
               }}
               renderLeftIcon={() => (
                 <Ionicons style={dropdownstyles.icon} name="school" size={20} color="white" />
@@ -133,8 +151,8 @@ const SignupPage = ({ navigation }) => {
               labelField="label"
               valueField="value"
               value={userColleges}
-              onChange={(item) => {
-                setUserColleges(item);
+              onChange={(items) => {
+                setUserColleges(items.map(item => String(item)));
               }}
               renderLeftIcon={() => (
                 <FontAwesome6 style={dropdownstyles.icon} name="school" size={15} color="white" />
@@ -158,7 +176,7 @@ const SignupPage = ({ navigation }) => {
               style={styles.boxEntry}
               onChangeText={setUserMajor}
               value={userMajor}
-              placeholder="Enter your major"
+              placeholder="E.g. Data Science"
               placeholderTextColor="white"
             />
           </View>
@@ -168,7 +186,7 @@ const SignupPage = ({ navigation }) => {
               style={styles.boxEntry}
               onChangeText={setUserMinor}
               value={userMinor}
-              placeholder="Enter your minor"
+              placeholder="E.g. Business Administration"
               placeholderTextColor="white"
             />
           </View>
@@ -229,7 +247,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
     borderRadius: 8,
-    backgroundColor: '#3D3D3D',
+    backgroundColor: '#1be347',
     width: 300,
     height: 40,
     padding: 10,
