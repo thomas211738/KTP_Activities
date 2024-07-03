@@ -50,12 +50,9 @@ router.post("/", async (request, response) => {
             BUEmail,
             FirstName,
             LastName,
-            PhoneNumber,
             GradYear,
             Colleges,
             Major,
-            Minor,
-            Birthday,
             Position,
         } = request.body;
 
@@ -63,12 +60,9 @@ router.post("/", async (request, response) => {
             !request.body.BUEmail ||
             !request.body.FirstName ||
             !request.body.LastName ||
-            !request.body.PhoneNumber ||
             !request.body.GradYear ||
             !request.body.Colleges ||
             !request.body.Major ||
-            !request.body.Minor ||
-            !request.body.PhoneNumber ||
             !request.body.Position
         ) {
             return response.status(400).send({
@@ -85,13 +79,9 @@ router.post("/", async (request, response) => {
             BUEmail,
             FirstName,
             LastName,
-            PhoneNumber,
             GradYear,
             Colleges,
             Major,
-            Minor,
-            PhoneNumber, 
-            Birthday,
             Position,
         });
         await newUser.save();
@@ -112,11 +102,8 @@ router.put("/:id", async (request, response) => {
             !request.body.FirstName ||
             !request.body.LastName ||
             !request.body.GradYear ||
-            !request.body.PhoneNumber ||
             !request.body.Colleges ||
             !request.body.Major ||
-            !request.body.Minor ||
-            !request.body.PhoneNumber ||
             !request.body.Position
         ) {
             return response.status(400).send({

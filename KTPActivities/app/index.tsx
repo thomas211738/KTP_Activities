@@ -11,10 +11,11 @@ import {
 import { auth } from "./firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignInScreen from './signin';
-import _layout from './(tabs)/_layout';
-import { Stack } from 'expo-router/stack';
-import { Redirect } from 'expo-router';
+import { Redirect, router} from 'expo-router';
 import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID, BACKEND_URL } from '@env';
+import { ValidateUser } from './auth';
+import Toast from 'react-native-root-toast';
+import { RootSiblingParent } from 'react-native-root-siblings';
 
 
 WebBrowser.maybeCompleteAuthSession();
@@ -29,6 +30,7 @@ const HomeScreen = ({navigation}) => {
     iosClientId: GOOGLE_AUTH_IOS_CLIENT_ID,
     androidClientId: GOOGLE_AUTH_ANDROID_CLIENT_ID,
   });
+
 
   const getLocalUser = async () => {
     try {
@@ -50,6 +52,8 @@ const HomeScreen = ({navigation}) => {
       const { id_token } = response.params;
       const credential = GoogleAuthProvider.credential(id_token);
       signInWithCredential(auth, credential);
+
+
     }
   }, [response]);
 
@@ -60,24 +64,49 @@ const HomeScreen = ({navigation}) => {
         await AsyncStorage.setItem("@user", JSON.stringify(user));
         const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${user.email}`);
         setPos(userPositionJSON.data[0].Position);
-        console.log(JSON.stringify(user, null, 2));
-        setUserInfo(user);
+        
+
+        const validation = await ValidateUser(user.providerData[0].email);
+
+        if (validation.status === 1) {          
+          router.replace("/(tabs)/(rush)/calender");
+        } else if (validation.status === 0) {
+          router.push({
+            pathname: 'signup',
+            params: { email: user.providerData[0].email },
+          });
+        } else if (validation.status === -1) {
+          Toast.show('Error: Please use a BU email', {
+            duration: Toast.durations.SHORT,
+            position: Toast.positions.CENTER,
+            shadow: true,
+            animation: true,
+            hideOnPress: true,
+            delay: 0,
+            backgroundColor: 'red',
+            textColor: 'white',
+            opacity: 1,
+          });
+        }
       } else {
-        console.log("user not authenticated");
       }
     });
     return () => unsub();
   }, []);
 
 
+
   if (loading)
     return (
+      <RootSiblingParent>
+      
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size={"large"} />
       </View>
+      </RootSiblingParent>
     );
 
-  return userInfo ? <Redirect href={`/(tabs)?position=${pos}`} /> : <SignInScreen promptAsync={promptAsync} />;
+  return <SignInScreen promptAsync={promptAsync} />;
   
 }
 export default HomeScreen

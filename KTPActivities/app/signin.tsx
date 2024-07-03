@@ -1,31 +1,33 @@
 import { View, Text, SafeAreaView, Image, StatusBar, Button, StyleSheet} from 'react-native'
 import React from 'react'
-import { Link,Redirect } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
+import GoogleButton from './components/googleButton';
+import { RootSiblingParent } from 'react-native-root-siblings';
+
+
 
 
 export default function SignInScreen({ promptAsync }) {
     const mynavigation = useNavigation();
+    
     return (
-    <SafeAreaView style = {home.container}>
-        <View style = {home.container}>
-        <Image source={require('../img/ktplogopng.png')} style={home.logo} />
-        <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
-        <StatusBar style="auto" />
-        </View>
-        <View style = {home.Button}>
-        <Link href="/signup"> Signup </Link>
-        </View>
-        <View style={{ flexDirection: 'row', margin: 5}}>
-        <Text style={{color: 'white'}}>Already have an account? </Text>
+        <RootSiblingParent>
+            <SafeAreaView style = {home.container}>
+            <View style = {home.container}>
+            <Image source={require('../img/ktplogopng.png')} style={home.logo} />
+            <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
+            <StatusBar style="auto" />
+            </View>
+            {/* <View style = {home.Button}>
+            <Link href="/signup"> Signup </Link>
+            </View>
+            <View style={{ flexDirection: 'row', margin: 5}}>
+            <Button title="Login" onPress={() => mynavigation.navigate('(tabs)')} />
+            </View> */}
 
-        <Button title="Login" onPress={() => mynavigation.navigate('(tabs)')} />
-        </View>
-        <Button
-            title="Sign in with Google"
-            onPress={() => promptAsync()}
-        />
-        </SafeAreaView>
+            <GoogleButton promptAsync={() => promptAsync()} />
+            </SafeAreaView>
+        </RootSiblingParent>
   );
 }
 
@@ -41,6 +43,7 @@ const home = StyleSheet.create({
       height: 200,
     },
     text: {
+      fontWeight: 'bold',
       padding: 12,
       borderRadius: 8, 
       color: '#fff',

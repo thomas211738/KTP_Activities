@@ -8,10 +8,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/splash.png"
     },
+    "plugins": [
+      "expo-router"
+    ],
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -29,9 +30,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-router"
-    ],
     "extra": {
       "router": {
         "origin": false
@@ -40,6 +38,15 @@
         "projectId": "78d7b599-c910-4187-ba8e-3aa9aba9eec9"
       }
     },
-    "scheme": "KTPActivities"
+    "scheme": [
+      "ktpactivities"
+    ],
+    "owner": "boston-ktp",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/78d7b599-c910-4187-ba8e-3aa9aba9eec9"
+    }
   }
 }
