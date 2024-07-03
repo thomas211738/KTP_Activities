@@ -31,6 +31,18 @@ router.get("/:id", async (request, response) => {
     }
 });
 
+//get a User by email
+router.get("/email/:email", async(request, response) => {
+    try {
+        const { email } = request.params;
+        const User = await Users.find({ BUEmail: email });
+        return response.status(200).json(User);
+    } catch (err) {
+        console.log(err.message);
+        return response.status(500).send({ message: err.message});
+    }
+})
+
 // add a User
 router.post("/", async (request, response) => {
     try {

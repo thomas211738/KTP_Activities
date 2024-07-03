@@ -1,5 +1,6 @@
 {
   "expo": {
+    "owner": "boston-ktp",
     "name": "KTPActivities",
     "slug": "KTPActivities",
     "version": "1.0.0",
