@@ -11,11 +11,12 @@ import {
 import { auth } from "./firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignInScreen from './signin';
-import { Redirect, router} from 'expo-router';
+import { router} from 'expo-router';
 import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID, BACKEND_URL } from '@env';
 import { ValidateUser } from './auth';
 import Toast from 'react-native-root-toast';
 import { RootSiblingParent } from 'react-native-root-siblings';
+import { signOut } from "firebase/auth";
 
 
 WebBrowser.maybeCompleteAuthSession();
@@ -31,15 +32,14 @@ const HomeScreen = ({navigation}) => {
     androidClientId: GOOGLE_AUTH_ANDROID_CLIENT_ID,
   });
 
-
   const getLocalUser = async () => {
     try {
       setLoading(true);
       const userJSON = await AsyncStorage.getItem("@user");
       const userData = userJSON ? JSON.parse(userJSON) : null;
       setUserInfo(userData);
-      const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${userData.email}`);
-      setPos(userPositionJSON.data[0].Position);
+      // const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${userData.email}`);
+      // setPos(userPositionJSON.data[0].Position);
     } catch (e) {
       console.log(e, "Error getting local user");
     } finally {
@@ -63,7 +63,7 @@ const HomeScreen = ({navigation}) => {
       if (user) {
         await AsyncStorage.setItem("@user", JSON.stringify(user));
         const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${user.email}`);
-        setPos(userPositionJSON.data[0].Position);
+        // setPos(userPositionJSON.data[0].Position);
         
 
         const validation = await ValidateUser(user.providerData[0].email);
@@ -87,6 +87,9 @@ const HomeScreen = ({navigation}) => {
             textColor: 'white',
             opacity: 1,
           });
+          await signOut(auth);
+          await AsyncStorage.removeItem("@user");
+
         }
       } else {
       }

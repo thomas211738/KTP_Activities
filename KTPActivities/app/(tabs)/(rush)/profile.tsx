@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Button} from 'react-native';
+import { View, StyleSheet, Button} from 'react-native';
 import React from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "./../../firebaseConfig";
