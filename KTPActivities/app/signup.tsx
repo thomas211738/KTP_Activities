@@ -161,7 +161,7 @@ const SignupPage = () => {
               renderSelectedItem={(item, unSelect) => (
                 <TouchableOpacity onPress={() => unSelect && unSelect(item)}>
                   <View style={dropdownstyles.selectedStyle}>
-                    <Text style={dropdownstyles.textSelectedStyle}>{item.label}</Text>
+                    <Text style={dropdownstyles.textSelectedStyle}>{item.value}</Text>
                     <AntDesign color="white" name="delete" size={17} />
                   </View>
                 </TouchableOpacity>
