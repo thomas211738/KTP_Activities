@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -10,16 +10,19 @@ import { BACKEND_URL } from '@env';
 
 const InformationPage = ({ navigation }) => {
   const [events, setEvents] = useState([]);
+  //TO-DO: Integrate pos state when file system is reorganized
+  const [pos, setPos] = useState(3);
 
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/events`);
+      setEvents(response.data.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
   useEffect(() => {
-    axios
-      .get(`${BACKEND_URL}/events`)
-      .then((response) => {
-        setEvents(response.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    fetchEvents();
   }, []);
 
   const formatDate = (dateString) => {
@@ -38,6 +41,33 @@ const InformationPage = ({ navigation }) => {
     }, {});
   };
 
+  //TO-DO: Include modal component and handle modal fields to make axios POST request customizable
+  const addEvent = async () => {
+    try {
+      await axios.post(`${BACKEND_URL}/events`, {
+        "Name": "Example",
+        "Day": "2024-09-17",
+        "Time": "3-5pm",
+        "Location": "CDS 364",
+        "Position": 1,
+        "Description": "Example description"
+      });
+      fetchEvents();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const deleteEvent = async (id) => {
+    try{ 
+      await axios.delete(`${BACKEND_URL}/events/${id}`);
+      const updatedEvents = events.filter(event => event._id != id);
+      setEvents(updatedEvents);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   const groupedEvents = groupEventsByDate(events);
 
   return (
@@ -48,7 +78,10 @@ const InformationPage = ({ navigation }) => {
           {groupedEvents[date].map((event, eventIndex) => (
             <View key={eventIndex} style={styles.eventWrapper}>
               <View style={styles.eventContainer}>
-                <Text style={styles.eventTitle}>{event.Name}</Text>
+                <View style={styles.titleContainer}>
+                  <Text style={styles.eventTitle}>{event.Name}</Text>
+                  {pos >= 3 ? <MaterialIcons name="delete" size={24} color="black" onPress={() => deleteEvent(event._id)}/> : ''}
+                </View>
                 <Text style={styles.eventText}>
                   <MaterialIcons name="access-time-filled" size={15} color="black" /> {event.Time}{' '}
                   <Entypo name="location-pin" size={17} color="black" /> {event.Location}
@@ -59,6 +92,11 @@ const InformationPage = ({ navigation }) => {
           ))}
         </View>
       ))}
+      {pos >= 3 ? 
+        <Pressable style={styles.newEventBtn} onPress={addEvent}>
+          <Text style={styles.newEventBtnText}>Add New Event</Text>
+        </Pressable>
+       : ''}
     </ScrollView>
   );
 };
@@ -107,6 +145,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  newEventBtn: {
+    backgroundColor: 'gray',
+    alignContent: 'center',
+    width: '50%'
+  },
+  newEventBtnText: {
+    color: 'white',
+    padding: 20,
+    alignSelf: 'center'
+  }
 });
 
 export default InformationPage;
