@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text,Alert, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -41,6 +41,15 @@ const InformationPage = ({ navigation }) => {
     }, {});
   };
 
+  const confirmDeleteAlert = (name, id) =>
+    Alert.alert('Are you sure you want to delete the following event:', name, [
+      {
+        text: 'Cancel',
+      },
+      {text: 'Delete', onPress: () => deleteEvent(id), style: 'destructive'},
+    ]);
+
+
   //TO-DO: Include modal component and handle modal fields to make axios POST request customizable
   const addEvent = async () => {
     try {
@@ -80,7 +89,7 @@ const InformationPage = ({ navigation }) => {
               <View style={styles.eventContainer}>
                 <View style={styles.titleContainer}>
                   <Text style={styles.eventTitle}>{event.Name}</Text>
-                  {pos >= 3 ? <MaterialIcons name="delete" size={24} color="black" onPress={() => deleteEvent(event._id)}/> : ''}
+                  {pos >= 3 ? <MaterialIcons name="delete" size={24} color="black" onPress={() => confirmDeleteAlert(event.Name, event._id)}/> : ''}
                 </View>
                 <Text style={styles.eventText}>
                   <MaterialIcons name="access-time-filled" size={15} color="black" /> {event.Time}{' '}
