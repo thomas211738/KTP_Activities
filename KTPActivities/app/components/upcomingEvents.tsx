@@ -7,6 +7,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import { format, parseISO } from 'date-fns';
 import { BACKEND_URL } from '@env';
+import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 const InformationPage = ({ navigation }) => {
   const [events, setEvents] = useState([]);
@@ -21,9 +24,9 @@ const InformationPage = ({ navigation }) => {
       console.log(err);
     }
   }
-  useEffect(() => {
+  useFocusEffect(() => {
     fetchEvents();
-  }, []);
+  });
 
   const formatDate = (dateString) => {
     const date = parseISO(dateString);
@@ -90,7 +93,11 @@ const InformationPage = ({ navigation }) => {
                 <View style={styles.titleContainer}>
                   <Text style={styles.eventTitle}>{event.Name}</Text>
                   <View style={styles.icon}>
-                  {pos >= 3 ?<Feather name="edit" size={23} color="black" onPress={() => console.log("Edit button")}/> : '' }
+                  {pos >= 3 ?<Feather name="edit" size={23} color="black" onPress={() => 
+                  router.push( {
+                    pathname: 'components/editEvent',
+                    params: { eventID: event._id },
+                  })} /> : '' }
                   {pos >= 3 ? <MaterialIcons name="delete" size={25} color="black" style={styles.iconSpacing} onPress={() => confirmDeleteAlert(event.Name, event._id)}/> : ''}
                   </View >
                 </View>

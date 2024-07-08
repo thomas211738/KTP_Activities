@@ -2,7 +2,7 @@
 import { Stack } from 'expo-router/stack';
 import React from 'react';
 import { router } from 'expo-router';
-import { Button,View, TouchableOpacity, Pressable, Text} from 'react-native';
+import { Pressable} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "./firebaseConfig";
 import { signOut } from "firebase/auth";
@@ -48,6 +48,10 @@ export default function Layout() {
           name="(tabs)"
           options={{ headerShown: false }}
         />
+        {/* <Stack.Screen
+          name="components/editEvent"
+          // options={{ headerShown: false }}
+        /> */}
     </Stack>
    
   );
