@@ -9,7 +9,7 @@ import { format, parseISO } from 'date-fns';
 import { BACKEND_URL } from '@env';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const InformationPage = ({ navigation }) => {
   const [events, setEvents] = useState([]);
@@ -53,23 +53,6 @@ const InformationPage = ({ navigation }) => {
     ]);
 
 
-  //TO-DO: Include modal component and handle modal fields to make axios POST request customizable
-  const addEvent = async () => {
-    try {
-      await axios.post(`${BACKEND_URL}/events`, {
-        "Name": "Example",
-        "Day": "2024-09-17",
-        "Time": "3-5pm",
-        "Location": "CDS 364",
-        "Position": 1,
-        "Description": "Example description"
-      });
-      fetchEvents();
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
   const deleteEvent = async (id) => {
     try{ 
       await axios.delete(`${BACKEND_URL}/events/${id}`);
@@ -80,10 +63,19 @@ const InformationPage = ({ navigation }) => {
     }
   }
 
+  const handleaddEvent = () => {
+    router.push('components/createEvent');
+  };
+
   const groupedEvents = groupEventsByDate(events);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollcontainer} style={styles.container}>
+      <View style={styles.iconview}>
+      {pos >= 3 ? 
+      
+      <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={handleaddEvent}/> : ''}
+      </View>
       {Object.keys(groupedEvents).map((date, index) => (
         <View key={index} style={styles.dateGroup}>
           <Text style={styles.eventDate}>{date}</Text>
@@ -111,21 +103,18 @@ const InformationPage = ({ navigation }) => {
           ))}
         </View>
       ))}
-      {pos >= 3 ? 
-        <Pressable style={styles.newEventBtn} onPress={addEvent}>
-          <Text style={styles.newEventBtnText}>Add New Event</Text>
-        </Pressable>
-       : ''}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollcontainer: {
+    padding: 16,
+  },
   container: {
     flexGrow: 1,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
-  },
+    height: '100%',
+ },
   dateGroup: {
     marginBottom: 16,
   },
@@ -168,22 +157,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
-  newEventBtn: {
-    backgroundColor: 'gray',
-    alignContent: 'center',
-    width: '50%'
-  },
-  newEventBtnText: {
-    color: 'white',
-    padding: 20,
-    alignSelf: 'center'
-  },
   icon:{
     flexDirection: 'row',
   },
   iconSpacing:{
     marginLeft: 10,
-  }
+  },
+  iconview: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: -20
+  },
+  addIcon: {
+    marginRight: 10
+  },
 });
 
 export default InformationPage;
