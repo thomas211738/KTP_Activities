@@ -82,12 +82,16 @@ const InformationPage = ({ navigation }) => {
     }
   }
 
+  const handleaddEvent = () => {
+    router.push('components/createEvent');
+  };
+
   const groupedEvents = groupEventsByDate(events);
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollcontainer} style={styles.container}>
       <View style={styles.iconview}>
-      {pos >= 3 ? <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={addEvent}/> : ''}
+      {pos >= 3 ? <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={handleaddEvent}/> : ''}
       </View>
       {Object.keys(groupedEvents).map((date, index) => (
         <View key={index} style={styles.dateGroup}>
