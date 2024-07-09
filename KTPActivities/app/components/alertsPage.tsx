@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BACKEND_URL } from '@env';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const AlertComponent = (props) => {
   return (
@@ -98,7 +99,7 @@ const AlertsTab = () => {
           <Text style={styles.alertPageTitle}>Announcements</Text>
           <Text style={styles.alertPageSubheading}>Updates and reminders about rush!</Text>
         </View>
-        {pos >= 3 ? <MaterialIcons name="add" size={36} color="black" style={styles.addIcon} onPress={addAlert} /> : ''}
+        {pos >= 3 ? <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={addAlert}/> : ''}
       </View>
       <ScrollView style={styles.alertsContainer}>
         {Object.keys(groupedAlerts).map((date, index) => (
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   addIcon: {
-    marginRight: 10 
+    marginRight: 12
   },
   deleteIcon: {
     margin: 15
