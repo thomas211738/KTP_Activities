@@ -41,7 +41,6 @@
     "scheme": [
       "ktpactivities"
     ],
-    "owner": "boston-ktp",
     "runtimeVersion": {
       "policy": "appVersion"
     },
