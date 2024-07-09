@@ -11,8 +11,6 @@ import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-
-
 const InformationPage = ({ navigation }) => {
   const [events, setEvents] = useState([]);
   //TO-DO: Integrate pos state when file system is reorganized
@@ -55,23 +53,6 @@ const InformationPage = ({ navigation }) => {
     ]);
 
 
-  //TO-DO: Include modal component and handle modal fields to make axios POST request customizable
-  const addEvent = async () => {
-    try {
-      await axios.post(`${BACKEND_URL}/events`, {
-        "Name": "Example",
-        "Day": "2024-09-17",
-        "Time": "3-5pm",
-        "Location": "CDS 364",
-        "Position": 1,
-        "Description": "Example description"
-      });
-      fetchEvents();
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
   const deleteEvent = async (id) => {
     try{ 
       await axios.delete(`${BACKEND_URL}/events/${id}`);
@@ -91,7 +72,9 @@ const InformationPage = ({ navigation }) => {
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollcontainer} style={styles.container}>
       <View style={styles.iconview}>
-      {pos >= 3 ? <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={handleaddEvent}/> : ''}
+      {pos >= 3 ? 
+      
+      <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={handleaddEvent}/> : ''}
       </View>
       {Object.keys(groupedEvents).map((date, index) => (
         <View key={index} style={styles.dateGroup}>
