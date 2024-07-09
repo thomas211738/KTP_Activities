@@ -3,8 +3,10 @@ import React, { useCallback } from 'react';
 import { Alert, ScrollView, Image, View, Text, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { BACKEND_URL } from '@env';
+import { useFocusEffect } from '@react-navigation/native';
 
 const AlertComponent = (props) => {
   return (
@@ -32,9 +34,9 @@ const AlertsTab = () => {
     }
   }
 
-  useEffect(() => {
+  useFocusEffect(() => {
     fetchAlerts();
-  }, []);
+  });
 
   const formatDate = (dateString) => {
     const date = parseISO(dateString);
@@ -109,6 +111,12 @@ const AlertsTab = () => {
             {groupedAlerts[date].map((alert) => (
               <View key={alert._id} style={styles.alertWrapper}>
                 <AlertComponent alertName={alert.AlertName} description={alert.Description} time={alert.Time} />
+                {pos >= 3 ? <Feather name="edit" size={24} color="black" style={styles.editIcon} onPress={() => 
+                  router.push({
+                    pathname: 'components/editAlert',
+                    params: { alertID: alert._id }
+                  })
+                } /> : ''}
                 {pos >= 3 ? <MaterialIcons name="delete" size={25} color="black" style={styles.deleteIcon} onPress={() => confirmDeleteAlert(alert._id)} /> : ''}
               </View>
             ))}
@@ -185,6 +193,9 @@ const styles = StyleSheet.create({
   },
   deleteIcon: {
     margin: 15
+  },
+  editIcon: {
+    marginTop: 15
   }
 });
 
