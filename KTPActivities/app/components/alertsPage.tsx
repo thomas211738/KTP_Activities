@@ -7,6 +7,8 @@ import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { BACKEND_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
 
 const AlertComponent = (props) => {
   return (
