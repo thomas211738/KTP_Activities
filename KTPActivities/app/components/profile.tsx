@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     },
     faculty: {
       color: 'white',
-      fontSize: 18,
+      fontSize: 16,
       fontWeight: 'bold',
     },
     details: {
@@ -146,8 +146,9 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
       },
       signOutButtonText: {
-        color: '#0a9bf5',
+        color: 'red',
         fontSize: 16,
+        fontWeight: 'bold',
       },
   });
 export default profile;
