@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     height: '100%',
-    backgroundColor: '#86ebba',
+    backgroundColor: '#f2f2f2',
 
  },
   dateGroup: {
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   eventDate: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'black',
     marginBottom: 8,
   },
   eventContainer: {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
   eventText: {
     fontSize: 16,
-    color: '#e3e3e3',
+    color: 'white',
     padding: 2,
     marginTop: 2,
   },
