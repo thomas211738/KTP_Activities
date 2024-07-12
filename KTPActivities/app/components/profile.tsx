@@ -10,15 +10,17 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { LinearGradient } from 'expo-linear-gradient';
 
 
+
 const profile = () => {
   return (
     
     <LinearGradient 
     style={styles.container}
     colors={['#6dbf98', '#86ebba']}
-    >
+ 
       {/* IMAGE COMPONENT */}
       <Octicons name="feed-person" size={175} color="#242424" />
+
 
       {/* PROFILE CARD */}
       <View style={styles.card}>
@@ -62,11 +64,12 @@ const profile = () => {
     
 
     </LinearGradient>
+
   )
 }
 
 const styles = StyleSheet.create({
-  
+
     container: {
         flex: 1,
         justifyContent: 'center',

@@ -9,11 +9,7 @@ const alertSchema = mongoose.Schema(
     Description: {
         type: String,
         required: true,
-    },
-    Time: {
-        type: String, 
-        required: true,
-    },
+    }
     },
     {
         timestamps: true,
