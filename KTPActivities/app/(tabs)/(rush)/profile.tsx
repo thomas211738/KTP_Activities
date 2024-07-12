@@ -1,18 +1,9 @@
-import { View, Text, StyleSheet } from 'react-native';
-import React from 'react';
+import Profile from "../../components/profile";
 
 export default function Tab() {
   return (
-    <View style={styles.container}>
-      <Text>rush Tab profile</Text>
-    </View>
+    <Profile/>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+

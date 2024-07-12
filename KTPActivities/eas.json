@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 10.0.2"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development",
+      "ios": {
+        "simulator": true,
+        "cocoapods": "1.15.2"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true,
+        "cocoapods": "1.15.2"
+      },
+      "channel": "preview"
+    },
+    "production": {
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

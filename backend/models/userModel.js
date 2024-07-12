@@ -16,7 +16,7 @@ const userSchema = mongoose.Schema(
     },
     PhoneNumber: {
         type: String,
-        required: true,
+        required: false,
     },
     Birthday: {
         type: String,
@@ -46,6 +46,15 @@ const userSchema = mongoose.Schema(
         type: Number,
         required: true,
     },
+    Interests: {
+        type: [String]
+    },
+    LinkedIn: {
+        type: String
+    },
+    Class: {
+        type: String
+    }
     },
     {
         timestamps: true,

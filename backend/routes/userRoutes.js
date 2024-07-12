@@ -31,6 +31,18 @@ router.get("/:id", async (request, response) => {
     }
 });
 
+//get a User by email
+router.get("/email/:email", async(request, response) => {
+    try {
+        const { email } = request.params;
+        const User = await Users.find({ BUEmail: email });
+        return response.status(200).json(User);
+    } catch (err) {
+        console.log(err.message);
+        return response.status(500).send({ message: err.message});
+    }
+})
+
 // add a User
 router.post("/", async (request, response) => {
     try {
@@ -38,12 +50,9 @@ router.post("/", async (request, response) => {
             BUEmail,
             FirstName,
             LastName,
-            PhoneNumber,
             GradYear,
             Colleges,
             Major,
-            Minor,
-            Birthday,
             Position,
         } = request.body;
 
@@ -51,17 +60,15 @@ router.post("/", async (request, response) => {
             !request.body.BUEmail ||
             !request.body.FirstName ||
             !request.body.LastName ||
-            !request.body.PhoneNumber ||
             !request.body.GradYear ||
             !request.body.Colleges ||
             !request.body.Major ||
-            !request.body.Minor ||
-            !request.body.Birthday ||
             !request.body.Position
         ) {
             return response.status(400).send({
                 message:
-                    "Send all required fields: BUEmail, FirstName, LastName, PhoneNumber, GradYear, Colleges, Majors, Birthday, Position",
+
+                    "Send all required fields: BUEmail, FirstName, LastName, GradYear, Colleges, Major, Position",
             });
         } else if (request.body.Position > 4 || request.body.Position < 0){
             return response.status(401).send({
@@ -73,12 +80,9 @@ router.post("/", async (request, response) => {
             BUEmail,
             FirstName,
             LastName,
-            PhoneNumber,
             GradYear,
             Colleges,
             Major,
-            Minor,
-            Birthday,
             Position,
         });
         await newUser.save();
@@ -99,16 +103,13 @@ router.put("/:id", async (request, response) => {
             !request.body.FirstName ||
             !request.body.LastName ||
             !request.body.GradYear ||
-            !request.body.PhoneNumber ||
             !request.body.Colleges ||
             !request.body.Major ||
-            !request.body.Minor ||
-            !request.body.Birthday ||
             !request.body.Position
         ) {
             return response.status(400).send({
                 message:
-                    "Send all required fields: BUEmail, FirstName, LastName, PhoneNumber, GradYear, Colleges, Majors, Birthday, Position",
+                    "Send all required fields: BUEmail, FirstName, LastName, GradYear, Colleges, Major, Position",
             });
         } else if (request.body.Position > 4 || request.body.Position < 0){
             return response.status(401).send({

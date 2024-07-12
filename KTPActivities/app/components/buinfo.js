@@ -1,17 +1,17 @@
 
 const colleges = [
-    { label: 'Faculty of Computing and Data Sciences', value: '1' },
-    { label: 'College of Arts & Sciences', value: '2' },
-    { label: 'College of Communication', value: '3' },
-    { label: 'College of Engineering', value: '4' },
-    { label: 'College of Fine Arts', value: '5' },
-    { label: 'College of General Studies', value: '6' },
-    { label: 'Questrom School of Business', value: '7' },
-    { label: 'Sargent College of Health & Rehabilitation Sciences', value: '8' },
-    { label: 'Wheelock College of Education & Human Development', value: '9' },
-    { label: 'Arvind and Chandan Nandlal Kilachand Honors College', value: '10' },
-    { label: 'Frederick S. Pardee School of Global Studies', value: '11' },
-    { label: 'School of Hospitality Administration', value: '12' },
+    { label: 'Faculty of Computing and Data Sciences', value: 'CDS' },
+    { label: 'College of Arts & Sciences', value: 'CAS' },
+    { label: 'College of Communication', value: 'COM' },
+    { label: 'College of Engineering', value: 'ENG' },
+    { label: 'College of Fine Arts', value: 'CFA' },
+    { label: 'College of General Studies', value: 'CGS' },
+    { label: 'Questrom School of Business', value: 'QST' },
+    { label: 'Sargent College of Health & Rehabilitation Sciences', value: 'SAR' },
+    { label: 'Wheelock College of Education & Human Development', value: 'SED' },
+    { label: 'Arvind and Chandan Nandlal Kilachand Honors College', value: 'KHC' },
+    { label: 'Frederick S. Pardee School of Global Studies', value: 'PAR' },
+    { label: 'School of Hospitality Administration', value: 'SHA' },
 ];
 
 export default colleges;

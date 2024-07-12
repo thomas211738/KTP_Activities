@@ -36,24 +36,21 @@ router.post("/", async (request, response) => {
     try {
         const {
             AlertName,
-            Description,
-            Time,
+            Description
         } = request.body;
 
         if (
             !request.body.AlertName ||
-            !request.body.Description ||
-            !request.body.Time
+            !request.body.Description
         ) {
             return response.status(400).send({
                 message:
-                    "Send all required fields: AlertName, Description, Time",
+                    "Send all required fields: AlertName, Description",
             });
         }
         const newalert = new Alerts({
             AlertName,
-            Description,
-            Time,
+            Description
         });
         await newalert.save();
         return response
@@ -70,12 +67,11 @@ router.put("/:id", async (request, response) => {
     try {
         if (
             !request.body.AlertName ||
-            !request.body.Description ||
-            !request.body.Time 
+            !request.body.Description
         ) {
             return response.status(400).send({
                 message:
-                    "Send all required fields: AlertName, Description, Time",
+                    "Send all required fields: AlertName, Description",
             });
         }
         const { id } = request.params;
