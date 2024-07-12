@@ -7,16 +7,20 @@ import { router } from 'expo-router';
 import Octicons from '@expo/vector-icons/Octicons';
 import { AntDesign } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
-
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 
 const profile = () => {
   return (
     
-    <View style={styles.container}>
+    <LinearGradient 
+    style={styles.container}
+    colors={['#6dbf98', '#86ebba']}
+ 
       {/* IMAGE COMPONENT */}
-      <Octicons name="feed-person" size={175} color="gray" />
+      <Octicons name="feed-person" size={175} color="#242424" />
+
 
       {/* PROFILE CARD */}
       <View style={styles.card}>
@@ -59,19 +63,21 @@ const profile = () => {
     </View>
     
 
-    </View>
+    </LinearGradient>
+
   )
 }
 
 const styles = StyleSheet.create({
+
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
+        backgroundColor: '#86ebba',
       },
     card: {
-      backgroundColor: '#2B2B2B',
+      backgroundColor: '#134b91',
       padding: 20,
       borderRadius: 10,
       width: '90%',
@@ -136,7 +142,7 @@ const styles = StyleSheet.create({
       marginLeft: 10,
     },
     signOutCard: {
-        backgroundColor: '#2B2B2B',
+        backgroundColor: '#134b91',
         padding: 10,
         borderRadius: 10,
         width: '90%',
@@ -146,7 +152,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
       },
       signOutButtonText: {
-        color: 'red',
+        color: '#ff4f4f',
         fontSize: 16,
         fontWeight: 'bold',
       },
