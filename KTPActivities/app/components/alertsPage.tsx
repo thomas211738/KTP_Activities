@@ -3,12 +3,11 @@ import React, { useCallback } from 'react';
 import { Alert, ScrollView, Image, View, Text, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { BACKEND_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
-import Ionicons from '@expo/vector-icons/Ionicons';
-
+import AddAlertModal from './addAlertModal';
 
 const AlertComponent = (props) => {
   return (
@@ -26,6 +25,7 @@ const AlertComponent = (props) => {
 const AlertsTab = () => { 
   const [alerts, setAlerts] = useState([]);
   const [pos, setPos] = useState(3);
+  const [addModalVisible, setAddModalVisible] = useState(false);
 
   const fetchAlerts = async () => {
     try {
@@ -39,6 +39,11 @@ const AlertsTab = () => {
   useFocusEffect(() => {
     fetchAlerts();
   });
+
+  const formatTime = (dateString) => {
+    const date = parseISO(dateString);
+    return format(date, 'h:mm a');
+  }
 
   const formatDate = (dateString) => {
     const date = parseISO(dateString);
@@ -57,13 +62,13 @@ const AlertsTab = () => {
     }, {});
   });
 
-  const addAlert = async () => {
+  const postAlert = async (alertName, alertDescription) => {
     try {
       await axios.post(`${BACKEND_URL}/alerts`, {
-        "AlertName": "Example",
-        "Description": "Example Alert",
-        "Time": "11:00 AM"
+        "AlertName": alertName, 
+        "Description": alertDescription
       });
+      setAddModalVisible(false);
       fetchAlerts();
     } catch (err) {
       console.log(err.message);
@@ -102,9 +107,10 @@ const AlertsTab = () => {
           <Text style={styles.alertPageTitle}>Announcements</Text>
           <Text style={styles.alertPageSubheading}>Updates and reminders about rush!</Text>
         </View>
-        {pos >= 3 ? <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={addAlert}/> : ''}
+        {pos >= 3 ? <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={() => setAddModalVisible(true)}/> : ''}
       </View>
       <ScrollView style={styles.alertsContainer}>
+        <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} />
         {Object.keys(groupedAlerts).map((date, index) => (
           <View key={index+date}>
             <View style={styles.alertDateContainer}>
@@ -112,7 +118,7 @@ const AlertsTab = () => {
             </View>
             {groupedAlerts[date].map((alert) => (
               <View key={alert._id} style={styles.alertWrapper}>
-                <AlertComponent alertName={alert.AlertName} description={alert.Description} time={alert.Time} />
+                <AlertComponent alertName={alert.AlertName} description={alert.Description} time={formatTime(alert.createdAt)} />
                 {pos >= 3 ? <Feather name="edit" size={24} color="black" style={styles.editIcon} onPress={() => 
                   router.push({
                     pathname: 'components/editAlert',
