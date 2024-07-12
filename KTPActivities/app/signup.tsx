@@ -61,7 +61,7 @@ const SignupPage = () => {
       axios
       .post(`${BACKEND_URL}/users`, new_user)
       .then(() => {
-        router.replace("/(tabs)/(rush)/calender");
+        router.replace("/(tabs)/Calender");
       })
       .catch((error) => {
         console.log(error);

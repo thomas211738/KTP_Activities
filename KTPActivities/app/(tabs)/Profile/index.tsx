@@ -1,7 +1,7 @@
 import { View, Button, StyleSheet, Text, TouchableOpacity} from 'react-native'
 import React from 'react'
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "./../firebaseConfig";
+import { auth } from "../../firebaseConfig";
 import { signOut } from "firebase/auth";
 import { router } from 'expo-router';
 import Octicons from '@expo/vector-icons/Octicons';
@@ -9,9 +9,7 @@ import { AntDesign } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import { LinearGradient } from 'expo-linear-gradient';
 
-
-
-const profile = () => {
+const index = () => {
   return (
     
     <LinearGradient 
@@ -158,4 +156,4 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
       },
   });
-export default profile;
+export default index;

@@ -11,7 +11,7 @@ import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-const InformationPage = ({ navigation }) => {
+const index = ({ navigation }) => {
   const [events, setEvents] = useState([]);
   //TO-DO: Integrate pos state when file system is reorganized
   const [pos, setPos] = useState(3);
@@ -64,7 +64,7 @@ const InformationPage = ({ navigation }) => {
   }
 
   const handleaddEvent = () => {
-    router.push('components/createEvent');
+    router.push('(tabs)/Calendar/createEvent');
   };
 
   const groupedEvents = groupEventsByDate(events);
@@ -87,7 +87,7 @@ const InformationPage = ({ navigation }) => {
                   <View style={styles.icon}>
                   {pos >= 3 ?<Feather name="edit" size={23} color="white" onPress={() => 
                   router.push( {
-                    pathname: 'components/editEvent',
+                    pathname: '(tabs)/Calendar/editEvent',
                     params: { eventID: event._id },
                   })} /> : '' }
                   {pos >= 3 ? <MaterialIcons name="delete" size={25} color="white" style={styles.iconSpacing} onPress={() => confirmDeleteAlert(event.Name, event._id)}/> : ''}
@@ -175,4 +175,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InformationPage;
+export default index;

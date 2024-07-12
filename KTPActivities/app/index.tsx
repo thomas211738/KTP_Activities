@@ -13,7 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignInScreen from './signin';
 import { router} from 'expo-router';
 import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID, BACKEND_URL } from '@env';
-import { ValidateUser } from './auth';
+import { ValidateUser } from './components/auth';
 import Toast from 'react-native-root-toast';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import { signOut } from "firebase/auth";
@@ -69,7 +69,7 @@ const HomeScreen = ({navigation}) => {
         const validation = await ValidateUser(user.providerData[0].email);
 
         if (validation.status === 1) {          
-          router.replace("/(tabs)/(rush)/calender");
+          router.replace("/(tabs)/Calendar");
         } else if (validation.status === 0) {
           router.push({
             pathname: 'signup',

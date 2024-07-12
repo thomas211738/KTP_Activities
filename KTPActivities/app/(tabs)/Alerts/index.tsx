@@ -7,12 +7,12 @@ import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { BACKEND_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
-import AddAlertModal from './addAlertModal';
+import AddAlertModal from '../../components/addAlertModal';
 
 const AlertComponent = (props) => {
   return (
     <View style={styles.alertContainer}>
-      <Image source={require("../../img/ktplogopng.png")} style={styles.alertImage}/>
+      <Image source={require("../../../img/ktplogopng.png")} style={styles.alertImage}/>
       <View>
         <Text style={styles.alertName}>{props.alertName}</Text>
         <Text style={styles.alertTime}>{props.time}</Text>
@@ -22,7 +22,7 @@ const AlertComponent = (props) => {
   );
 }
 
-const AlertsTab = () => { 
+const index = () => { 
   const [alerts, setAlerts] = useState([]);
   const [pos, setPos] = useState(3);
   const [addModalVisible, setAddModalVisible] = useState(false);
@@ -207,4 +207,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default AlertsTab;
+export default index;

@@ -48,10 +48,6 @@ export default function Layout() {
           name="(tabs)"
           options={{ headerShown: false }}
         />
-        {/* <Stack.Screen
-          name="components/editEvent"
-          // options={{ headerShown: false }}
-        /> */}
     </Stack>
    
   );
