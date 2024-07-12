@@ -85,17 +85,17 @@ const InformationPage = ({ navigation }) => {
                 <View style={styles.titleContainer}>
                   <Text style={styles.eventTitle}>{event.Name}</Text>
                   <View style={styles.icon}>
-                  {pos >= 3 ?<Feather name="edit" size={23} color="black" onPress={() => 
+                  {pos >= 3 ?<Feather name="edit" size={23} color="white" onPress={() => 
                   router.push( {
                     pathname: 'components/editEvent',
                     params: { eventID: event._id },
                   })} /> : '' }
-                  {pos >= 3 ? <MaterialIcons name="delete" size={25} color="black" style={styles.iconSpacing} onPress={() => confirmDeleteAlert(event.Name, event._id)}/> : ''}
+                  {pos >= 3 ? <MaterialIcons name="delete" size={25} color="white" style={styles.iconSpacing} onPress={() => confirmDeleteAlert(event.Name, event._id)}/> : ''}
                   </View >
                 </View>
                 <Text style={styles.eventText}>
-                  <MaterialIcons name="access-time-filled" size={15} color="black" /> {event.Time}{' '}
-                  <Entypo name="location-pin" size={17} color="black" /> {event.Location}
+                  <MaterialIcons name="access-time-filled" size={15} color="white" /> {event.Time}{' '}
+                  <Entypo name="location-pin" size={17} color="white" /> {event.Location}
                 </Text>
                 <Text style={styles.eventText}>{event.Description}</Text>
               </View>
@@ -114,6 +114,8 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     height: '100%',
+    backgroundColor: '#86ebba',
+
  },
   dateGroup: {
     marginBottom: 16,
@@ -128,7 +130,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   eventContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#134b91',
     padding: 16,
     borderRadius: 8,
     shadowColor: '#000',
@@ -141,11 +143,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: '#333',
+    color: 'white',
   },
   eventText: {
     fontSize: 16,
-    color: '#555',
+    color: '#e3e3e3',
     padding: 2,
     marginTop: 2,
   },
