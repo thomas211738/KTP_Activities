@@ -16,7 +16,7 @@ const profile = () => {
     
     <LinearGradient 
     style={styles.container}
-    colors={['#6dbf98', '#86ebba']}
+    colors={['#f2f2f2', '#f2f2f2']}>
  
       {/* IMAGE COMPONENT */}
       <Octicons name="feed-person" size={175} color="#242424" />
@@ -25,7 +25,7 @@ const profile = () => {
       {/* PROFILE CARD */}
       <View style={styles.card}>
       <Text style={styles.name}>John Doe</Text>
-      <Text style={styles.status}>Rushe</Text>
+      <Text style={styles.status}>Rushee</Text>
       <View style={styles.divider} />
       <Text style={styles.faculty}>Faculty of Computing & Data Sciences</Text>
       <Text style={styles.details}>Major in Data Science | Minor in Business</Text>
@@ -71,10 +71,10 @@ const profile = () => {
 const styles = StyleSheet.create({
 
     container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#86ebba',
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#86ebba',
       },
     card: {
       backgroundColor: '#134b91',
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
       flexWrap: 'wrap',
     },
     interest: {
-      backgroundColor: '#5A5A5A',
+      backgroundColor: '#86ebba',
       paddingHorizontal: 10,
       paddingVertical: 5,
       borderRadius: 20,
@@ -129,7 +129,8 @@ const styles = StyleSheet.create({
       marginBottom: 10,
     },
     interestText: {
-        color: 'white',
+        color: 'black',
+        fontWeight: '500',
       },
     socialIcons: {
       flexDirection: 'row',
