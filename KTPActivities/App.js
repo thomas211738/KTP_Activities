@@ -4,10 +4,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 const Stack = createNativeStackNavigator();
 
 import HomeScreen from './pages/signup/homeSignup';
-import LoginPage from './pages/login/loginPage';
 import SignupPage from './pages/signup/signUp';
 import InformationPage from './pages/events/events';
-import AgendaScreen from './agendaScreen';
 import Layout from './app/_layout'
 
 const App = () => {
