@@ -102,14 +102,11 @@ const index = () => {
 
   return (
     <View style={styles.container}>
+
+      <ScrollView contentInsetAdjustmentBehavior='automatic' style={styles.alertsContainer}>
       <View style={styles.alertPageHeader}>
-        <View>
-          <Text style={styles.alertPageTitle}>Announcements</Text>
-          <Text style={styles.alertPageSubheading}>Updates and reminders about rush!</Text>
-        </View>
         {pos >= 3 ? <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={() => setAddModalVisible(true)}/> : ''}
       </View>
-      <ScrollView style={styles.alertsContainer}>
         <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} />
         {Object.keys(groupedAlerts).map((date, index) => (
           <View key={index+date}>

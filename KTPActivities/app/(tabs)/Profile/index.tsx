@@ -1,4 +1,4 @@
-import { View, Button, StyleSheet, Text, TouchableOpacity} from 'react-native'
+import { View, Button, StyleSheet, ScrollView,Text, TouchableOpacity} from 'react-native'
 import React from 'react'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "../../firebaseConfig";
@@ -7,49 +7,44 @@ import { router } from 'expo-router';
 import Octicons from '@expo/vector-icons/Octicons';
 import { AntDesign } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
-import { LinearGradient } from 'expo-linear-gradient';
 
 const index = () => {
   return (
-    
-    <LinearGradient 
-    style={styles.container}
-    colors={['#f2f2f2', '#f2f2f2']}>
- 
-      {/* IMAGE COMPONENT */}
-      <Octicons name="feed-person" size={175} color="#242424" />
+    <View style={styles.container}>
+        <ScrollView contentInsetAdjustmentBehavior='automatic'>
+        {/* IMAGE COMPONENT */}
+        <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic}/>
 
-
-      {/* PROFILE CARD */}
-      <View style={styles.card}>
-      <Text style={styles.name}>John Doe</Text>
-      <Text style={styles.status}>Rushee</Text>
-      <View style={styles.divider} />
-      <Text style={styles.faculty}>Faculty of Computing & Data Sciences</Text>
-      <Text style={styles.details}>Major in Data Science | Minor in Business</Text>
-      <Text style={styles.details}>Junior (2026)</Text>
-      <View style={styles.divider} />
-      <View style={styles.interestsContainer}>
+        {/* PROFILE CARD */}
+        <View style={styles.card}>
+        <Text style={styles.name}>John Doe</Text>
+        <Text style={styles.status}>Rushee</Text>
+        <View style={styles.divider} />
+        <Text style={styles.faculty}>Faculty of Computing & Data Sciences</Text>
+        <Text style={styles.details}>Major in Data Science | Minor in Business</Text>
+        <Text style={styles.details}>Junior (2026)</Text>
+        <View style={styles.divider} />
+        <View style={styles.interestsContainer}>
         <Text style={styles.interestsTitle}>Interests</Text>
         <View style={styles.interests}>
-          <View style={styles.interest}><Text style={styles.interestText}>Soccer</Text></View>
-          <View style={styles.interest}><Text style={styles.interestText}>Machine Learning</Text></View>
-          <View style={styles.interest}><Text style={styles.interestText}>Brawl Stars</Text></View>
-          <View style={styles.interest}><Text style={styles.interestText}>Finance</Text></View>
+            <View style={styles.interest}><Text style={styles.interestText}>Soccer</Text></View>
+            <View style={styles.interest}><Text style={styles.interestText}>Machine Learning</Text></View>
+            <View style={styles.interest}><Text style={styles.interestText}>Brawl Stars</Text></View>
+            <View style={styles.interest}><Text style={styles.interestText}>Finance</Text></View>
         </View>
-      </View>
-      <View style={styles.socialIcons}>
+        </View>
+        <View style={styles.socialIcons}>
         <TouchableOpacity>
         <AntDesign name="linkedin-square" size={24} color="white" />
         </TouchableOpacity>
         <TouchableOpacity>
         <AntDesign name="instagram" size={24} color="white" />
         </TouchableOpacity>
-      </View>
-    </View>
+        </View>
+        </View>
 
-    {/* SIGNOUT CARD */}
-    <View style={styles.signOutCard}>
+        {/* SIGNOUT CARD */}
+        <View style={styles.signOutCard}>
         <TouchableOpacity onPress={async () => {
             await signOut(auth);
             await AsyncStorage.removeItem("@user");
@@ -58,11 +53,11 @@ const index = () => {
         <Text style={styles.signOutButtonText}>Sign Out</Text>
         </TouchableOpacity>
         <Entypo name="log-out" size={20} color="white" />
+        </View>
+    </ScrollView>
+
     </View>
     
-
-    </LinearGradient>
-
   )
 }
 
@@ -70,15 +65,17 @@ const styles = StyleSheet.create({
 
     container: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#86ebba',
+      backgroundColor: 'white',
       },
+    profilepic: {
+        marginTop: 10,
+        alignSelf: 'center',
+    },
     card: {
       backgroundColor: '#134b91',
       padding: 20,
       borderRadius: 10,
-      width: '90%',
+      width: '95%',
       alignSelf: 'center',
       marginTop: 20,
     },
@@ -144,7 +141,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#134b91',
         padding: 10,
         borderRadius: 10,
-        width: '90%',
+        width: '95%',
         alignSelf: 'center',
         marginTop: 20,
         flexDirection: 'row',

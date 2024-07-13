@@ -11,27 +11,30 @@ export default function TabLayout() {
         name="Calendar"
         options={{
           headerShown: false,
-          title: 'Calender',
+          title: 'Calendar',
           tabBarIcon: ({ color }) => <Entypo name="calendar" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="People/index"
+        name="People"
         options={{
+          headerShown: false,
           title: 'People',
           tabBarIcon: ({ color }) => <FontAwesome name="group" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="Alerts/index"
+        name="Alerts"
         options={{
           title: 'Alerts',
+          headerShown: false,
           tabBarIcon: ({ color }) => <Ionicons name="notifications" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="Profile/index"
+        name="Profile"
         options={{
+          headerShown: false,
           title: 'Profile',
           tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
         }}
