@@ -1,5 +1,5 @@
 import { View, Button, StyleSheet, ScrollView,Text, TouchableOpacity} from 'react-native'
-import React from 'react'
+import React, {useState} from 'react'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "../../firebaseConfig";
 import { signOut } from "firebase/auth";
@@ -7,8 +7,47 @@ import { router } from 'expo-router';
 import Octicons from '@expo/vector-icons/Octicons';
 import { AntDesign } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
+import { getUserInfo } from '../../components/userInfoManager'; 
+import colleges from '../../components/buinfo';
+import { Ionicons } from '@expo/vector-icons';
+
+
+
 
 const index = () => {
+    const userInfo = getUserInfo();
+    let posName = "";
+    if (userInfo.Position === 0) {
+        posName = "Rushee";
+    } else if (userInfo.Position === 1) {
+        posName = "Pledge";
+    } else if (userInfo.Position === 2) {
+        posName = "Brother";
+    } else if (userInfo.Position === 3) {
+        posName = "Executive Board Member";
+    } else if (userInfo.Position === 4) {
+        posName = "Super Administrator";
+    }
+
+    function getLabelByValue(value) {
+        const college = colleges.find(college => college.value === value);
+        return college ? college.label : 'Value not found';
+    }
+    const college = getLabelByValue(userInfo.Colleges[0]);
+
+    let grade = "";
+    if (userInfo.GradYear === 2025) {
+        grade = "Senior";
+    } else if (userInfo.GradYear === 2026) {
+        grade = "Junior";
+    } else if (userInfo.GradYear === 2027) {
+        grade = "Sophomore";
+    } else if (userInfo.GradYear === 2028) {
+        grade = "Freshman";
+    }
+
+    
+
   return (
     <View style={styles.container}>
         <ScrollView contentInsetAdjustmentBehavior='automatic'>
@@ -17,15 +56,23 @@ const index = () => {
 
         {/* PROFILE CARD */}
         <View style={styles.card}>
-        <Text style={styles.name}>John Doe</Text>
-        <Text style={styles.status}>Rushee</Text>
+        <Text style={styles.name}>{userInfo.FirstName} {userInfo.LastName}</Text>
+        <Text style={styles.status}>{posName}</Text>
         <View style={styles.divider} />
-        <Text style={styles.faculty}>Faculty of Computing & Data Sciences</Text>
-        <Text style={styles.details}>Major in Data Science | Minor in Business</Text>
-        <Text style={styles.details}>Junior (2026)</Text>
+        <Text style={styles.faculty}>{college}</Text>
+        <Text style={styles.details}>
+            Major in {userInfo.Major.join(', ')}
+            {userInfo.Minor.length > 0 && ` | Minor in ${userInfo.Minor.join(', ')}`}
+        </Text>
+        <Text style={styles.details}>{grade} ({userInfo.GradYear})</Text>
         <View style={styles.divider} />
         <View style={styles.interestsContainer}>
-        <Text style={styles.interestsTitle}>Interests</Text>
+        <View style={styles.interestTitlerow}>
+            <Text style={styles.interestsTitle}>Interests</Text>
+            <TouchableOpacity style={styles.addInterestIcon}>
+                <Ionicons name="add" size={30} color="white" />
+            </TouchableOpacity>    
+        </View>
         <View style={styles.interests}>
             <View style={styles.interest}><Text style={styles.interestText}>Soccer</Text></View>
             <View style={styles.interest}><Text style={styles.interestText}>Machine Learning</Text></View>
@@ -105,11 +152,19 @@ const styles = StyleSheet.create({
     interestsContainer: {
       marginTop: 2,
     },
+    interestTitlerow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
     interestsTitle: {
       color: 'white',
       fontSize: 20,
       marginBottom: 10,
       fontWeight: 'bold',
+    },
+    addInterestIcon:{
+        marginTop: -5
+
     },
     interests: {
       flexDirection: 'row',
