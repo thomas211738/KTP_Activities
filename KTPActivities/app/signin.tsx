@@ -4,9 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 import GoogleButton from './components/googleButton';
 import { RootSiblingParent } from 'react-native-root-siblings';
 
-
-
-
 export default function SignInScreen({ promptAsync }) {
     const mynavigation = useNavigation();
     

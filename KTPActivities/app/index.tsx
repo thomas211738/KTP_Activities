@@ -13,10 +13,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignInScreen from './signin';
 import { router} from 'expo-router';
 import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID, BACKEND_URL } from '@env';
-import { ValidateUser } from './auth';
+import { ValidateUser } from './components/auth';
 import Toast from 'react-native-root-toast';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import { signOut } from "firebase/auth";
+import { setUserInfo } from './components/userInfoManager'; 
+import { setAllUsersInfo } from './components/allUsersManager';
 
 
 WebBrowser.maybeCompleteAuthSession();
@@ -24,7 +26,6 @@ WebBrowser.maybeCompleteAuthSession();
 //HOME SCREEN
 const HomeScreen = ({navigation}) => {
 
-  const [userInfo, setUserInfo] = React.useState();
   const [loading, setLoading] = React.useState(false);
   const [pos, setPos] = React.useState(0);
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
@@ -37,7 +38,6 @@ const HomeScreen = ({navigation}) => {
       setLoading(true);
       const userJSON = await AsyncStorage.getItem("@user");
       const userData = userJSON ? JSON.parse(userJSON) : null;
-      setUserInfo(userData);
       // const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${userData.email}`);
       // setPos(userPositionJSON.data[0].Position);
     } catch (e) {
@@ -68,8 +68,10 @@ const HomeScreen = ({navigation}) => {
 
         const validation = await ValidateUser(user.providerData[0].email);
 
-        if (validation.status === 1) {          
-          router.replace("/(tabs)/(rush)/calender");
+        if (validation.status === 1) {   
+          setUserInfo(validation.user); 
+          setAllUsersInfo(validation.allUsers);
+          router.replace("/(tabs)/Calendar");
         } else if (validation.status === 0) {
           router.push({
             pathname: 'signup',

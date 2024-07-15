@@ -10,8 +10,10 @@ import { BACKEND_URL } from '@env';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import {useHeaderHeight} from '@react-navigation/elements';
 
-const InformationPage = ({ navigation }) => {
+const index = ({ navigation }) => {
+    const headerHeight = useHeaderHeight();
   const [events, setEvents] = useState([]);
   //TO-DO: Integrate pos state when file system is reorganized
   const [pos, setPos] = useState(3);
@@ -64,47 +66,42 @@ const InformationPage = ({ navigation }) => {
   }
 
   const handleaddEvent = () => {
-    router.push('components/createEvent');
+    router.push('(tabs)/Calendar/createEvent');
   };
 
   const groupedEvents = groupEventsByDate(events);
 
-  return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollcontainer} style={styles.container}>
-      <View style={styles.iconview}>
-      {pos >= 3 ? 
-      
-      <Ionicons name="add-circle-outline" size={33} color="black"  style={styles.addIcon} onPress={handleaddEvent}/> : ''}
-      </View>
-      {Object.keys(groupedEvents).map((date, index) => (
-        <View key={index} style={styles.dateGroup}>
-          <Text style={styles.eventDate}>{date}</Text>
-          {groupedEvents[date].map((event, eventIndex) => (
-            <View key={eventIndex} style={styles.eventWrapper}>
-              <View style={styles.eventContainer}>
-                <View style={styles.titleContainer}>
-                  <Text style={styles.eventTitle}>{event.Name}</Text>
-                  <View style={styles.icon}>
-                  {pos >= 3 ?<Feather name="edit" size={23} color="white" onPress={() => 
-                  router.push( {
-                    pathname: 'components/editEvent',
-                    params: { eventID: event._id },
-                  })} /> : '' }
-                  {pos >= 3 ? <MaterialIcons name="delete" size={25} color="white" style={styles.iconSpacing} onPress={() => confirmDeleteAlert(event.Name, event._id)}/> : ''}
-                  </View >
-                </View>
-                <Text style={styles.eventText}>
-                  <MaterialIcons name="access-time-filled" size={15} color="white" /> {event.Time}{' '}
-                  <Entypo name="location-pin" size={17} color="white" /> {event.Location}
-                </Text>
-                <Text style={styles.eventText}>{event.Description}</Text>
-              </View>
+return (
+    <ScrollView contentInsetAdjustmentBehavior='automatic' showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollcontainer]} style={styles.container}>
+        {Object.keys(groupedEvents).map((date, index) => (
+            <View key={index} style={styles.dateGroup}>
+                <Text style={styles.eventDate}>{date}</Text>
+                {groupedEvents[date].map((event, eventIndex) => (
+                    <View key={eventIndex} style={styles.eventWrapper}>
+                        <View style={styles.eventContainer}>
+                            <View style={styles.titleContainer}>
+                                <Text style={styles.eventTitle}>{event.Name}</Text>
+                                <View style={styles.icon}>
+                                {pos >= 3 ?<Feather name="edit" size={23} color="white" onPress={() => 
+                                router.push( {
+                                    pathname: '(tabs)/Calendar/editEvent',
+                                    params: { eventID: event._id },
+                                })} /> : '' }
+                                {pos >= 3 ? <MaterialIcons name="delete" size={25} color="white" style={styles.iconSpacing} onPress={() => confirmDeleteAlert(event.Name, event._id)}/> : ''}
+                                </View >
+                            </View>
+                            <Text style={styles.eventText}>
+                                <MaterialIcons name="access-time-filled" size={15} color="white" /> {event.Time}{' '}
+                                <Entypo name="location-pin" size={17} color="white" /> {event.Location}
+                            </Text>
+                            <Text style={styles.eventText}>{event.Description}</Text>
+                        </View>
+                    </View>
+                ))}
             </View>
-          ))}
-        </View>
-      ))}
+        ))}
     </ScrollView>
-  );
+);
 };
 
 const styles = StyleSheet.create({
@@ -114,7 +111,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     height: '100%',
-    backgroundColor: '#f2f2f2',
+    backgroundColor: 'white',
 
  },
   dateGroup: {
@@ -165,14 +162,9 @@ const styles = StyleSheet.create({
   iconSpacing:{
     marginLeft: 10,
   },
-  iconview: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: -20
-  },
   addIcon: {
     marginRight: 10
   },
 });
 
-export default InformationPage;
+export default index;
