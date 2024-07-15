@@ -1,41 +1,27 @@
 import { View, Text, TextInput, StyleSheet, Modal, Pressable } from 'react-native'
-import React from 'react'
-import axios from 'axios'
-import { BACKEND_URL } from '@env';
+import React, {useEffect} from 'react'
 
-const EditAlertModal = (props) => {
-  const [alertName, setAlertName] = React.useState('');
-  const [alertDescription, setAlertDescription] = React.useState('');
+const EditInterestModal = (props) => {
+  const [interest, setInterest] = React.useState('');
 
-  React.useEffect(() => {
-    axios.get(`${BACKEND_URL}/alerts/${props.alertID}`)
-      .then((response) => {
-        setAlertName(response.data.AlertName);
-        setAlertDescription(response.data.Description);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [props.alertID]);
+  useEffect(() => {
+    setInterest(props.interest);
+  }, [props.interest]);
 
   return (
     <Modal animationType="fade" transparent={true} visible={props.visible} onRequestClose={props.onCancel}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Text style={styles.modalTitle}>Edit Alert</Text>
+          <Text style={styles.modalTitle}>Edit Interest</Text>
           <View style={styles.boxView}>
-            <Text style={styles.boxTitle}>Alert Title</Text>
-            <TextInput style={styles.boxEntry} onChangeText={setAlertName} value={alertName} placeholderTextColor="white" />
-          </View>
-          <View style={styles.boxView}>
-            <Text style={styles.boxTitle}>Description</Text>
-            <TextInput style={[styles.boxEntry, { height: 160 }]} multiline onChangeText={setAlertDescription} value={alertDescription} placeholderTextColor="white" />
+            <Text style={styles.boxTitle}>Interest</Text>
+            <TextInput style={styles.boxEntry} onChangeText={setInterest} value={interest} placeholderTextColor="white" />
           </View>
           <View style={styles.buttonsView}>
             <Pressable onPress={props.onCancel} style={styles.cancelButton}>
               <Text>Cancel</Text>
             </Pressable>
-            <Pressable onPress={() => props.onPut(alertName, alertDescription)} style={styles.postButton}>
+            <Pressable onPress={() => props.onPut(interest)} style={styles.postButton}>
               <Text>Post</Text>
             </Pressable>
           </View>
@@ -102,4 +88,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default EditAlertModal
+export default EditInterestModal
