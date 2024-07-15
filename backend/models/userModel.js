@@ -50,7 +50,10 @@ const userSchema = mongoose.Schema(
     },
     Class: {
         type: String
-    }
+    },
+    Eboard_Position: {
+        type: String
+    },
     },
     {
         timestamps: true,
