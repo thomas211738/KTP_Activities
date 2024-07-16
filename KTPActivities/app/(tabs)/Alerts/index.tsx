@@ -4,7 +4,6 @@ import { Alert, ScrollView, Image, View, Text, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { BACKEND_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import AddAlertModal from '../../components/addAlertModal';
