@@ -67,6 +67,7 @@ router.post("/", async (request, response) => {
         ) {
             return response.status(400).send({
                 message:
+
                     "Send all required fields: BUEmail, FirstName, LastName, GradYear, Colleges, Major, Position",
             });
         } else if (request.body.Position > 4 || request.body.Position < 0){

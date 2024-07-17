@@ -38,6 +38,10 @@ const userSchema = mongoose.Schema(
         type: [String],
         required: false,
     },
+    Birthday: {
+        type: String,
+        required: true,
+    },
     Position: {
         type: Number,
         required: true,
