@@ -67,6 +67,20 @@ const Index = () => {
         }
     }
 
+    const deleteInterest = async () => {
+        try {
+            let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Minor, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major, Minor ,Colleges, Interests, Position: Position.toString() }))(userInfo);
+            updateduser.Interests.splice(interestIndex, 1);
+            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+                updateduser
+            );
+            setEditModalVisible(false);
+            fetchProfile();
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     const fetchProfile = async () => {
         try {
             const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
@@ -80,7 +94,7 @@ const Index = () => {
         <View style={styles.container}>
             <ScrollView contentInsetAdjustmentBehavior='automatic'>
                 {/* MODALS */}
-                <EditInterestModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putInterest} interest={originalInterest}/>
+                <EditInterestModal visible={editModalVisible} onDelete={deleteInterest} onCancel={() => setEditModalVisible(false)} onPut={putInterest} interest={originalInterest}/>
 
                 <AddInterestModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postInterest} />
                 {/* IMAGE COMPONENT */}

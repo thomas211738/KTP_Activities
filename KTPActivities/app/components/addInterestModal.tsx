@@ -17,7 +17,15 @@ const AddInterestModal = (props) => {
                         <Pressable onPress={props.onCancel} style={styles.cancelButton}>
                             <Text>Cancel</Text>
                         </Pressable>
-                        <Pressable onPress={() => props.onPost(interest)} style={styles.postButton}>
+                        <Pressable 
+                            onPress={() => {
+                                if (interest) {
+                                    props.onPost(interest);
+                                }
+                            }} 
+                            style={[styles.postButton, !interest && styles.disabledButton]}
+                            disabled={!interest}
+                        >
                             <Text>Post</Text>
                         </Pressable>
                     </View>
@@ -81,6 +89,9 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 5,
         marginBottom: 10
+    },
+    disabledButton: {
+        backgroundColor: 'gray'
     }
 });
 
