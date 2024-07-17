@@ -9,10 +9,13 @@ const Person = (props) => {
             <Image source={require("../../../img/ktplogopng.png")} style={styles.personImage} />
             <View>
                 <Text style={styles.personName}>
-                    {props.firstName + " " + props.lastName}
+                    {props.user.FirstName + " " + props.user.LastName}
                 </Text>
                 <Text style={styles.personMajors}>
-                    {props.majors.toString()} Major{props.minors[0] !== "" ? `, ${props.minors.toString()} Minor` : ''}
+                    {props.user.Position == 3 ? 
+                        props.user.Eboard_Position :
+                        `${props.user.Major.toString()} Major${props.user.Minor[0] !== "" ? `, ${props.user.Minor.toString()} Minor` : ''}`
+                    }
                 </Text>
             </View>
         </View>
@@ -49,10 +52,7 @@ const index = () => {
                 {filteredUsers.length > 0 ? filteredUsers.map((user) => (
                     <Person
                         key={user._id}
-                        firstName={user.FirstName}
-                        lastName={user.LastName}
-                        majors={user.Major}
-                        minors={user.Minor}
+                        user={user}
                     />
                 )) : (
                     <View style={styles.noMembersContainer}>
