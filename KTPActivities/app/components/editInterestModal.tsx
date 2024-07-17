@@ -21,6 +21,9 @@ const EditInterestModal = (props) => {
             <Pressable onPress={props.onCancel} style={styles.cancelButton}>
               <Text>Cancel</Text>
             </Pressable>
+            <Pressable onPress={props.onDelete} style={styles.deleteButton}>
+              <Text>Delete</Text>
+            </Pressable>
             <Pressable onPress={() => props.onPut(interest)} style={styles.postButton}>
               <Text>Post</Text>
             </Pressable>
@@ -75,6 +78,13 @@ const styles = StyleSheet.create({
   cancelButton: {
     alignItems: 'center',
     backgroundColor: "lightgray",
+    padding: 15,
+    borderRadius: 5,
+    marginBottom: 10
+  },
+  deleteButton:{
+    alignItems: 'center',
+    backgroundColor: 'red',
     padding: 15,
     borderRadius: 5,
     marginBottom: 10
