@@ -14,13 +14,17 @@ const AddInterestModal = (props) => {
                         <TextInput style={styles.boxEntry} onChangeText={setInterest} value={interest} placeholderTextColor="white" />
                     </View>
                     <View style={styles.buttonsView}>
-                        <Pressable onPress={props.onCancel} style={styles.cancelButton}>
+                        <Pressable onPress={() => { 
+                                    setInterest(''); 
+                                    props.onCancel(); 
+                                }}  style={styles.cancelButton}>
                             <Text>Cancel</Text>
                         </Pressable>
                         <Pressable 
                             onPress={() => {
                                 if (interest) {
                                     props.onPost(interest);
+                                    setInterest('');
                                 }
                             }} 
                             style={[styles.postButton, !interest && styles.disabledButton]}

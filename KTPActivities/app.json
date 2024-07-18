@@ -4,6 +4,7 @@
     "name": "KTPActivities",
     "slug": "KTPActivities",
     "version": "1.0.0",
+    "runtimeVersion": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,7 +19,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.KTPActivities"
+      "bundleIdentifier": "com.anonymous.KTPActivities",
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": ["instagram", "linkedin"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -41,9 +45,6 @@
     "scheme": [
       "ktpactivities"
     ],
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
     "updates": {
       "url": "https://u.expo.dev/78d7b599-c910-4187-ba8e-3aa9aba9eec9"
     }

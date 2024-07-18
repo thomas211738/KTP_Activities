@@ -18,13 +18,22 @@ const EditInterestModal = (props) => {
             <TextInput style={styles.boxEntry} onChangeText={setInterest} value={interest} placeholderTextColor="white" />
           </View>
           <View style={styles.buttonsView}>
-            <Pressable onPress={props.onCancel} style={styles.cancelButton}>
+            <Pressable onPress={
+                () => {
+                    setInterest(props.interest);
+                    props.onCancel();
+            }} style={styles.cancelButton}>
               <Text>Cancel</Text>
             </Pressable>
             <Pressable onPress={props.onDelete} style={styles.deleteButton}>
               <Text>Delete</Text>
             </Pressable>
-            <Pressable onPress={() => props.onPut(interest)} style={styles.postButton}>
+            <Pressable onPress={() =>{
+                    if (interest) {
+                        props.onPut(interest);
+                    }
+            }
+                } style={[styles.postButton, !interest && styles.disabledButton]}>
               <Text>Post</Text>
             </Pressable>
           </View>
@@ -95,7 +104,10 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     marginBottom: 10
-  }
+  },
+  disabledButton: {
+    backgroundColor: 'gray'
+}
 });
 
 export default EditInterestModal

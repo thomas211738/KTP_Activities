@@ -14,6 +14,8 @@ import AddInterestModal from '../../components/addInterestModal';
 import EditInterestModal from '../../components/editInterestModal';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
+import * as Linking from 'expo-linking';
+
 
 const Index = () => {
     const userInfo = getUserInfo();
@@ -23,8 +25,39 @@ const Index = () => {
     const [originalInterest, setOriginalInterest] = useState('');
     const [interestIndex, setInterestIndex] = useState(null);
 
-
     const posName = ["Rushee", "Pledge", "Brother", "Executive Board Member", "Super Administrator"][userInfo.Position] || "";
+
+    const openInstagramProfile = async (username) => {
+        const url = `instagram://user?username=${username}`;
+    
+        // Check if the Instagram app can be opened
+        const supported = await Linking.canOpenURL(url);
+    
+        if (supported) {
+          // Open the Instagram app to the specified profile
+          await Linking.openURL(url);
+        } else {
+          // If the Instagram app is not installed, open the profile in the web browser
+          const webUrl = `https://www.instagram.com/${username}/`;
+          await Linking.openURL(webUrl);
+        }
+      };
+
+      const openLinkedInProfile = async (username) => {
+        const url = `linkedin://in/${username}`;
+    
+        // Check if the LinkedIn app can be opened
+        const supported = await Linking.canOpenURL(url);
+    
+        if (supported) {
+          // Open the LinkedIn app to the specified profile
+          await Linking.openURL(url);
+        } else {
+          // If the LinkedIn app is not installed, open the profile in the web browser
+          const webUrl = `https://www.linkedin.com/in/${username}/`;
+          await Linking.openURL(webUrl);
+        }
+      };
 
     function getLabelByValue(value) {
         const college = colleges.find(college => college.value === value);
@@ -130,10 +163,10 @@ const Index = () => {
                     </View>
                     </View>
                     <View style={styles.socialIcons}>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => openLinkedInProfile('thomasyousef21')}>
                             <AntDesign name="linkedin-square" size={24} color="white" />
                         </TouchableOpacity>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => openInstagramProfile('thomas.bowls21')}>
                             <AntDesign name="instagram" size={24} color="white" />
                         </TouchableOpacity>
                     </View>
