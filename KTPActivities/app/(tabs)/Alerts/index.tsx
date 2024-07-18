@@ -13,11 +13,17 @@ const AlertComponent = (props) => {
   return (
     <View style={styles.alertContainer}>
       <Image source={require("../../../img/ktplogopng.png")} style={styles.alertImage} />
-      <View>
+      <View style={styles.alertTextContainer}>
         <Text style={styles.alertName}>{props.alertName}</Text>
-        <Text style={styles.alertTime}>{props.time}</Text>
         <Text>{props.description}</Text>
       </View>
+      <Text style={styles.alertTime}>{props.time}</Text>
+      {props.pos >= 3 && (
+        <View style={styles.alertButtons}>
+          <Feather name="edit" size={24} color="black" style={styles.editIcon} onPress={props.onEdit} />
+          <MaterialIcons name="delete" size={25} color="#B22222" style={styles.deleteIcon} onPress={props.onDelete} />
+        </View>
+      )}
     </View>
   );
 }
@@ -52,17 +58,31 @@ const index = () => {
     return format(date, 'EEEE, MMMM d');
   };
 
-  const groupAlertsByDate = ((alerts) => {
-    return alerts.reduce((alertGroups, alert) => {
+  const groupAlertsByDate = (alerts) => {
+    const alertGroups = alerts.reduce((groups, alert) => {
       const date = formatDate(alert.updatedAt);
-      if (!alertGroups[date]) {
-        alertGroups[date] = [];
+      if (!groups[date]) {
+        groups[date] = [];
       }
-
-      alertGroups[date].push(alert);
-      return alertGroups;
+      groups[date].push(alert);
+      return groups;
     }, {});
-  });
+  
+    // Sort descending order of dates based on original alert timestamps
+    const sortedDates = Object.keys(alertGroups).sort((a, b) => {
+      const dateA = alerts.find(alert => formatDate(alert.updatedAt) === a).updatedAt;
+      const dateB = alerts.find(alert => formatDate(alert.updatedAt) === b).updatedAt;
+      return new Date(dateB) - new Date(dateA);
+    });
+  
+    // New object with sorted dates
+    const sortedAlertGroups = {};
+    sortedDates.forEach(date => {
+      sortedAlertGroups[date] = alertGroups[date];
+    });
+  
+    return sortedAlertGroups;
+  };
 
   const postAlert = async (alertName, alertDescription) => {
     try {
@@ -117,7 +137,6 @@ const index = () => {
 
   return (
     <View style={styles.container}>
-
       <ScrollView contentInsetAdjustmentBehavior='automatic' style={styles.alertsContainer}>
         <View style={styles.alertPageHeader}>
           {pos >= 3 ? <Ionicons name="add-circle-outline" size={33} color="black" style={styles.addIcon} onPress={() => setAddModalVisible(true)} /> : ''}
@@ -125,19 +144,23 @@ const index = () => {
         {pos >= 3 ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
         {pos >= 3 ? <EditAlertModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putAlert} alertID={alertID}/> : ''}
         {Object.keys(groupedAlerts).map((date, index) => (
-          <View key={index + date}>
+          <View key={index + date} style={styles.dateContainer}>
             <View style={styles.alertDateContainer}>
               <Text style={styles.alertDateText}>{date}</Text>
             </View>
             {groupedAlerts[date].map((alert) => (
               <View key={alert._id} style={styles.alertWrapper}>
-                <AlertComponent alertName={alert.AlertName} description={alert.Description} time={formatTime(alert.updatedAt)} />
-                {pos >= 3 ? <Feather name="edit" size={24} color="black" style={styles.editIcon} onPress={() => {
-                  setAlertID(alert._id)
-                  setEditModalVisible(true)
-                }
-                } /> : ''}
-                {pos >= 3 ? <MaterialIcons name="delete" size={25} color="black" style={styles.deleteIcon} onPress={() => confirmDeleteAlert(alert._id)} /> : ''}
+                <AlertComponent
+                  alertName={alert.AlertName}
+                  description={alert.Description}
+                  time={formatTime(alert.updatedAt)}
+                  pos={pos}
+                  onEdit={() => {
+                    setAlertID(alert._id);
+                    setEditModalVisible(true);
+                  }}
+                  onDelete={() => confirmDeleteAlert(alert._id)}
+                />
               </View>
             ))}
           </View>
@@ -150,73 +173,112 @@ const index = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    backgroundColor: '#f8f9fa',
+    padding: 5,
   },
   alertPageHeader: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center'
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#dee2e6',
+    backgroundColor: '#fff',
   },
   alertsContainer: {
     flex: 1,
-    width: '100%'
+    width: '100%',
   },
   alertPageTitle: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: 'bold',
     marginLeft: 15,
-    marginTop: 15,
   },
   alertPageSubheading: {
     marginLeft: 15,
-    marginTop: 5,
-    marginBottom: 5,
-    color: 'gray'
+    color: 'gray',
+    fontSize: 16,
   },
   alertDateContainer: {
-    marginLeft: 15,
-    marginRight: 15,
-    marginTop: 10,
+    marginLeft: 10,
+    marginRight: 10,
+    marginTop: 5,
+    marginBottom: 5,
     borderBottomColor: '#b0b0b0',
     borderBottomWidth: 1,
   },
   alertDateText: {
-    color: '#6082B6',
-    fontWeight: 'bold'
+    color: '#134b91',
+    fontWeight: 'bold',
+    fontSize: 20,
   },
   alertContainer: {
-    flex: 1,
     flexDirection: 'row',
-    marginLeft: 15,
-    marginTop: 10
+    margin: 10,
+    marginTop: 5,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 3,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  alertTextContainer: {
+    flex: 1,
   },
   alertImage: {
     width: 45,
     height: 45,
     borderRadius: 15,
-    marginRight: 10
+    marginRight: 10,
   },
   alertName: {
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    fontSize: 18,
   },
   alertTime: {
     color: 'gray',
-    fontSize: 12
+    fontSize: 12,
+    position: 'absolute',
+    top: 10, 
+    right: 10,
   },
   alertWrapper: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  alertButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
   },
   addIcon: {
-    marginRight: 12
+    marginRight: 12,
   },
   deleteIcon: {
-    margin: 15
+    marginLeft: 10,
   },
   editIcon: {
-    marginTop: 15
-  }
+    marginLeft: 10,
+  },
+  dateSection: {
+    backgroundColor: '#e9ecef',
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  dateContainer: {
+    backgroundColor: '#F0F0F0',
+    padding: 5,
+    borderRadius: 5,
+    marginBottom: 5,
+  },
 });
 
 export default index;
