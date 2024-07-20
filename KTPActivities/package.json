@@ -29,6 +29,7 @@
     "expo-constants": "~16.0.2",
     "expo-crypto": "~13.0.2",
     "expo-dev-client": "~4.0.20",
+    "expo-linear-gradient": "~13.0.2",
     "expo-linking": "~6.3.1",
     "expo-random": "~14.0.1",
     "expo-router": "~3.5.18",
@@ -39,6 +40,7 @@
     "expo-web-browser": "~13.0.3",
     "firebase": "^10.12.2",
     "react": "18.2.0",
+    "react-content-loader": "^7.0.2",
     "react-dom": "18.2.0",
     "react-native": "0.74.3",
     "react-native-calendars": "^1.1305.0",
@@ -49,10 +51,10 @@
     "react-native-screens": "3.31.1",
     "react-native-skeleton-content": "^1.0.28",
     "react-native-snackbar-component": "^1.1.12",
+    "react-native-svg": "^15.4.0",
     "react-native-vector-icons": "^10.1.0",
     "react-native-web": "~0.19.10",
-    "typescript": "~5.3.3",
-    "expo-linear-gradient": "~13.0.2"
+    "typescript": "~5.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0"
