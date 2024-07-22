@@ -14,10 +14,6 @@ export default function Layout() {
             headerTransparent: true,
             headerLargeTitle: true,
             headerLargeTitleShadowVisible: false,
-            headerSearchBarOptions: {
-                placeholder: "Search People",
-            }
-            
           }}
         />
     </Stack>
