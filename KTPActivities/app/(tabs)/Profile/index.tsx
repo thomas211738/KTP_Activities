@@ -1,4 +1,4 @@
-import { View, Button, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "../../firebaseConfig";
@@ -15,6 +15,11 @@ import EditInterestModal from '../../components/editInterestModal';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
 import * as Linking from 'expo-linking';
+import Feather from '@expo/vector-icons/Feather';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+
 
 
 const Index = () => {
@@ -24,6 +29,7 @@ const Index = () => {
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [originalInterest, setOriginalInterest] = useState('');
     const [interestIndex, setInterestIndex] = useState(null);
+    const [image, setImage] = useState(null);
 
     const posName = ["Rushee", "Pledge", "Brother", "Executive Board Member", "Super Administrator"][userInfo.Position] || "";
 
@@ -114,6 +120,22 @@ const Index = () => {
         }
     }
 
+    const pickImage = async () => {
+        
+        // Open image picker
+        let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+    
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
+          }
+    
+      };
+
     const fetchProfile = async () => {
         try {
             const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
@@ -128,10 +150,21 @@ const Index = () => {
             <ScrollView contentInsetAdjustmentBehavior='automatic'>
                 {/* MODALS */}
                 <EditInterestModal visible={editModalVisible} onDelete={deleteInterest} onCancel={() => setEditModalVisible(false)} onPut={putInterest} interest={originalInterest}/>
-
                 <AddInterestModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postInterest} />
+
                 {/* IMAGE COMPONENT */}
-                <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic} />
+                {image ? (
+                    <Image source={{ uri: image }} style={styles.profileimage} />
+                ) : (
+                    <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic} />
+                )}
+
+                <FontAwesome name="circle" size={50} color="white" style={styles.profilepiccircle}/>
+                <TouchableOpacity onPress={pickImage}>
+                    <FontAwesome name="circle" size={40} color="#134b91" style={styles.profilepiccirclebg}/>
+                    <Feather name="edit-2" size={20} color="white" style={styles.editpic}/>
+                </TouchableOpacity>
+                
 
                 {/* PROFILE CARD */}
                 <View style={styles.card}>
@@ -196,6 +229,26 @@ const styles = StyleSheet.create({
     profilepic: {
         marginTop: 10,
         alignSelf: 'center',
+    },
+    profileimage: {
+        width: 175,
+        height: 175,
+        borderRadius: 100,
+        alignSelf: 'center',
+        marginTop: 10,
+    },
+    profilepiccircle: {
+        alignSelf: 'center',
+        marginTop: -30,
+
+    },
+    profilepiccirclebg: {
+        alignSelf: 'center',
+        marginTop: -46,
+    },
+    editpic: {
+        alignSelf: 'center',
+        marginTop: -30,
     },
     card: {
         backgroundColor: '#134b91',

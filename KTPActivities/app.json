@@ -12,7 +12,9 @@
       "image": "./assets/splash.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router", 
+      "expo-image-picker"
+      
     ],
     "assetBundlePatterns": [
       "**/*"
