@@ -1,5 +1,6 @@
 
 import { View, Text, ScrollView, StyleSheet, Image, Pressable } from 'react-native'
+import { SearchBar } from 'react-native-elements'
 import React from 'react'
 import { getAllUsersInfo } from '../../components/allUsersManager'
 
@@ -23,32 +24,61 @@ const Person = (props) => {
 }
 
 const index = () => {
-    const [pos, setPos] = React.useState(2);
     const users = getAllUsersInfo();
-    const filteredUsers = users.filter(user => user.Position === pos);
+    const [pos, setPos] = React.useState(2);
+    const [search, setSearch] = React.useState('');
+    const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => user.Position === pos));
+
+    const searchUsers = (text) => {
+        setSearch(text);
+        setFilteredUsers(users.filter(
+            (user) => {
+                let name = user.FirstName + " " + user.LastName;
+                return user.Position === pos && name.includes(text);
+            })
+        )
+    }
+
+    const changePosition = (position) => {
+        if(position !== pos) {
+            setSearch('');
+            setPos(position);
+            setFilteredUsers(users.filter(user => user.Position === position));
+        }
+    }
+
     return (
         <View style={styles.container}>
             <ScrollView keyboardDismissMode='on-drag' contentInsetAdjustmentBehavior='automatic'>
                 <View style={styles.buttonsContainer}>
                     <Pressable 
                         style={[styles.unselectedButton, pos <= 1 && styles.selectedButton]}
-                        onPress={() => setPos(1)}
+                        onPress={() => changePosition(1)}
                     >
                         <Text style={[{color: 'black'}, pos <= 1 && {color: 'white'}]}>Rushee/Pledges</Text>
                     </Pressable>
                     <Pressable 
                         style={[styles.unselectedButton, pos == 2 && styles.selectedButton]}
-                        onPress={() => setPos(2)}
+                        onPress={() => changePosition(2)}
                     >
                         <Text style={[{color: 'black'}, pos == 2 && {color: 'white'}]}>Brothers</Text>
                     </Pressable>
                     <Pressable 
                         style={[styles.unselectedButton, pos == 3 && styles.selectedButton]}
-                        onPress={() => setPos(3)}
+                        onPress={() => changePosition(3)}
                     >
                         <Text style={[{color: 'black'}, pos == 3 && {color: 'white'}]}>E-Board</Text>
                     </Pressable>
                 </View>
+                <SearchBar 
+                    platform='default'
+                    value={search}
+                    onChangeText={(text) => searchUsers(text)}
+                    placeholder='Search'
+                    lightTheme={true}
+                    round={true}
+                    containerStyle={{backgroundColor: "white"}}
+                />
                 {filteredUsers.length > 0 ? filteredUsers.map((user) => (
                     <Person
                         key={user._id}
