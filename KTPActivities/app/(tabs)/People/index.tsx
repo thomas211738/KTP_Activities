@@ -18,7 +18,7 @@ const Person = (props) => {
                 <Text style={styles.personMajors}>
                     {props.user.Position == 3 ? 
                         props.user.Eboard_Position :
-                        `${props.user.Major.toString()} Major${props.user.Minor[0] !== "" ? `, ${props.user.Minor.toString()} Minor` : ''}`
+                        `${props.user.Major.join(" and ")} Major${props.user.Minor[0] !== "" ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
                     }
                 </Text>
             </View>
@@ -101,10 +101,10 @@ const index = () => {
             {user.Position >= 1 && (
                 <>
                 <Pressable 
-                    style={[styles.unselectedButton, pos == 5 && styles.selectedButton]}
-                    onPress={() => changePosition(5)}
+                    style={[styles.unselectedButton, pos == 4 && styles.selectedButton]}
+                    onPress={() => changePosition(4)}
                 >
-                    <Text style={[{color: 'black'}, pos == 5 && {color: 'white', fontWeight: 'bold'}]}>Alumni</Text>
+                    <Text style={[{color: 'black'}, pos == 4 && {color: 'white', fontWeight: 'bold'}]}>Alumni</Text>
                 </Pressable>
                 </>
             )}

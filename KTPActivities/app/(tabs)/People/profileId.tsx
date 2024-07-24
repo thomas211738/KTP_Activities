@@ -28,8 +28,8 @@ const profileId = () => {
             setuserLastName(response.data.LastName);
             setUserGradYear(response.data.GradYear);
             setUserColleges(response.data.Colleges.join(', '));
-            setUserMajor(response.data.Major.join(', '));
-            setUserMinor(response.data.Minor.join(', '));
+            setUserMajor(response.data.Major.join(' and '));
+            setUserMinor(response.data.Minor.join(' and '));
             setPosition(response.data.Position);
             setEboardPosition(response.data.Eboard_Position);
             setUserInterests(response.data.Interests);
@@ -39,7 +39,7 @@ const profileId = () => {
         });
     }, [userID, BACKEND_URL]);
 
-    const posName = ["Rushee", "Pledge", "Brother", eboardPosition, "Super Administrator"][position] || "";
+    const posName = ["Rushee", "Pledge", "Brother", eboardPosition, "Alumni", "Super Administrator"][position] || "";
 
     function getLabelByValue(value) {
         const college = colleges.find(college => college.value === value);
@@ -52,7 +52,7 @@ const profileId = () => {
         2026: "Junior",
         2027: "Sophomore",
         2028: "Freshman"
-    }[userGradYear] || "";
+    }[userGradYear] || "Alumni";
 
 
   return (

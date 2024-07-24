@@ -40,7 +40,6 @@ const userSchema = mongoose.Schema(
     },
     Birthday: {
         type: String,
-        required: true,
     },
     Position: {
         type: Number,
