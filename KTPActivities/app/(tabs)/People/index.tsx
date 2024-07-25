@@ -5,6 +5,8 @@ import React from 'react'
 import { getAllUsersInfo } from '../../components/allUsersManager'
 import { useNavigation } from '@react-navigation/native'
 import { getUserInfo } from '../../components/userInfoManager'; 
+import PeopleLoader from '../../components/loaders/poepleLoader';
+import { set } from 'date-fns'
 
 const Person = (props) => {
     return (
@@ -34,6 +36,7 @@ const index = () => {
     const [pos, setPos] = React.useState(2);
     const [search, setSearch] = React.useState('');
     const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => user.Position === pos));
+    const [loading, setLoading] = React.useState(false);
     const navigation = useNavigation();
     user.Position = 3;
 
@@ -43,26 +46,29 @@ const index = () => {
             placeholder: "Search People",
             onChangeText: (event) => searchUsers(event.nativeEvent.text),
             hideWhenScrolling: false,
-
           },
         });
       }, [navigation]);
 
     const searchUsers = (text) => {
         setSearch(text);
+        setLoading(true);
         setFilteredUsers(users.filter(
             (user) => {
                 let name = user.FirstName + " " + user.LastName;
                 return name.toLowerCase().includes(text.toLowerCase());
             })
         )
+        setLoading(false);
     }
 
     const changePosition = (position) => {
         if(position !== pos) {
+            setLoading(true);
             setSearch('');
             setPos(position);
             setFilteredUsers(users.filter(user => user.Position === position));
+            setLoading(false);
         }
     }
 
@@ -110,15 +116,19 @@ const index = () => {
             )}
             </View>
             
-            {filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                <Person
-                key={user._id}
-                user={user}
-                />
-            )) : (
-                <View style={styles.noMembersContainer}>
-                <Text style={styles.noMembers}>No members found</Text>
-                </View>
+            {loading ? (
+                <PeopleLoader />
+            ) : (
+                filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                    <Person
+                    key={user._id}
+                    user={user}
+                    />
+                )) : (
+                    <View style={styles.noMembersContainer}>
+                    <Text style={styles.noMembers}>No members found</Text>
+                    </View>
+                )
             )}
             
             </ScrollView>
