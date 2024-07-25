@@ -28,7 +28,6 @@ const Index = () => {
     const [originalInterest, setOriginalInterest] = useState('');
     const [interestIndex, setInterestIndex] = useState(null);
     const [image, setImage] = useState(null);
-
     const posName = ["Rushee", "Pledge", "Brother", userInfo.Eboard_Position , "Alumni", "Super Administrator"][userInfo.Position] || "";
 
     const openInstagramProfile = async (username) => {

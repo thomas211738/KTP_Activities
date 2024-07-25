@@ -79,12 +79,14 @@ const SignupPage = () => {
     }
   };
 
+  
+
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.scrollContainer}>
         <View style={styles.top}>
-          <Image source={require('..//img/ktplogopng.png')} style={styles.logo} />
+          <Image source={require('../img/ktplogopng.png')} style={styles.logo} />
           <Text style={{ color: 'white', fontWeight: 'bold' }}>
             Let's get started on creating your account.
           </Text>
@@ -122,7 +124,6 @@ const SignupPage = () => {
           <View style={styles.box}>
           <Text style={styles.boxTitle}>Graduation Year</Text>
             <Dropdown
-              confirmSelectItem={true}
               maxHeight={200}
               style={dropdownstyles.dropdown}
               placeholderStyle={dropdownstyles.placeholderStyle}
@@ -135,7 +136,7 @@ const SignupPage = () => {
               valueField="value"
               value={userGradYear}
               onChange={(item) => {
-                setUserGradYear(String(item.label));
+                setUserGradYear(item.value);
               }}
               renderLeftIcon={() => (
                 <Ionicons style={dropdownstyles.icon} name="school" size={20} color="white" />

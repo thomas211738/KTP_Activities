@@ -20,7 +20,7 @@ const Person = (props) => {
                 <Text style={styles.personMajors}>
                     {props.user.Position == 3 ? 
                         props.user.Eboard_Position :
-                        `${props.user.Major.join(" and ")} Major${props.user.Minor[0] !== "" ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
+                        `${props.user.Major.join(" and")} Major${props.user.Minor.length !== 0 && props.user.Minor[0] !== "" ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
                     }
                 </Text>
             </View>
@@ -38,7 +38,6 @@ const index = () => {
     const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => user.Position === pos));
     const [loading, setLoading] = React.useState(false);
     const navigation = useNavigation();
-    user.Position = 3;
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
