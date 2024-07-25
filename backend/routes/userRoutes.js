@@ -1,6 +1,12 @@
 import express from "express";
 
 import { Users } from "../models/userModel.js";
+import { Metadata } from "../models/metadataModel.js";
+import { gfs, upload } from "../gridFS.js";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const router = express.Router();
 
@@ -95,8 +101,40 @@ router.post("/", async (request, response) => {
     }
 });
 
+router.post("/photo", upload.single('file'), async(req, res) => {
+    try {
+        if (!gfs) {
+          return res.status(500).send('GridFS is not initialized.');
+        }
+    
+        const file = req.file;
+
+        console.log(file);
+    
+        // Ensure that the file was uploaded successfully
+        if (!file) {
+          return res.status(400).send('File upload failed.');
+        }
+
+        console.log('Uploaded file:', file);
+    
+        // Save metadata using the file's ObjectId
+        const metadata = new Metadata({
+          description: req.body.description,
+          // other metadata fields...
+        });
+    
+        await metadata.save();
+    
+        res.status(200).send({ message: 'File uploaded and metadata saved successfully.', file, metadata });
+      } catch (err) {
+        console.error('Error uploading file:', err);
+        res.status(500).send('An error occurred during the file upload.');
+      }
+})
+
 // update a User
-router.put("/:id", async (request, response) => {
+router.put("/id/:id", async (request, response) => {
     try {
         if (
             !request.body.BUEmail ||

@@ -58,6 +58,9 @@ const userSchema = mongoose.Schema(
     Eboard_Position: {
         type: String
     },
+    ProfilePhoto: {
+        type: mongoose.Schema.ObjectId
+    }
     },
     {
         timestamps: true,
