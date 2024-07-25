@@ -10,6 +10,8 @@ import { gradyears } from './components/buinfo';
 import { useLocalSearchParams, router } from 'expo-router';
 import axios from 'axios';
 import {BACKEND_URL} from '@env';
+import { setUserInfo } from './components/userInfoManager'; 
+
 
 
 
@@ -46,6 +48,11 @@ const SignupPage = () => {
   };
 
   const handleFinishPress = () => {
+
+    let postedMinor = [];
+    if (userMinor.length > 0) {
+      postedMinor.push(userMinor);
+    } 
     if (isFormValid) {
       const new_user = {
         BUEmail: email,
@@ -53,19 +60,21 @@ const SignupPage = () => {
         LastName: userLastName,
         GradYear: userGradYear,
         Colleges: userColleges,
-        Major: userMajor,
+        Major: [userMajor],
+        Minor: postedMinor,
         Position: position,
+        Interests: [],
       };
-      console.log(new_user);
 
       axios
       .post(`${BACKEND_URL}/users`, new_user)
       .then(() => {
-        router.replace("/(tabs)/Calender");
+        router.replace("/(tabs)/Calendar");
       })
       .catch((error) => {
         console.log(error);
       });
+      setUserInfo(new_user);
 
     }
   };
@@ -75,7 +84,7 @@ const SignupPage = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView automaticallyAdjustKeyboardInsets contentContainerStyle={styles.scrollContainer}>
         <View style={styles.top}>
-          <Image source={require('../img/ktplogopng.png')} style={styles.logo} />
+          <Image source={require('..//img/ktplogopng.png')} style={styles.logo} />
           <Text style={{ color: 'white', fontWeight: 'bold' }}>
             Let's get started on creating your account.
           </Text>

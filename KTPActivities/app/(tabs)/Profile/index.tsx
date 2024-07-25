@@ -83,7 +83,8 @@ const Index = () => {
     const postInterest = async (interest) => {
         try {
             userInfo.Interests.push(interest);
-            let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Minor, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major, Minor ,Colleges, Interests, Position: Position.toString() }))(userInfo);
+            let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major ,Colleges, Interests, Position: Position.toString() }))(userInfo);
+            console.log(updateduser);
             await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
                 updateduser
             );
