@@ -6,7 +6,6 @@ import { getAllUsersInfo } from '../../components/allUsersManager'
 import { useNavigation } from '@react-navigation/native'
 import { getUserInfo } from '../../components/userInfoManager'; 
 import PeopleLoader from '../../components/loaders/poepleLoader';
-import { set } from 'date-fns'
 
 const Person = (props) => {
     return (
