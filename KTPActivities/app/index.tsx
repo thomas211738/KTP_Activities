@@ -73,6 +73,7 @@ const HomeScreen = ({navigation}) => {
           setAllUsersInfo(validation.allUsers);
           router.replace("/(tabs)/Calendar");
         } else if (validation.status === 0) {
+          setAllUsersInfo(validation.allUsers);
           router.push({
             pathname: 'signup',
             params: { email: user.providerData[0].email },

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useCallback } from 'react';
-import { Alert, ScrollView, Image, View, Text, StyleSheet } from 'react-native';
+import { Alert, ScrollView, Image, View, Text, StyleSheet, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
@@ -8,8 +8,11 @@ import { BACKEND_URL } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
 import AddAlertModal from '../../components/addAlertModal';
 import EditAlertModal from '../../components/editAlertModal';
+import { useNavigation } from '@react-navigation/native'
+import { getUserInfo } from '../../components/userInfoManager';
 
 const AlertComponent = (props) => {
+    
   return (
     <View style={styles.alertContainer}>
       <Image source={require("../../../img/ktplogopng.png")} style={styles.alertImage} />
@@ -34,6 +37,8 @@ const index = () => {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [alertID, setAlertID] = useState('');
+  const navigation = useNavigation();
+  const userInfo = getUserInfo();
 
   const fetchAlerts = async () => {
     try {
@@ -43,6 +48,25 @@ const index = () => {
       console.log(err.message);
     }
   }
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+        headerRight: userInfo.Position === 3 || userInfo.Position === 5 ? () => (
+            <Pressable
+              onPress={async () => 
+                setAddModalVisible(true)
+              }
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <Ionicons name="add" size={35} color="#134b91" />
+            </Pressable>
+          ) : undefined,
+    });
+  }, [navigation]);
 
   useFocusEffect(() => {
     fetchAlerts();
@@ -137,10 +161,7 @@ const index = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentInsetAdjustmentBehavior='automatic' style={styles.alertsContainer}>
-        <View style={styles.alertPageHeader}>
-          {pos >= 3 ? <Ionicons name="add-circle-outline" size={33} color="black" style={styles.addIcon} onPress={() => setAddModalVisible(true)} /> : ''}
-        </View>
+      <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior='automatic' style={styles.alertsContainer}>
         {pos >= 3 ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
         {pos >= 3 ? <EditAlertModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putAlert} alertID={alertID}/> : ''}
         {Object.keys(groupedAlerts).map((date, index) => (

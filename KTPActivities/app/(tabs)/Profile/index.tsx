@@ -1,4 +1,4 @@
-import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity } from 'react-native';
+import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, Linking } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "../../firebaseConfig";
@@ -14,11 +14,11 @@ import AddInterestModal from '../../components/addInterestModal';
 import EditInterestModal from '../../components/editInterestModal';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
-import * as Linking from 'expo-linking';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+
 
 
 const Index = () => {
@@ -32,7 +32,8 @@ const Index = () => {
     const [image1, setImage1] = useState(null);
 
 
-    const posName = ["Rushee", "Pledge", "Brother", "Executive Board Member", "Super Administrator"][userInfo.Position] || "";
+
+    const posName = ["Rushee", "Pledge", "Brother", userInfo.Eboard_Position , "Alumni", "Super Administrator"][userInfo.Position] || "";
 
     const openInstagramProfile = async (username) => {
         const url = `instagram://user?username=${username}`;
@@ -53,17 +54,21 @@ const Index = () => {
       const openLinkedInProfile = async (username) => {
         const url = `linkedin://in/${username}`;
     
-        // Check if the LinkedIn app can be opened
-        const supported = await Linking.canOpenURL(url);
-    
-        if (supported) {
-          // Open the LinkedIn app to the specified profile
-          await Linking.openURL(url);
-        } else {
-          // If the LinkedIn app is not installed, open the profile in the web browser
-          const webUrl = `https://www.linkedin.com/in/${username}/`;
-          await Linking.openURL(webUrl);
-        }
+        try {
+            // Check if the LinkedIn app can be opened
+            const supported = await Linking.canOpenURL(url);
+        
+            if (supported) {
+              // Open the LinkedIn app to the specified profile
+              await Linking.openURL(url);
+            } else {
+              // If the LinkedIn app is not installed, open the profile in the web browser
+              const webUrl = `https://www.linkedin.com/in/${username}/`;
+              await Linking.openURL(webUrl);
+            }
+          } catch (error) {
+            console.error("An error occurred while opening the URL:", error);
+          }
       };
 
     function getLabelByValue(value) {
@@ -77,12 +82,13 @@ const Index = () => {
         2026: "Junior",
         2027: "Sophomore",
         2028: "Freshman"
-    }[userInfo.GradYear] || "";
+    }[userInfo.GradYear] || "Alumni";
 
     const postInterest = async (interest) => {
         try {
             userInfo.Interests.push(interest);
-            let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Minor, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major, Minor ,Colleges, Interests, Position: Position.toString() }))(userInfo);
+            let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major ,Colleges, Interests, Position: Position.toString() }))(userInfo);
+            console.log(updateduser);
             await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
                 updateduser
             );
@@ -215,8 +221,8 @@ const Index = () => {
                     <View style={styles.divider} />
                     <Text style={styles.faculty}>{college}</Text>
                     <Text style={styles.details}>
-                        Major in {userInfo.Major.join(', ')}
-                        {userInfo.Minor.length > 0 && ` | Minor in ${userInfo.Minor.join(', ')}`}
+                        Major in {userInfo.Major.join(' and')}
+                        {userInfo.Minor.length > 0 && ` | Minor in ${userInfo.Minor.join(' and')}`}
                     </Text>
                     <Text style={styles.details}>{grade} ({userInfo.GradYear})</Text>
                     <View style={styles.divider} />

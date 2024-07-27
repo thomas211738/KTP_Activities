@@ -16,6 +16,13 @@ export default function Layout() {
             headerLargeTitleShadowVisible: false,
           }}
         />
+        <Stack.Screen
+          name="profileId"
+          options={{
+            headerTitle: "",
+          }}
+
+        />
     </Stack>
    
   );

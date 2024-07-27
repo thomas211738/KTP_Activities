@@ -8,11 +8,9 @@ import { format, parseISO } from 'date-fns';
 import { BACKEND_URL } from '@env';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { useHeaderHeight } from '@react-navigation/elements';
 import CalendarLoader from '../../components/loaders/calendarLoader';
 
 const index = ({ navigation }) => {
-    const headerHeight = useHeaderHeight();
     const [events, setEvents] = useState([]);
     const [pos, setPos] = useState(3);
     const [loading, setLoading] = useState(true);

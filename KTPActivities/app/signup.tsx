@@ -10,6 +10,8 @@ import { gradyears } from './components/buinfo';
 import { useLocalSearchParams, router } from 'expo-router';
 import axios from 'axios';
 import {BACKEND_URL} from '@env';
+import { setUserInfo } from './components/userInfoManager'; 
+
 
 
 
@@ -46,6 +48,11 @@ const SignupPage = () => {
   };
 
   const handleFinishPress = () => {
+
+    let postedMinor = [];
+    if (userMinor.length > 0) {
+      postedMinor.push(userMinor);
+    } 
     if (isFormValid) {
       const new_user = {
         BUEmail: email,
@@ -53,22 +60,26 @@ const SignupPage = () => {
         LastName: userLastName,
         GradYear: userGradYear,
         Colleges: userColleges,
-        Major: userMajor,
+        Major: [userMajor],
+        Minor: postedMinor,
         Position: position,
+        Interests: [],
       };
-      console.log(new_user);
 
       axios
       .post(`${BACKEND_URL}/users`, new_user)
       .then(() => {
-        router.replace("/(tabs)/Calender");
+        router.replace("/(tabs)/Calendar");
       })
       .catch((error) => {
         console.log(error);
       });
+      setUserInfo(new_user);
 
     }
   };
+
+  
 
 
   return (
@@ -113,7 +124,6 @@ const SignupPage = () => {
           <View style={styles.box}>
           <Text style={styles.boxTitle}>Graduation Year</Text>
             <Dropdown
-              confirmSelectItem={true}
               maxHeight={200}
               style={dropdownstyles.dropdown}
               placeholderStyle={dropdownstyles.placeholderStyle}
@@ -126,7 +136,7 @@ const SignupPage = () => {
               valueField="value"
               value={userGradYear}
               onChange={(item) => {
-                setUserGradYear(String(item.label));
+                setUserGradYear(item.value);
               }}
               renderLeftIcon={() => (
                 <Ionicons style={dropdownstyles.icon} name="school" size={20} color="white" />
