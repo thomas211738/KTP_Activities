@@ -1,4 +1,5 @@
 import express from "express";
+
 import { Users } from "../models/userModel.js";
 // import { Metadata } from "../models/metadataModel.js";
 import { gfs, upload, uploadToGridFS} from "../gridFS.js";
@@ -158,12 +159,6 @@ router.get('/photo/all/:id', async (req, res) => {
         console.log(error.message);
         res.status(500).send({ message: error.message });
     }
-
-   
-      
-  
-
-
   });
 
   router.get('/photo/all', async (req, res) => {
@@ -227,17 +222,11 @@ router.get('/photo/all/:id', async (req, res) => {
 router.put("/:id", async (request, response) => {
     try {
         if (
-            !request.body.BUEmail ||
-            !request.body.FirstName ||
-            !request.body.LastName ||
-            !request.body.GradYear ||
-            !request.body.Colleges ||
-            !request.body.Major ||
             !request.body.Position
         ) {
             return response.status(400).send({
                 message:
-                    "Send all required fields: BUEmail, FirstName, LastName, GradYear, Colleges, Major, Position",
+                    "Send Position",
             });
         } else if (request.body.Position > 4 || request.body.Position < 0){
             return response.status(401).send({

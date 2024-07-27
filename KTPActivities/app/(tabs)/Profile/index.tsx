@@ -1,23 +1,32 @@
+
+// React Imports
 import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, Linking } from 'react-native';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+
+// Sign Out Functionality
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "../../firebaseConfig";
 import { signOut } from "firebase/auth";
 import { router } from 'expo-router';
+
+// Icons
 import Octicons from '@expo/vector-icons/Octicons';
 import { AntDesign } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
+import { Ionicons } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+// Other Imports
 import { getUserInfo } from '../../components/userInfoManager'; 
 import colleges from '../../components/buinfo';
-import { Ionicons } from '@expo/vector-icons';
 import AddInterestModal from '../../components/addInterestModal';
 import EditInterestModal from '../../components/editInterestModal';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
-import Feather from '@expo/vector-icons/Feather';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 
 
@@ -29,8 +38,27 @@ const Index = () => {
     const [originalInterest, setOriginalInterest] = useState('');
     const [interestIndex, setInterestIndex] = useState(null);
     const [image, setImage] = useState(null);
-    const [image1, setImage1] = useState(null);
 
+    const fetchProfile = async () => {
+        try {
+            const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
+            
+            if (response.data.ProfilePhoto) {
+                getimage(response.data.ProfilePhoto);
+            }
+            if (response.data.Interests){
+                setUserInterests(response.data.Interests);
+            }
+
+
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
+    useFocusEffect(() => {
+        fetchProfile();
+    });
 
 
     const posName = ["Rushee", "Pledge", "Brother", userInfo.Eboard_Position , "Alumni", "Super Administrator"][userInfo.Position] || "";
@@ -143,13 +171,10 @@ const Index = () => {
         // }
 
         postimage(result.assets[0]);
-        
-    
       };
 
-      
 
-      const postimage = async (file) => {
+    const postimage = async (file) => {
         try {
             const formData = new FormData();
             formData.append('file', {
@@ -165,31 +190,32 @@ const Index = () => {
                   },
             });
 
-            console.log(imageID.data.fileId);
             getimage(imageID.data.fileId);
+            addFileIDToUser(imageID.data.fileId);
         } catch (err) {
             console.log(err.message);
         }
     }
 
     const getimage = async (picid) => {
+
         try {
             const response = await axios.get(`${BACKEND_URL}/users/photo/all/${picid}`);
             setImage(response.data.data[0].data);
-            console.log(response.data.data[0].data);
-
 
         } catch (err) {
             console.log(err);
         }
     }
 
-    const fetchProfile = async () => {
+      const addFileIDToUser = async (fileID) => {
         try {
-            const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
-            setUserInterests(response.data.data.Interests);
+            const updateduser = {Position: userInfo.Position.toString(), ProfilePhoto: fileID};
+            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+                updateduser
+            );
         } catch (err) {
-            console.log(err.message);
+            console.log(err);
         }
     }
 
@@ -234,13 +260,13 @@ const Index = () => {
                             </TouchableOpacity>    
                         </View>
                     <View style={styles.interests}>
-                        {userInterests.map((interest, index) => (
+                        {userInterests.length > 0 ? userInterests.map((interest, index) => (
                             <View key={index} style={styles.interest}>
                                 <TouchableOpacity onPress={() => {setInterestIndex(index); setOriginalInterest(interest); setEditModalVisible(true)}}>
                                     <Text style={styles.interestText}>{interest}</Text>
                                 </TouchableOpacity>    
                             </View>
-                        ))}
+                        )) : ""}
                     </View>
                     </View>
                     <View style={styles.socialIcons}>

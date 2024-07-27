@@ -58,7 +58,7 @@ const userSchema = mongoose.Schema(
         type: String
     },
     ProfilePhoto: {
-        type: mongoose.Schema.ObjectId
+        type: String
     }
     },
     {
