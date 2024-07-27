@@ -1,12 +1,10 @@
 import express from "express";
 
 import { Users } from "../models/userModel.js";
-import { Metadata } from "../models/metadataModel.js";
-import { gfs, upload } from "../gridFS.js";
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+// import { Metadata } from "../models/metadataModel.js";
+import { gfs, upload, uploadToGridFS} from "../gridFS.js";
+import { ObjectId } from 'mongodb';
+
 
 const router = express.Router();
 
@@ -101,40 +99,133 @@ router.post("/", async (request, response) => {
     }
 });
 
-router.post("/photo", upload.single('file'), async(req, res) => {
+router.post("/photo", upload.single('file'),uploadToGridFS, async(req, res) => {
     try {
-        if (!gfs) {
-          return res.status(500).send('GridFS is not initialized.');
-        }
     
-        const file = req.file;
-
-        console.log(file);
-    
-        // Ensure that the file was uploaded successfully
-        if (!file) {
-          return res.status(400).send('File upload failed.');
-        }
-
-        console.log('Uploaded file:', file);
-    
-        // Save metadata using the file's ObjectId
-        const metadata = new Metadata({
-          description: req.body.description,
-          // other metadata fields...
-        });
-    
-        await metadata.save();
-    
-        res.status(200).send({ message: 'File uploaded and metadata saved successfully.', file, metadata });
+        res.status(200).send({fileId: req.fileId });
       } catch (err) {
         console.error('Error uploading file:', err);
         res.status(500).send('An error occurred during the file upload.');
       }
 })
 
+router.get('/photo/all/:id', async (req, res) => {
+    if (!gfs) {
+      return res.status(500).send('GridFS is not initialized.');
+    }
+
+    try {
+
+        const objectId = new ObjectId(req.params);
+        const file = await gfs.find({_id:objectId}).toArray();
+
+        if (!file || file.length === 0) {
+            return res.status(404).send('File not found.');
+        }
+
+        const filesData = [];
+
+
+        const readStream = gfs.openDownloadStream(objectId);
+        const chunks = [];
+  
+        // Collect the data chunks
+        readStream.on('data', (chunk) => {
+          chunks.push(chunk);
+        });
+  
+        // When the stream ends, combine the chunks into a single Buffer
+        await new Promise((resolve, reject) => {
+          readStream.on('end', () => {
+            const buffer = Buffer.concat(chunks);
+            filesData.push({
+              filename: file.filename,
+              contentType: file.contentType,
+              data: buffer.toString('base64') // Convert the buffer to a base64 string
+            });
+            resolve();
+          });
+  
+          readStream.on('error', (err) => {
+            reject(err);
+          });
+        });
+
+        return res.status(200).json(
+          {data: filesData}
+          );
+
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send({ message: error.message });
+    }
+
+   
+      
+  
+
+
+  });
+
+  router.get('/photo/all', async (req, res) => {
+    if (!gfs) {
+      return res.status(500).send('GridFS is not initialized.');
+    }
+  
+    try {
+      const profilePics = await gfs.find().toArray();
+  
+      if (profilePics.length === 0) {
+        return res.status(404).json({
+          message: 'No files found.',
+        });
+      }
+  
+      // Prepare an array to hold the image data
+      const filesData = [];
+  
+      for (const file of profilePics) {
+        // Create a stream to read the file
+        const readStream = gfs.openDownloadStream(file._id);
+        const chunks = [];
+  
+        // Collect the data chunks
+        readStream.on('data', (chunk) => {
+          chunks.push(chunk);
+        });
+  
+        // When the stream ends, combine the chunks into a single Buffer
+        await new Promise((resolve, reject) => {
+          readStream.on('end', () => {
+            const buffer = Buffer.concat(chunks);
+            filesData.push({
+              fileid: file._id,
+              filename: file.filename,
+              contentType: file.contentType,
+              data: buffer.toString('base64') // Convert the buffer to a base64 string
+            });
+            resolve();
+          });
+  
+          readStream.on('error', (err) => {
+            reject(err);
+          });
+        });
+      }
+  
+      return res.status(200).json({
+        count: profilePics.length,
+        data: filesData,
+      });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send({ message: error.message });
+    }
+  });
+
+
 // update a User
-router.put("/id/:id", async (request, response) => {
+router.put("/:id", async (request, response) => {
     try {
         if (
             !request.body.BUEmail ||

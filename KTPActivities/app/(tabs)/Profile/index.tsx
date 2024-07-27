@@ -18,8 +18,7 @@ import * as Linking from 'expo-linking';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
-
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 
 const Index = () => {
@@ -30,6 +29,8 @@ const Index = () => {
     const [originalInterest, setOriginalInterest] = useState('');
     const [interestIndex, setInterestIndex] = useState(null);
     const [image, setImage] = useState(null);
+    const [image1, setImage1] = useState(null);
+
 
     const posName = ["Rushee", "Pledge", "Brother", "Executive Board Member", "Super Administrator"][userInfo.Position] || "";
 
@@ -92,6 +93,7 @@ const Index = () => {
         }
     }
 
+
     const putInterest = async (interest) => {
         try {
             let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Minor, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major, Minor ,Colleges, Interests, Position: Position.toString() }))(userInfo);
@@ -130,11 +132,51 @@ const Index = () => {
           quality: 1,
         });
     
-        if (!result.canceled) {
-            setImage(result.assets[0].uri);
-          }
+        // if (!result.canceled) {
+        //     setImage(result.assets[0].uri);
+        // }
+
+        postimage(result.assets[0]);
+        
     
       };
+
+      
+
+      const postimage = async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', {
+                uri: file.uri,
+                name: 'photo.jpg',
+                type: 'image/jpeg',
+            });
+            console.log(formData);
+
+            const imageID = await axios.post(`${BACKEND_URL}/users/photo`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                  },
+            });
+
+            console.log(imageID.data.fileId);
+            getimage(imageID.data.fileId);
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
+    const getimage = async (picid) => {
+        try {
+            const response = await axios.get(`${BACKEND_URL}/users/photo/all/${picid}`);
+            setImage(response.data.data[0].data);
+            console.log(response.data.data[0].data);
+
+
+        } catch (err) {
+            console.log(err);
+        }
+    }
 
     const fetchProfile = async () => {
         try {
@@ -154,7 +196,7 @@ const Index = () => {
 
                 {/* IMAGE COMPONENT */}
                 {image ? (
-                    <Image source={{ uri: image }} style={styles.profileimage} />
+                    <Image source={{ uri: `data:image/png;base64,${image}` }} style={styles.profileimage} />
                 ) : (
                     <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic} />
                 )}
