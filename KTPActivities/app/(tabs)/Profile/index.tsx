@@ -25,9 +25,8 @@ import EditInterestModal from '../../components/editInterestModal';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { useFocusEffect } from '@react-navigation/native';
-
-
 
 
 const Index = () => {
@@ -166,11 +165,17 @@ const Index = () => {
           quality: 1,
         });
     
-        // if (!result.canceled) {
-        //     setImage(result.assets[0].uri);
-        // }
+        const compressedImage = await compressImage(result.assets[0]);
+        postimage(compressedImage);
+      };
 
-        postimage(result.assets[0]);
+      const compressImage = async (image) => {
+        const manipResult = await ImageManipulator.manipulateAsync(
+          image.uri,
+          [{ resize: { width: 800 } }], // Resize to a width of 800px, adjust as needed
+          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Adjust compression and format as needed
+        );
+        return manipResult;
       };
 
 
@@ -182,7 +187,6 @@ const Index = () => {
                 name: 'photo.jpg',
                 type: 'image/jpeg',
             });
-            console.log(formData);
 
             const imageID = await axios.post(`${BACKEND_URL}/users/photo`, formData, {
                 headers: {
