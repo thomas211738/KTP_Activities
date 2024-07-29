@@ -175,7 +175,8 @@ const styles = StyleSheet.create({
     },
     personMajors: {
         color: 'gray',
-        fontSize: 14
+        fontSize: 14,
+        paddingRight: 70
     },
     noMembersContainer: {
         flex: 1,

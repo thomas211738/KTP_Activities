@@ -1,7 +1,7 @@
 
 // React Imports
 import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, Linking } from 'react-native';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Sign Out Functionality
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -26,8 +26,8 @@ import axios from 'axios';
 import { BACKEND_URL } from '@env';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { useFocusEffect } from '@react-navigation/native';
-
+import CircleLoader from '../../components/loaders/circleLoader';
+import { GetImage } from '../../components/pictures';
 
 const Index = () => {
     const userInfo = getUserInfo();
@@ -37,13 +37,18 @@ const Index = () => {
     const [originalInterest, setOriginalInterest] = useState('');
     const [interestIndex, setInterestIndex] = useState(null);
     const [image, setImage] = useState(null);
+    const [imageLoading, setImageLoading] = useState(true);
 
     const fetchProfile = async () => {
         try {
             const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
             
             if (response.data.ProfilePhoto) {
-                getimage(response.data.ProfilePhoto);
+                const image = await GetImage(response.data.ProfilePhoto);
+                setImage(image);
+                setImageLoading(false);
+            } else {
+                setImageLoading(false);
             }
             if (response.data.Interests){
                 setUserInterests(response.data.Interests);
@@ -55,9 +60,9 @@ const Index = () => {
         }
     }
 
-    useFocusEffect(() => {
+    useEffect(() => {
         fetchProfile();
-    });
+    },[]);
 
 
     const posName = ["Rushee", "Pledge", "Brother", userInfo.Eboard_Position , "Alumni", "Super Administrator"][userInfo.Position] || "";
@@ -164,14 +169,19 @@ const Index = () => {
           aspect: [4, 3],
           quality: 1,
         });
-    
-        const compressedImage = await compressImage(result.assets[0]);
-        postimage(compressedImage);
+        
+
+        if (!result.canceled) {
+            console.log("HERE");
+            setImageLoading(true);
+            const compressedImage = await compressImage(result.assets[0].uri);
+            postimage(compressedImage);
+        }
       };
 
-      const compressImage = async (image) => {
+      const compressImage = async (uri) => {
         const manipResult = await ImageManipulator.manipulateAsync(
-          image.uri,
+          uri,
           [{ resize: { width: 800 } }], // Resize to a width of 800px, adjust as needed
           { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Adjust compression and format as needed
         );
@@ -194,21 +204,12 @@ const Index = () => {
                   },
             });
 
-            getimage(imageID.data.fileId);
+            const image = await GetImage(imageID.data.fileId);
+            setImage(image);
+            setImageLoading(false);
             addFileIDToUser(imageID.data.fileId);
         } catch (err) {
             console.log(err.message);
-        }
-    }
-
-    const getimage = async (picid) => {
-
-        try {
-            const response = await axios.get(`${BACKEND_URL}/users/photo/all/${picid}`);
-            setImage(response.data.data[0].data);
-
-        } catch (err) {
-            console.log(err);
         }
     }
 
@@ -231,11 +232,14 @@ const Index = () => {
                 <AddInterestModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postInterest} />
 
                 {/* IMAGE COMPONENT */}
-                {image ? (
-                    <Image source={{ uri: `data:image/png;base64,${image}` }} style={styles.profileimage} />
-                ) : (
-                    <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic} />
-                )}
+                {imageLoading ? <CircleLoader/> : 
+                    image ? (
+                        <Image source={{ uri: `data:image/png;base64,${image}` }} style={styles.profileimage} />
+                    ) : (
+                        <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic} />
+                    )}
+
+
 
                 <FontAwesome name="circle" size={50} color="white" style={styles.profilepiccircle}/>
                 <TouchableOpacity onPress={pickImage}>

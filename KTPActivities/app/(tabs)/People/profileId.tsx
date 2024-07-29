@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet} from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image} from 'react-native'
 import React, {useState} from 'react'
 import { useLocalSearchParams, router } from 'expo-router';
 import {BACKEND_URL} from '@env';
@@ -6,6 +6,8 @@ import axios from 'axios';
 import { AntDesign } from '@expo/vector-icons';
 import colleges from '../../components/buinfo';
 import { Octicons } from '@expo/vector-icons';
+import CircleLoader from '../../components/loaders/circleLoader';
+import {GetImage} from '../../components/pictures';
 
 
 
@@ -20,19 +22,29 @@ const profileId = () => {
     const [position, setPosition] = useState(null);
     const [eboardPosition, setEboardPosition] = useState("");
     const [userInterests, setUserInterests] = useState([]);
+    const [image, setImage] = useState(null);
+    const [imageLoading, setImageLoading] = useState(true);
 
     React.useEffect(() => {
         axios.get(`${BACKEND_URL}/users/${userID}`)
-        .then((response) => {
+        .then(async (response) => {
             setuserFirstName(response.data.FirstName);
             setuserLastName(response.data.LastName);
             setUserGradYear(response.data.GradYear);
-            setUserColleges(response.data.Colleges.join(', '));
+            setUserColleges(response.data.Colleges);
             setUserMajor(response.data.Major.join(' and '));
-            setUserMinor(response.data.Minor.join(' and '));
+            if (response.data.Minor.length > 0) setUserMinor(response.data.Minor.join(' and '));
             setPosition(response.data.Position);
             setEboardPosition(response.data.Eboard_Position);
             setUserInterests(response.data.Interests);
+            if (response.data.ProfilePhoto) {
+                const image = await GetImage(response.data.ProfilePhoto);
+                setImage(image);
+                setImageLoading(false);
+            }else{
+                setImageLoading(false);
+            }
+            
         })
         .catch((error) => {
             console.log(error);
@@ -42,7 +54,7 @@ const profileId = () => {
     const posName = ["Rushee", "Pledge", "Brother", eboardPosition, "Alumni", "Super Administrator"][position] || "";
 
     function getLabelByValue(value) {
-        const college = colleges.find(college => college.value === value);
+        const college = colleges.find(college => college.value === value[0]);
         return college ? college.label : 'Value not found';
     }
     const college = getLabelByValue(userColleges);
@@ -58,9 +70,16 @@ const profileId = () => {
   return (
 
     <View style={styles.pageView}>
-        <View style={styles.profilepiccirclebg}>
-            <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepiccircle} />
+        <ScrollView>
+        <View style={styles.container}>
+            {imageLoading ? <CircleLoader/> : 
+                image ? (
+                    <Image source={{ uri: `data:image/png;base64,${image}` }} style={styles.profileimage} />
+                ) : (
+                    <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic} />
+                )}
         </View>
+
 
         <View style={styles.card}>
             <Text style={styles.name}>{userFirstName} {userLastName}</Text>
@@ -94,6 +113,8 @@ const profileId = () => {
                 </TouchableOpacity>
             </View> */}
         </View>
+        </ScrollView>
+        
 
     </View>
     
@@ -108,6 +129,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
+        marginTop: 20,
     },
     profilepic: {
         marginTop: 10,
