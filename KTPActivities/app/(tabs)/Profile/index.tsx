@@ -201,8 +201,8 @@ const Index = () => {
                     'Content-Type': 'multipart/form-data',
                   },
             });
-
             const image = await GetImage(imageID.data.fileId);
+
             setImage(image);
             setImageLoading(false);
             addFileIDToUser(imageID.data.fileId);
@@ -213,6 +213,7 @@ const Index = () => {
 
       const addFileIDToUser = async (fileID) => {
         try {
+
             const updateduser = {Position: userInfo.Position.toString(), ProfilePhoto: fileID};
             await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
                 updateduser

@@ -228,12 +228,7 @@ router.put("/:id", async (request, response) => {
                 message:
                     "Send Position",
             });
-        } else if (request.body.Position > 4 || request.body.Position < 0){
-            return response.status(401).send({
-                message:
-                    "Position must be an integer 0 through 4",
-            });
-        }
+        } 
         const { id } = request.params;
         const result = await Users.findByIdAndUpdate(id, request.body);
         if (!result) {
