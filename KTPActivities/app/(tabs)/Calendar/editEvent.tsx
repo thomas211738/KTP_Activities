@@ -85,7 +85,7 @@ return (
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#5E89B3',
+      backgroundColor: '#134b91',
     },
     scrollContainer: {
       paddingBottom: 20,
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
       marginTop: 10,
     },
     boxEntry: {
-      backgroundColor: '#3D3D3D',
+      backgroundColor: '#d1d1d1',
       height: 40,
       padding: 10,
       borderRadius: 6,

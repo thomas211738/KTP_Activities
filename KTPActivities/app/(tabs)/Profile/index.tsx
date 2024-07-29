@@ -120,7 +120,6 @@ const Index = () => {
         try {
             userInfo.Interests.push(interest);
             let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major ,Colleges, Interests, Position: Position.toString() }))(userInfo);
-            console.log(updateduser);
             await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
                 updateduser
             );
@@ -172,7 +171,6 @@ const Index = () => {
         
 
         if (!result.canceled) {
-            console.log("HERE");
             setImageLoading(true);
             const compressedImage = await compressImage(result.assets[0].uri);
             postimage(compressedImage);

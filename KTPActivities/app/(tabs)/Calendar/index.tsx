@@ -9,11 +9,12 @@ import { BACKEND_URL } from '@env';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import CalendarLoader from '../../components/loaders/calendarLoader';
+import { getUserInfo } from '../../components/userInfoManager';
 
 const index = ({ navigation }) => {
     const [events, setEvents] = useState([]);
-    const [pos, setPos] = useState(3);
     const [loading, setLoading] = useState(true);
+    const userInfo = getUserInfo();
 
     const fetchEvents = async () => {
         try {
@@ -87,8 +88,8 @@ const index = ({ navigation }) => {
                                 <View style={styles.titleContainer}>
                                     <Text style={styles.eventTitle}>{event.Name}</Text>
                                     <View style={styles.icon}>
-                                        {pos >= 3 && <Feather name="edit" size={23} color="white" onPress={() => router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } })} />}
-                                        {pos >= 3 && <MaterialIcons name="delete" size={25} color="white" style={styles.iconSpacing} onPress={() => confirmDeleteAlert(event.Name, event._id)} />}
+                                        {userInfo.Position === 3 || userInfo.Position === 5  && <Feather name="edit" size={23} color="white" onPress={() => router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } })} />}
+                                        {userInfo.Position === 3 || userInfo.Position === 5  && <MaterialIcons name="delete" size={25} color="white" style={styles.iconSpacing} onPress={() => confirmDeleteAlert(event.Name, event._id)} />}
                                     </View>
                                 </View>
                                 <Text style={styles.eventText}>

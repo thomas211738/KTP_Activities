@@ -66,7 +66,7 @@ const createEvent = () => {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#5E89B3',
+
     },
     scrollContainer: {
       paddingBottom: 20,
@@ -78,9 +78,10 @@ const styles = StyleSheet.create({
       marginVertical: 10,
     },
     boxTitle: {
-      color: 'white',
+      color: '#134b91',
       fontWeight: 'bold',
       marginTop: 10,
+      fontSize: 15,
     },
     boxEntry: {
       backgroundColor: '#3D3D3D',
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     },
     bottom: {
       alignItems: 'center',
-      padding: 12,
+      padding: 15,
     },
     buttonContainer: {
         alignItems: 'center',

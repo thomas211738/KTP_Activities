@@ -12,6 +12,8 @@ import { useNavigation } from '@react-navigation/native'
 import { getUserInfo } from '../../components/userInfoManager';
 
 const AlertComponent = (props) => {
+  const userInfo = getUserInfo();
+
     
   return (
     <View style={styles.alertContainer}>
@@ -21,7 +23,7 @@ const AlertComponent = (props) => {
         <Text>{props.description}</Text>
       </View>
       <Text style={styles.alertTime}>{props.time}</Text>
-      {props.pos >= 3 && (
+      {userInfo.Position === 3 || userInfo.Position === 5 && (
         <View style={styles.alertButtons}>
           <Feather name="edit" size={24} color="black" style={styles.editIcon} onPress={props.onEdit} />
           <MaterialIcons name="delete" size={25} color="#B22222" style={styles.deleteIcon} onPress={props.onDelete} />
@@ -33,7 +35,6 @@ const AlertComponent = (props) => {
 
 const index = () => {
   const [alerts, setAlerts] = useState([]);
-  const [pos, setPos] = useState(3);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [alertID, setAlertID] = useState('');
@@ -162,8 +163,8 @@ const index = () => {
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior='automatic' style={styles.alertsContainer}>
-        {pos >= 3 ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
-        {pos >= 3 ? <EditAlertModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putAlert} alertID={alertID}/> : ''}
+        {userInfo.Position === 3 || userInfo.Position === 5 ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
+        {userInfo.Position === 3 || userInfo.Position === 5 ? <EditAlertModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putAlert} alertID={alertID}/> : ''}
         {Object.keys(groupedAlerts).map((date, index) => (
           <View key={index + date} style={styles.dateContainer}>
             <View style={styles.alertDateContainer}>
@@ -175,7 +176,6 @@ const index = () => {
                   alertName={alert.AlertName}
                   description={alert.Description}
                   time={formatTime(alert.updatedAt)}
-                  pos={pos}
                   onEdit={() => {
                     setAlertID(alert._id);
                     setEditModalVisible(true);
@@ -247,7 +247,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
     alignItems: 'center',
-    position: 'relative',
   },
   alertTextContainer: {
     flex: 1,
@@ -275,10 +274,9 @@ const styles = StyleSheet.create({
   },
   alertButtons: {
     flexDirection: 'row',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
+    justifyContent: 'flex-end',
+    marginTop: 20,
+
   },
   addIcon: {
     marginRight: 12,
