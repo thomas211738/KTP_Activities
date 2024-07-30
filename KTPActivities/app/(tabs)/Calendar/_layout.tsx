@@ -38,12 +38,14 @@ export default function Layout() {
         name="createEvent"
         options={{
           headerTitle: "Create Event",
+
         }}
       />
       <Stack.Screen
         name="editEvent"
         options={{
           headerTitle: "Edit Event",
+
         }}
       />
     </Stack>

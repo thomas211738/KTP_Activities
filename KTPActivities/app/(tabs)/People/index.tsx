@@ -32,7 +32,7 @@ const Person = (props) => {
 const index = () => {
     const users = getAllUsersInfo();
     const user = getUserInfo();
-    const [pos, setPos] = React.useState(2);
+    const [pos, setPos] = React.useState(0);
     const [search, setSearch] = React.useState('');
     const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => user.Position === pos));
     const [loading, setLoading] = React.useState(false);

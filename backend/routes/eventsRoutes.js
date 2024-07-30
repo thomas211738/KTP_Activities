@@ -39,7 +39,6 @@ router.post("/", async (request, response) => {
             Day,
             Time,
             Location,
-            Position,
             Description,
         } = request.body;
 
@@ -48,7 +47,6 @@ router.post("/", async (request, response) => {
             !request.body.Day ||
             !request.body.Time ||
             !request.body.Location ||
-            !request.body.Position ||
             !request.body.Description
         ) {
             return response.status(400).send({
@@ -61,7 +59,6 @@ router.post("/", async (request, response) => {
             Day,
             Time,
             Location,
-            Position,
             Description,
         });
         await newevent.save();
@@ -82,7 +79,6 @@ router.put("/:id", async (request, response) => {
             !request.body.Day ||
             !request.body.Time ||
             !request.body.Location ||
-            !request.body.Position ||
             !request.body.Description
         ) {
             return response.status(400).send({
