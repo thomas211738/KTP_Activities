@@ -8,7 +8,7 @@ import eventsRoute from './routes/eventsRoutes.js';
 import taskRoute from './routes/taskRoutes.js';
 import alertsRoute from './routes/alertsRoutes.js';
 import completedTaskRoute from './routes/completedTaskRoutes.js';
-
+import notificationsRoute from './routes/notificationsRoute.js'
 
 const app = express();
 app.use(express.json());
@@ -23,6 +23,7 @@ app.use('/events', eventsRoute);
 app.use('/tasks', taskRoute);
 app.use('/alerts', alertsRoute);
 app.use('/completed-tasks', completedTaskRoute);
+app.use('/notifications', notificationsRoute)
 
 
 app.get('/', (request, response) => {

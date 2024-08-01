@@ -59,7 +59,8 @@ const userSchema = mongoose.Schema(
     },
     ProfilePhoto: {
         type: String
-    }
+    },
+    ExpoPushToken: String,
     },
     {
         timestamps: true,

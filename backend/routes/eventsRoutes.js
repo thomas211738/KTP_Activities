@@ -1,6 +1,7 @@
 import express from "express";
 
 import { Events } from "../models/eventsModel.js";
+import {scheduleEventsNotifications} from './notificationsRoute.js'
 
 const router = express.Router();
 
@@ -65,6 +66,7 @@ router.post("/", async (request, response) => {
             Description,
         });
         await newevent.save();
+        scheduleEventsNotifications(newevent)
         return response
             .status(200)
             .send({ message: "event added successfully" });
