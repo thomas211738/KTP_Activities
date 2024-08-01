@@ -38,7 +38,7 @@ const Index = () => {
     const [interestIndex, setInterestIndex] = useState(null);
     const [image, setImage] = useState(null);
     const [imageLoading, setImageLoading] = useState(true);
-
+    
     const fetchProfile = async () => {
         try {
             const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
@@ -53,13 +53,13 @@ const Index = () => {
             if (response.data.Interests){
                 setUserInterests(response.data.Interests);
             }
-
-
+            
+            
         } catch (err) {
             console.log(err.message);
         }
     }
-
+    
     useEffect(() => {
         fetchProfile();
     },[]);
@@ -195,6 +195,10 @@ const Index = () => {
                 name: 'photo.jpg',
                 type: 'image/jpeg',
             });
+
+            if(userInfo.ProfilePhoto) {
+                await axios.delete(`${BACKEND_URL}/users/photo/${userInfo.ProfilePhoto}`);
+            }
 
             const imageID = await axios.post(`${BACKEND_URL}/users/photo`, formData, {
                 headers: {

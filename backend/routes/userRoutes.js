@@ -4,7 +4,7 @@ import { Users } from "../models/userModel.js";
 // import { Metadata } from "../models/metadataModel.js";
 import { gfs, upload, uploadToGridFS} from "../gridFS.js";
 import { ObjectId } from 'mongodb';
-
+import mongoose from "mongoose";
 
 const router = express.Router();
 
@@ -244,7 +244,7 @@ router.put("/:id", async (request, response) => {
 });
 
 // delete a User
-router.delete("/:id", async (request, response) => {
+router.delete("/user/:id", async (request, response) => {
     try {
         await Users.findByIdAndDelete(request.params.id);
         return response
@@ -255,5 +255,17 @@ router.delete("/:id", async (request, response) => {
         response.status(500).send({ message: error.message });
     }
 });
+
+router.delete("/photo/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const fileId = new mongoose.Types.ObjectId(id);
+    await gfs.delete(fileId);
+    return res.status(200).send({ message: "File deleted successfully" });
+  } catch(err) {
+    console.log(err.message);
+    res.status(500).send({ message: err.message });
+  }
+})
 
 export default router;
