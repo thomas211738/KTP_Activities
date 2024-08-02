@@ -1,8 +1,9 @@
-import { View, Text, SafeAreaView, Image, StatusBar, Button, StyleSheet} from 'react-native'
+import { View, Text, SafeAreaView, Image, StatusBar, Button, StyleSheet, Platform} from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native';
 import GoogleButton from './components/googleButton';
 import { RootSiblingParent } from 'react-native-root-siblings';
+import AndroidAuth from './components/androidAuth';
 
 export default function SignInScreen({ promptAsync }) {
     const mynavigation = useNavigation();
@@ -22,7 +23,12 @@ export default function SignInScreen({ promptAsync }) {
             <Button title="Login" onPress={() => mynavigation.navigate('(tabs)')} />
             </View> */}
 
-            <GoogleButton promptAsync={() => promptAsync()} />
+           
+              {Platform.OS === "ios" ? (
+                 <GoogleButton promptAsync={() => promptAsync()} />
+              ) : (
+                <AndroidAuth/>
+              )}
             </SafeAreaView>
         </RootSiblingParent>
   );

@@ -27,7 +27,6 @@ WebBrowser.maybeCompleteAuthSession();
 const HomeScreen = ({navigation}) => {
 
   const [loading, setLoading] = React.useState(false);
-  const [pos, setPos] = React.useState(0);
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     iosClientId: GOOGLE_AUTH_IOS_CLIENT_ID,
     androidClientId: GOOGLE_AUTH_ANDROID_CLIENT_ID,
@@ -38,8 +37,7 @@ const HomeScreen = ({navigation}) => {
       setLoading(true);
       const userJSON = await AsyncStorage.getItem("@user");
       const userData = userJSON ? JSON.parse(userJSON) : null;
-      // const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${userData.email}`);
-      // setPos(userPositionJSON.data[0].Position);
+
     } catch (e) {
       console.log(e, "Error getting local user");
     } finally {
@@ -52,21 +50,22 @@ const HomeScreen = ({navigation}) => {
       const { id_token } = response.params;
       const credential = GoogleAuthProvider.credential(id_token);
       signInWithCredential(auth, credential);
-
-
     }
   }, [response]);
+
+
 
   React.useEffect(() => {
     getLocalUser();
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         await AsyncStorage.setItem("@user", JSON.stringify(user));
-        const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${user.email}`);
+        // const userPositionJSON = await axios.get(`${BACKEND_URL}/users/email/${user.email}`);
         // setPos(userPositionJSON.data[0].Position);
         
 
         const validation = await ValidateUser(user.providerData[0].email);
+
 
         if (validation.status === 1) {   
           setUserInfo(validation.user); 
@@ -105,7 +104,6 @@ const HomeScreen = ({navigation}) => {
   if (loading)
     return (
       <RootSiblingParent>
-      
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size={"large"} />
       </View>

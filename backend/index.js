@@ -30,6 +30,13 @@ app.get('/', (request, response) => {
     return response.status(234).send('Welcome To the KTP App');
   });
 
+
+  // Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
 mongoose
 .connect(mongoDBURL)
 .then(() => {
