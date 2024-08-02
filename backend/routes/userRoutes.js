@@ -12,6 +12,8 @@ const router = express.Router();
 router.get("/", async (request, response) => {
     try {
         const UserElements = await Users.find({});
+
+        UserElements.sort((a, b) => `${a.FirstName} ${a.LastName}`.localeCompare(`${b.FirstName} ${b.LastName}`));
         
         return response.status(200).json({
             count: UserElements.length,

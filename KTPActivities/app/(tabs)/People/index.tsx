@@ -66,8 +66,8 @@ const index = () => {
             setSearch('');
             setPos(position);
             if (position === 2) {
-                setFilteredUsers(users.filter(user => user.Position === 2 || user.Position === 5));
-            }else{
+              setFilteredUsers(users.filter(user => user.Position === 2 || user.Position === 5));
+            } else {
                 setFilteredUsers(users.filter(user => user.Position === position));
             }
             setLoading(false);
