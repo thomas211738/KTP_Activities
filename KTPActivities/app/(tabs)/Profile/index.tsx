@@ -1,6 +1,6 @@
 
 // React Imports
-import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, Linking } from 'react-native';
+import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, Linking , Platform} from 'react-native';
 import React, { useState, useEffect } from 'react';
 
 // Sign Out Functionality
@@ -28,6 +28,8 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import CircleLoader from '../../components/loaders/circleLoader';
 import { GetImage } from '../../components/pictures';
+import { GoogleSignin} from '@react-native-google-signin/google-signin';
+
 
 const Index = () => {
     const userInfo = getUserInfo();
@@ -295,6 +297,7 @@ const Index = () => {
                     <TouchableOpacity onPress={async () => {
                         await signOut(auth);
                         await AsyncStorage.removeItem("@user");
+                        await GoogleSignin.signOut()
                         router.replace("/");
                     }}>
                         <Text style={styles.signOutButtonText}>Sign Out</Text>
@@ -309,7 +312,8 @@ const Index = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: 'white',        
+        marginTop: 10,
     },
     profilepic: {
         marginTop: 10,

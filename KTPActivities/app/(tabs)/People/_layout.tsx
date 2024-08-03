@@ -1,6 +1,7 @@
 
 import { Stack } from 'expo-router/stack';
 import React from 'react';
+import { Platform } from 'react-native';
 
 export default function Layout() {
    
@@ -11,7 +12,7 @@ export default function Layout() {
           options={{
             headerTitle: "People",
             headerBlurEffect: "regular",
-            headerTransparent: true,
+            ...(Platform.OS === "ios" && { headerTransparent: true }),
             headerLargeTitle: true,
             headerLargeTitleShadowVisible: false,
           }}

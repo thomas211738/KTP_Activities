@@ -1,5 +1,5 @@
 
-import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity} from 'react-native'
+import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity, Platform} from 'react-native'
 import { router } from 'expo-router'
 import React from 'react'
 import { getAllUsersInfo } from '../../components/allUsersManager'
@@ -142,6 +142,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
+        marginTop: 10,
     },
     buttonsContainer: {
         flexDirection: 'row',

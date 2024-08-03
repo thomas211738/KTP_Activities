@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Alert, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Alert, ScrollView, StyleSheet, Platform, SafeAreaView } from 'react-native';
 import axios from 'axios';
 import Entypo from '@expo/vector-icons/Entypo';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -73,12 +73,12 @@ const index = ({ navigation }) => {
     }
 
     return (
-        <ScrollView
+        <SafeAreaView>
+            <ScrollView
             contentInsetAdjustmentBehavior='automatic'
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={[styles.scrollcontainer]}
-            style={styles.container}
         >
+            <View style={styles.scrollcontainer}>
             {Object.keys(groupedEvents).map((date, index) => (
                 <View key={index} style={styles.dateGroup}>
                     <Text style={styles.eventDate}>{date}</Text>
@@ -102,11 +102,18 @@ const index = ({ navigation }) => {
                     ))}
                 </View>
             ))}
+
+            </View>
+            
         </ScrollView>
+
+        </SafeAreaView>
+        
     );
 };
 
 const styles = StyleSheet.create({
+
     scrollcontainer: {
         padding: 16,
     },

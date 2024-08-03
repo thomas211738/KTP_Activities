@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router/stack';
-import { Pressable } from 'react-native';
+import { Pressable, Platform } from 'react-native';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -15,8 +15,8 @@ export default function Layout() {
         options={{
           headerTitle: "Calendar",
           headerBlurEffect: "regular",
-          headerTransparent: true,
           headerLargeTitle: true,
+          ...(Platform.OS === "ios" && { headerTransparent: true }),
           headerLargeTitleShadowVisible: false,
           headerRight: userInfo.Position === 3 || userInfo.Position === 5 ? () => (
             <Pressable

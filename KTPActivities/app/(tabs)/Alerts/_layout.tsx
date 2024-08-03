@@ -1,8 +1,7 @@
 
 import { Stack } from 'expo-router/stack';
 import React, { useState } from 'react';
-import { Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Platform } from 'react-native';
 
 export default function Layout() {
   return (
@@ -13,7 +12,7 @@ export default function Layout() {
           options={{
             headerTitle: "Alerts",
             headerBlurEffect: "regular",
-            headerTransparent: true,
+            ...(Platform.OS === "ios" && { headerTransparent: true }),
             headerLargeTitle: true,
             headerLargeTitleShadowVisible: false
           }}

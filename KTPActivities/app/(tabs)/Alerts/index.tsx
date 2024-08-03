@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useCallback } from 'react';
-import { Alert, ScrollView, Image, View, Text, StyleSheet, Pressable } from 'react-native';
+import { Alert, ScrollView, Image, View, Text, StyleSheet, Pressable, Platform} from 'react-native';
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
