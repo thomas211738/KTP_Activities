@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Alert, ScrollView, StyleSheet, Platform, SafeAreaView } from 'react-native';
+import { View, Text, Alert, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
 import axios from 'axios';
 import Entypo from '@expo/vector-icons/Entypo';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -73,54 +73,63 @@ const index = ({ navigation }) => {
     }
 
     return (
-        <SafeAreaView>
+        <SafeAreaView style={styles.container}>
             <ScrollView
-            contentInsetAdjustmentBehavior='automatic'
-            showsVerticalScrollIndicator={false}
-        >
-            <View style={styles.scrollcontainer}>
-            {Object.keys(groupedEvents).map((date, index) => (
-                <View key={index} style={styles.dateGroup}>
-                    <Text style={styles.eventDate}>{date}</Text>
-                    {groupedEvents[date].map((event, eventIndex) => (
-                        <View key={eventIndex} style={styles.eventWrapper}>
-                            <View style={styles.eventContainer}>
-                                <View style={styles.titleContainer}>
-                                    <Text style={styles.eventTitle}>{event.Name}</Text>
-                                    <View style={styles.icon}>
-                                        {userInfo.Position === 3 || userInfo.Position === 5  && <Feather name="edit" size={23} color="white" onPress={() => router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } })} />}
-                                        {userInfo.Position === 3 || userInfo.Position === 5  && <MaterialIcons name="delete" size={25} color="white" style={styles.iconSpacing} onPress={() => confirmDeleteAlert(event.Name, event._id)} />}
+                contentInsetAdjustmentBehavior='automatic'
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={styles.scrollcontainer}>
+                    {Object.keys(groupedEvents).map((date, index) => (
+                        <View key={index} style={styles.dateGroup}>
+                            <Text style={styles.eventDate}>{date}</Text>
+                            {groupedEvents[date].map((event, eventIndex) => (
+                                <View key={eventIndex} style={styles.eventWrapper}>
+                                    <View style={styles.eventContainer}>
+                                        <View style={styles.titleContainer}>
+                                            <Text style={styles.eventTitle}>{event.Name}</Text>
+                                            <View style={styles.icon}>
+                                                {userInfo.Position === 3 || userInfo.Position === 5 && (
+                                                    <Feather
+                                                        name="edit"
+                                                        size={23}
+                                                        color="white"
+                                                        onPress={() => router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } })}
+                                                    />
+                                                )}
+                                                {userInfo.Position === 3 || userInfo.Position === 5 && (
+                                                    <MaterialIcons
+                                                        name="delete"
+                                                        size={25}
+                                                        color="white"
+                                                        style={styles.iconSpacing}
+                                                        onPress={() => confirmDeleteAlert(event.Name, event._id)}
+                                                    />
+                                                )}
+                                            </View>
+                                        </View>
+                                        <Text style={styles.eventText}>
+                                            <MaterialIcons name="access-time-filled" size={15} color="white" /> {event.Time}{' '}
+                                            <Entypo name="location-pin" size={17} color="white" /> {event.Location}
+                                        </Text>
+                                        <Text style={styles.eventText}>{event.Description}</Text>
                                     </View>
                                 </View>
-                                <Text style={styles.eventText}>
-                                    <MaterialIcons name="access-time-filled" size={15} color="white" /> {event.Time}{' '}
-                                    <Entypo name="location-pin" size={17} color="white" /> {event.Location}
-                                </Text>
-                                <Text style={styles.eventText}>{event.Description}</Text>
-                            </View>
+                            ))}
                         </View>
                     ))}
                 </View>
-            ))}
-
-            </View>
-            
-        </ScrollView>
-
+            </ScrollView>
         </SafeAreaView>
-        
     );
 };
 
 const styles = StyleSheet.create({
-
+    container: {
+        flex: 1,
+        backgroundColor: 'white',
+    },
     scrollcontainer: {
         padding: 16,
-    },
-    container: {
-        flexGrow: 1,
-        height: '100%',
-        backgroundColor: 'white',
     },
     dateGroup: {
         marginBottom: 16,
@@ -156,10 +165,6 @@ const styles = StyleSheet.create({
         padding: 2,
         marginTop: 2,
     },
-    label: {
-        fontWeight: 'bold',
-        color: '#333',
-    },
     titleContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -169,9 +174,6 @@ const styles = StyleSheet.create({
     },
     iconSpacing: {
         marginLeft: 10,
-    },
-    addIcon: {
-        marginRight: 10,
     },
 });
 

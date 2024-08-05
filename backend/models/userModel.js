@@ -51,6 +51,9 @@ const userSchema = mongoose.Schema(
     LinkedIn: {
         type: String
     },
+    Instagram: {
+        type: String
+    },
     Class: {
         type: String
     },

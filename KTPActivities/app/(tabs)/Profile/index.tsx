@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "../../firebaseConfig";
 import { signOut } from "firebase/auth";
 import { router } from 'expo-router';
+import { GoogleSignin} from '@react-native-google-signin/google-signin';
 
 // Icons
 import Octicons from '@expo/vector-icons/Octicons';
@@ -28,7 +29,8 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import CircleLoader from '../../components/loaders/circleLoader';
 import { GetImage } from '../../components/pictures';
-import { GoogleSignin} from '@react-native-google-signin/google-signin';
+import AddigModal from '../../components/igModal';
+import AddLinkedinModal from '../../components/linkedinModal';
 
 
 const Index = () => {
@@ -40,6 +42,11 @@ const Index = () => {
     const [interestIndex, setInterestIndex] = useState(null);
     const [image, setImage] = useState(null);
     const [imageLoading, setImageLoading] = useState(true);
+    const [igModalVisible, setIgModalVisible] = useState(false);
+    const [linkedinModalVisible, setLinkedinModalVisible] = useState(false);
+    const [instagram, setInstagram] = useState(userInfo.Instagram);
+    const [linkedIn, setLinkedIn] = useState(userInfo.LinkedIn);
+
     
     const fetchProfile = async () => {
         try {
@@ -55,6 +62,8 @@ const Index = () => {
             if (response.data.Interests){
                 setUserInterests(response.data.Interests);
             }
+            if (response.data.Instagram) setInstagram(response.data.Instagram);
+            if (response.data.LinkedIn) setLinkedIn(response.data.LinkedIn);
             
             
         } catch (err) {
@@ -69,41 +78,7 @@ const Index = () => {
 
     const posName = ["Rushee", "Pledge", "Brother", userInfo.Eboard_Position , "Alumni", "Super Administrator"][userInfo.Position] || "";
 
-    const openInstagramProfile = async (username) => {
-        const url = `instagram://user?username=${username}`;
     
-        // Check if the Instagram app can be opened
-        const supported = await Linking.canOpenURL(url);
-    
-        if (supported) {
-          // Open the Instagram app to the specified profile
-          await Linking.openURL(url);
-        } else {
-          // If the Instagram app is not installed, open the profile in the web browser
-          const webUrl = `https://www.instagram.com/${username}/`;
-          await Linking.openURL(webUrl);
-        }
-      };
-
-      const openLinkedInProfile = async (username) => {
-        const url = `linkedin://in/${username}`;
-    
-        try {
-            // Check if the LinkedIn app can be opened
-            const supported = await Linking.canOpenURL(url);
-        
-            if (supported) {
-              // Open the LinkedIn app to the specified profile
-              await Linking.openURL(url);
-            } else {
-              // If the LinkedIn app is not installed, open the profile in the web browser
-              const webUrl = `https://www.linkedin.com/in/${username}/`;
-              await Linking.openURL(webUrl);
-            }
-          } catch (error) {
-            console.error("An error occurred while opening the URL:", error);
-          }
-      };
 
     function getLabelByValue(value) {
         const college = colleges.find(college => college.value === value);
@@ -177,16 +152,43 @@ const Index = () => {
             const compressedImage = await compressImage(result.assets[0].uri);
             postimage(compressedImage);
         }
-      };
+    };
 
-      const compressImage = async (uri) => {
+    const compressImage = async (uri) => {
         const manipResult = await ImageManipulator.manipulateAsync(
-          uri,
-          [{ resize: { width: 800 } }], // Resize to a width of 800px, adjust as needed
-          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Adjust compression and format as needed
+            uri,
+            [{ resize: { width: 800 } }], // Resize to a width of 800px, adjust as needed
+            { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Adjust compression and format as needed
         );
         return manipResult;
-      };
+    };
+
+    const postIg = async (instagram) => {
+        try {
+            const updateduser = {Position: userInfo.Position.toString(), Instagram: instagram};
+            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+                updateduser
+            );
+            setIgModalVisible(false);
+            fetchProfile();
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    const postLinkedIn = async (linkedin) => {
+        try {
+            const updateduser = {Position: userInfo.Position.toString(), LinkedIn: linkedin};
+            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+                updateduser
+            );
+            setLinkedinModalVisible(false);
+            fetchProfile();
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+
 
 
     const postimage = async (file) => {
@@ -235,6 +237,8 @@ const Index = () => {
                 {/* MODALS */}
                 <EditInterestModal visible={editModalVisible} onDelete={deleteInterest} onCancel={() => setEditModalVisible(false)} onPut={putInterest} interest={originalInterest}/>
                 <AddInterestModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postInterest} />
+                <AddigModal visible={igModalVisible} onCancel={() => setIgModalVisible(false)} onPost={postIg} Instagram={instagram}/>
+                <AddLinkedinModal visible={linkedinModalVisible} onCancel={() => setLinkedinModalVisible(false)} onPost={postLinkedIn} Linkedin={linkedIn}/>
 
                 {/* IMAGE COMPONENT */}
                 {imageLoading ? <CircleLoader/> : 
@@ -283,10 +287,10 @@ const Index = () => {
                     </View>
                     </View>
                     <View style={styles.socialIcons}>
-                        <TouchableOpacity onPress={() => openLinkedInProfile('thomasyousef21')}>
+                        <TouchableOpacity onPress={() => setLinkedinModalVisible(true)}>
                             <AntDesign name="linkedin-square" size={24} color="white" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => openInstagramProfile('thomas.bowls21')}>
+                        <TouchableOpacity onPress={() => setIgModalVisible(true)}>
                             <AntDesign name="instagram" size={24} color="white" />
                         </TouchableOpacity>
                     </View>

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image} from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Linking} from 'react-native'
 import React, {useState} from 'react'
 import { useLocalSearchParams, router } from 'expo-router';
 import {BACKEND_URL} from '@env';
@@ -24,6 +24,8 @@ const profileId = () => {
     const [userInterests, setUserInterests] = useState([]);
     const [image, setImage] = useState(null);
     const [imageLoading, setImageLoading] = useState(true);
+    const [instagram, setInstagram] = useState(null);
+    const [linkedin, setLinkedin] = useState(null);
 
     React.useEffect(() => {
         axios.get(`${BACKEND_URL}/users/${userID}`)
@@ -44,6 +46,8 @@ const profileId = () => {
             }else{
                 setImageLoading(false);
             }
+            if (response.data.Instagram) setInstagram(response.data.Instagram);
+            if (response.data.LinkedIn) setLinkedin(response.data.LinkedIn);
             
         })
         .catch((error) => {
@@ -65,6 +69,42 @@ const profileId = () => {
         2027: "Sophomore",
         2028: "Freshman"
     }[userGradYear] || "Alumni";
+
+    const openInstagramProfile = async (username) => {
+        const url = `instagram://user?username=${username}`;
+    
+        // Check if the Instagram app can be opened
+        const supported = await Linking.canOpenURL(url);
+    
+        if (supported) {
+          // Open the Instagram app to the specified profile
+          await Linking.openURL(url);
+        } else {
+          // If the Instagram app is not installed, open the profile in the web browser
+          const webUrl = `https://www.instagram.com/${username}/`;
+          await Linking.openURL(webUrl);
+        }
+      };
+
+      const openLinkedInProfile = async (username) => {
+        const url = `linkedin://in/${username}`;
+    
+        try {
+            // Check if the LinkedIn app can be opened
+            const supported = await Linking.canOpenURL(url);
+        
+            if (supported) {
+              // Open the LinkedIn app to the specified profile
+              await Linking.openURL(url);
+            } else {
+              // If the LinkedIn app is not installed, open the profile in the web browser
+              const webUrl = `https://www.linkedin.com/in/${username}/`;
+              await Linking.openURL(webUrl);
+            }
+          } catch (error) {
+            console.error("An error occurred while opening the URL:", error);
+          }
+      };
 
 
   return (
@@ -104,14 +144,21 @@ const profileId = () => {
                 ))}
             </View>
             </View>
-            {/* <View style={styles.socialIcons}>
-                <TouchableOpacity onPress={() => openLinkedInProfile('thomasyousef21')}>
+
+            
+
+            <View style={styles.socialIcons}>
+                {linkedin ? 
+                <TouchableOpacity onPress={() => openLinkedInProfile(linkedin)}>
                     <AntDesign name="linkedin-square" size={24} color="white" />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => openInstagramProfile('thomas.bowls21')}>
+                </TouchableOpacity> : ""}
+                {instagram ? 
+                <TouchableOpacity onPress={() => openInstagramProfile(instagram)}>
                     <AntDesign name="instagram" size={24} color="white" />
-                </TouchableOpacity>
-            </View> */}
+                </TouchableOpacity> : ""}
+
+            
+            </View>
         </View>
         </ScrollView>
         
