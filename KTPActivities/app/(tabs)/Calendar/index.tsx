@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Alert, ScrollView, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, Alert, ScrollView, StyleSheet, SafeAreaView, useColorScheme } from 'react-native';
 import axios from 'axios';
 import Entypo from '@expo/vector-icons/Entypo';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -11,10 +11,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import CalendarLoader from '../../components/loaders/calendarLoader';
 import { getUserInfo } from '../../components/userInfoManager';
 
+
+
+
+
 const index = ({ navigation }) => {
+    const colorScheme = useColorScheme();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const userInfo = getUserInfo();
+
 
     const fetchEvents = async () => {
         try {
@@ -67,13 +73,20 @@ const index = ({ navigation }) => {
     };
 
     const groupedEvents = groupEventsByDate(events);
+    const themeContainerStyle = colorScheme === 'dark' ? styles.lightcontainer : styles.darkcontainer;
+    const themeTitleTextStyle = colorScheme === 'dark' ? styles.darkText : styles.lightText ;
+    const themeTextStyle = colorScheme === 'dark' ?  styles.lightText : styles.darkText;
+    const themeEventStyle = colorScheme === 'dark' ? styles.lightEvent : styles.darkEvent;
+
+
+
 
     if (loading) {
         return <CalendarLoader />;
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, themeContainerStyle]}>
             <ScrollView
                 contentInsetAdjustmentBehavior='automatic'
                 showsVerticalScrollIndicator={false}
@@ -81,18 +94,18 @@ const index = ({ navigation }) => {
                 <View style={styles.scrollcontainer}>
                     {Object.keys(groupedEvents).map((date, index) => (
                         <View key={index} style={styles.dateGroup}>
-                            <Text style={styles.eventDate}>{date}</Text>
+                            <Text style={[styles.eventDate, themeTitleTextStyle]}>{date}</Text>
                             {groupedEvents[date].map((event, eventIndex) => (
                                 <View key={eventIndex} style={styles.eventWrapper}>
-                                    <View style={styles.eventContainer}>
+                                    <View style={[styles.eventContainer, themeEventStyle]}>
                                         <View style={styles.titleContainer}>
-                                            <Text style={styles.eventTitle}>{event.Name}</Text>
+                                            <Text style={[styles.eventTitle, themeTextStyle]}>{event.Name}</Text>
                                             <View style={styles.icon}>
                                                 {userInfo.Position === 3 || userInfo.Position === 5 && (
                                                     <Feather
                                                         name="edit"
                                                         size={23}
-                                                        color="white"
+                                                        color={colorScheme=== 'dark' ?  "white" : "black"}
                                                         onPress={() => router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } })}
                                                     />
                                                 )}
@@ -100,18 +113,18 @@ const index = ({ navigation }) => {
                                                     <MaterialIcons
                                                         name="delete"
                                                         size={25}
-                                                        color="white"
+                                                        color={colorScheme=== 'dark' ?  "white" : "black"}
                                                         style={styles.iconSpacing}
                                                         onPress={() => confirmDeleteAlert(event.Name, event._id)}
                                                     />
                                                 )}
                                             </View>
                                         </View>
-                                        <Text style={styles.eventText}>
-                                            <MaterialIcons name="access-time-filled" size={15} color="white" /> {event.Time}{' '}
-                                            <Entypo name="location-pin" size={17} color="white" /> {event.Location}
+                                        <Text style={[styles.eventText, themeTextStyle]}>
+                                            <MaterialIcons name="access-time-filled" size={15} color= {colorScheme=== 'dark' ?  "white" : "black"} /> {event.Time}{' '}
+                                            <Entypo name="location-pin" size={17} color={colorScheme=== 'dark' ?  "white" : "black"} /> {event.Location}
                                         </Text>
-                                        <Text style={styles.eventText}>{event.Description}</Text>
+                                        <Text style={[styles.eventText, themeTextStyle]}>{event.Description}</Text>
                                     </View>
                                 </View>
                             ))}
@@ -126,11 +139,29 @@ const index = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+    },
+    lightcontainer: {
+        backgroundColor:  'white',
+    },
+    darkcontainer: {
+        backgroundColor:  '#1a1a1a',
+    },
+    lightText: {
+        color: 'white',
+    },
+    darkText: {
+        color: 'black',
+    },
+    lightEvent:{
+        backgroundColor: '#134b91',
+    },
+    darkEvent: {
+        backgroundColor: '#86ebba',
     },
     scrollcontainer: {
         padding: 16,
     },
+
     dateGroup: {
         marginBottom: 16,
     },
@@ -140,11 +171,9 @@ const styles = StyleSheet.create({
     eventDate: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: 'black',
         marginBottom: 8,
     },
     eventContainer: {
-        backgroundColor: '#134b91',
         padding: 16,
         borderRadius: 8,
         shadowColor: '#000',
@@ -157,11 +186,9 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 8,
-        color: 'white',
     },
     eventText: {
         fontSize: 16,
-        color: 'white',
         padding: 2,
         marginTop: 2,
     },

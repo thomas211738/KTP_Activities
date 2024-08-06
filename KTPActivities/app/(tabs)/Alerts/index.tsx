@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useCallback } from 'react';
-import { Alert, ScrollView, Image, View, Text, StyleSheet, Pressable, Platform} from 'react-native';
+import { Alert, ScrollView, Image, View, Text, StyleSheet, Pressable, useColorScheme} from 'react-native';
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
@@ -13,19 +13,24 @@ import { getUserInfo } from '../../components/userInfoManager';
 
 const AlertComponent = (props) => {
   const userInfo = getUserInfo();
+  const colorScheme = useColorScheme();
+
+  const themeTitleTextStyle = colorScheme === 'dark' ? styles.darkText : styles.lightText ;
+  const themeTextStyle = colorScheme === 'dark' ? styles.darkText :  styles.lightText ;
+  const themeEventStyle = colorScheme === 'dark' ? styles.lightEvent : styles.darkEvent;
 
     
   return (
-    <View style={styles.alertContainer}>
+    <View style={[styles.alertContainer,themeEventStyle ]}>
       <Image source={require("../../../img/ktplogopng.png")} style={styles.alertImage} />
       <View style={styles.alertTextContainer}>
-        <Text style={styles.alertName}>{props.alertName}</Text>
-        <Text>{props.description}</Text>
+        <Text style={[styles.alertName, themeTextStyle]}>{props.alertName}</Text>
+        <Text style={themeTextStyle} > {props.description}</Text>
       </View>
       <Text style={styles.alertTime}>{props.time}</Text>
       {userInfo.Position === 3 || userInfo.Position === 5 && (
         <View style={styles.alertButtons}>
-          <Feather name="edit" size={24} color="black" style={styles.editIcon} onPress={props.onEdit} />
+          <Feather name="edit" size={24} color={colorScheme === 'dark' ? "black" : "white"} style={styles.editIcon} onPress={props.onEdit} />
           <MaterialIcons name="delete" size={25} color="#B22222" style={styles.deleteIcon} onPress={props.onDelete} />
         </View>
       )}
@@ -40,6 +45,11 @@ const index = () => {
   const [alertID, setAlertID] = useState('');
   const navigation = useNavigation();
   const userInfo = getUserInfo();
+  const colorScheme = useColorScheme();
+
+  
+
+
 
   const fetchAlerts = async () => {
     try {
@@ -63,7 +73,7 @@ const index = () => {
                 opacity: pressed ? 0.5 : 1,
               })}
             >
-              <Ionicons name="add" size={35} color="#134b91" />
+              <Ionicons name="add" size={35} color={colorScheme === "dark" ? "#134b91" : "#86ebba"} />
             </Pressable>
           ) : undefined,
     });
@@ -159,16 +169,20 @@ const index = () => {
   }
 
   const groupedAlerts = groupAlertsByDate(alerts);
+  const themeContainerStyle = colorScheme === 'dark' ? styles.lightcontainer : styles.darkcontainer;
+  const themeTextStyle = colorScheme === 'dark' ? styles.bluetext : styles.greentext;
+
+
 
   return (
-    <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior='automatic' style={styles.alertsContainer}>
+    <View style={[styles.container, themeContainerStyle]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior='automatic' >
         {userInfo.Position === 3 || userInfo.Position === 5 ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
         {userInfo.Position === 3 || userInfo.Position === 5 ? <EditAlertModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putAlert} alertID={alertID}/> : ''}
         {Object.keys(groupedAlerts).map((date, index) => (
           <View key={index + date} style={styles.dateContainer}>
             <View style={styles.alertDateContainer}>
-              <Text style={styles.alertDateText}>{date}</Text>
+              <Text style={[styles.alertDateText,themeTextStyle ]}>{date}</Text>
             </View>
             {groupedAlerts[date].map((alert) => (
               <View key={alert._id} style={styles.alertWrapper}>
@@ -192,9 +206,32 @@ const index = () => {
 }
 
 const styles = StyleSheet.create({
+  lightcontainer: {
+    backgroundColor:  'white',
+  },
+  darkcontainer: {
+      backgroundColor:  '#1a1a1a',
+  },
+  lightText: {
+      color: 'white',
+  },
+  darkText: {
+      color: 'black',
+  },
+  lightEvent:{
+      backgroundColor: 'white',
+  },
+  darkEvent: {
+      backgroundColor: '#363636',
+  },
+  bluetext:{
+    color: '#134b91',
+  },
+  greentext: {
+      color: '#86ebba',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
     padding: 5,
   },
   alertPageHeader: {
@@ -203,9 +240,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#dee2e6',
-    backgroundColor: '#fff',
+
   },
   alertsContainer: {
     flex: 1,
@@ -218,7 +253,6 @@ const styles = StyleSheet.create({
   },
   alertPageSubheading: {
     marginLeft: 15,
-    color: 'gray',
     fontSize: 16,
   },
   alertDateContainer: {
@@ -238,7 +272,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     margin: 10,
     marginTop: 5,
-    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 10,
     shadowColor: '#000',
@@ -288,12 +321,10 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   dateSection: {
-    backgroundColor: '#e9ecef',
     borderRadius: 5,
     marginBottom: 10,
   },
   dateContainer: {
-    backgroundColor: '#F0F0F0',
     padding: 5,
     borderRadius: 5,
     marginBottom: 5,

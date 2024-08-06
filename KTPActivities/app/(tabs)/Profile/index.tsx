@@ -1,6 +1,6 @@
 
 // React Imports
-import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, Linking , Platform} from 'react-native';
+import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, useColorScheme} from 'react-native';
 import React, { useState, useEffect } from 'react';
 
 // Sign Out Functionality
@@ -47,6 +47,7 @@ const Index = () => {
     const [instagram, setInstagram] = useState(userInfo.Instagram);
     const [linkedIn, setLinkedIn] = useState(userInfo.LinkedIn);
     const [userClass, setUserClass] = useState(`(${userInfo.Class})` || "");
+    const colorScheme = useColorScheme();
 
 
     
@@ -233,8 +234,16 @@ const Index = () => {
         }
     }
 
+    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark;
+    const textTheme = colorScheme === 'dark' ? styles.lightText : styles.darkText;
+
+    const eventTheme = colorScheme === 'dark' ? styles.lightEvent : styles.darkEvent;
+    const interestTheme = colorScheme === 'dark' ? styles.darkEvent : styles.lightEvent;
+    const interestTextTheme = colorScheme === 'dark' ? styles.darkText: styles.lightText;
+
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, containerTheme]}>
             <ScrollView contentInsetAdjustmentBehavior='automatic'>
                 {/* MODALS */}
                 <EditInterestModal visible={editModalVisible} onDelete={deleteInterest} onCancel={() => setEditModalVisible(false)} onPut={putInterest} interest={originalInterest}/>
@@ -252,37 +261,37 @@ const Index = () => {
 
 
 
-                <FontAwesome name="circle" size={50} color="white" style={styles.profilepiccircle}/>
+                <FontAwesome name="circle" size={50} color={colorScheme === 'dark' ? "white" : "#1a1a1a"} style={styles.profilepiccircle}/>
                 <TouchableOpacity onPress={pickImage}>
-                    <FontAwesome name="circle" size={40} color="#134b91" style={styles.profilepiccirclebg}/>
-                    <Feather name="edit-2" size={20} color="white" style={styles.editpic}/>
+                    <FontAwesome name="circle" size={40} color={colorScheme === 'dark' ? "#134b91" : "#86ebba"} style={[styles.profilepiccirclebg]}/>
+                    <Feather name="edit-2" size={20} color={colorScheme === 'dark' ? "white" : "black"} style={styles.editpic}/>
                 </TouchableOpacity>
                 
 
                 {/* PROFILE CARD */}
-                <View style={styles.card}>
-                    <Text style={styles.name}>{userInfo.FirstName} {userInfo.LastName}</Text>
+                <View style={[styles.card, eventTheme]}>
+                    <Text style={[styles.name, textTheme]}>{userInfo.FirstName} {userInfo.LastName}</Text>
                     <Text style={styles.status}>{posName} {userClass}</Text>
                     <View style={styles.divider} />
-                    <Text style={styles.faculty}>{college}</Text>
-                    <Text style={styles.details}>
+                    <Text style={[styles.faculty, textTheme]}>{college}</Text>
+                    <Text style={[styles.details, textTheme]}>
                         Major in {userInfo.Major.join(' and')}
                         {userInfo.Minor.length > 0 && ` | Minor in ${userInfo.Minor.join(' and')}`}
                     </Text>
-                    <Text style={styles.details}>{grade} ({userInfo.GradYear})</Text>
+                    <Text style={[styles.details, textTheme]}>{grade} ({userInfo.GradYear})</Text>
                     <View style={styles.divider} />
-                    <View style={styles.interestsContainer}>
+                    <View style={[styles.interestsContainer]}>
                         <View style={styles.interestTitlerow}>
-                            <Text style={styles.interestsTitle}>Interests</Text>
+                            <Text style={[styles.interestsTitle, textTheme]}>Interests</Text>
                             <TouchableOpacity style={styles.addInterestIcon} onPress={() => setAddModalVisible(true)}>
-                                <Ionicons name="add" size={30} color="white" />
+                                <Ionicons name="add" size={30} color={colorScheme === 'dark' ? "white" : "black"} />
                             </TouchableOpacity>    
                         </View>
-                    <View style={styles.interests}>
+                    <View style={[styles.interests]}>
                         {userInterests.length > 0 ? userInterests.map((interest, index) => (
-                            <View key={index} style={styles.interest}>
+                            <View key={index} style={[styles.interest, interestTheme]}>
                                 <TouchableOpacity onPress={() => {setInterestIndex(index); setOriginalInterest(interest); setEditModalVisible(true)}}>
-                                    <Text style={styles.interestText}>{interest}</Text>
+                                    <Text style={[styles.interestText, interestTextTheme]}>{interest}</Text>
                                 </TouchableOpacity>    
                             </View>
                         )) : ""}
@@ -290,16 +299,16 @@ const Index = () => {
                     </View>
                     <View style={styles.socialIcons}>
                         <TouchableOpacity onPress={() => setLinkedinModalVisible(true)}>
-                            <AntDesign name="linkedin-square" size={24} color="white" />
+                            <AntDesign name="linkedin-square" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => setIgModalVisible(true)}>
-                            <AntDesign name="instagram" size={24} color="white" />
+                            <AntDesign name="instagram" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* SIGNOUT CARD */}
-                <View style={styles.signOutCard}>
+                <View style={[styles.signOutCard, eventTheme]}>
                     <TouchableOpacity onPress={async () => {
                         await signOut(auth);
                         await AsyncStorage.removeItem("@user");
@@ -308,7 +317,7 @@ const Index = () => {
                     }}>
                         <Text style={styles.signOutButtonText}>Sign Out</Text>
                     </TouchableOpacity>
-                    <Entypo name="log-out" size={20} color="white" />
+                    <Entypo name="log-out" size={20} color={colorScheme === 'dark' ? "white" : "black"} />
                 </View>
             </ScrollView>
         </View>
@@ -320,6 +329,24 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white',        
         marginTop: 10,
+    },
+    containerLight: {
+        backgroundColor: 'white',
+    },
+    containerDark: {
+        backgroundColor: '#1a1a1a',
+    },
+    lightText: {
+        color: 'white',
+    },
+    darkText: {
+        color: 'black',
+    },
+    lightEvent:{
+        backgroundColor: '#134b91',
+    },
+    darkEvent: {
+        backgroundColor: '#86ebba',
     },
     profilepic: {
         marginTop: 10,
@@ -346,7 +373,6 @@ const styles = StyleSheet.create({
         marginTop: -30,
     },
     card: {
-        backgroundColor: '#134b91',
         padding: 20,
         borderRadius: 10,
         width: '95%',
@@ -363,7 +389,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     divider: {
-        borderBottomColor: 'white',
+        borderBottomColor: 'black',
         borderBottomWidth: 1,
         marginVertical: 10,
     },
@@ -397,7 +423,6 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
     },
     interest: {
-        backgroundColor: '#86ebba',
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderRadius: 20,
@@ -419,7 +444,6 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     signOutCard: {
-        backgroundColor: '#134b91',
         padding: 10,
         borderRadius: 10,
         width: '95%',

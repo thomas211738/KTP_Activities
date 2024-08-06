@@ -8,8 +8,7 @@ connection_string = os.getenv('mongoDBURL')
 PORT = os.getenv('PORT')
 URL = f"http://localhost:{PORT}/users"
 
-f = open('users.json');
-users = json.load(f)
+
 
 #supers and eboard should be populated with firstname lastname all lowercase no spaces | e.g. "johndoe"
 supers = []

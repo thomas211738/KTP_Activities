@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Linking} from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Linking, useColorScheme} from 'react-native'
 import React, {useState} from 'react'
 import { useLocalSearchParams, router } from 'expo-router';
 import {BACKEND_URL} from '@env';
@@ -27,6 +27,7 @@ const profileId = () => {
     const [instagram, setInstagram] = useState(null);
     const [linkedin, setLinkedin] = useState(null);
     const [userClass, setUserClass] = useState("");
+    const colorScheme = useColorScheme();
 
 
     React.useEffect(() => {
@@ -110,40 +111,47 @@ const profileId = () => {
           }
       };
 
+    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark;
+    const textTheme = colorScheme === 'dark' ? styles.lightText : styles.darkText;
+
+    const eventTheme = colorScheme === 'dark' ? styles.lightEvent : styles.darkEvent;
+    const interestTheme = colorScheme === 'dark' ? styles.darkEvent : styles.lightEvent;
+    const interestTextTheme = colorScheme === 'dark' ? styles.darkText: styles.lightText;
+
 
   return (
 
-    <View style={styles.pageView}>
+    <View style={[styles.pageView, containerTheme]}>
         <ScrollView>
-        <View style={styles.container}>
+        <View style={[styles.container, containerTheme]}>
             {imageLoading ? <CircleLoader/> : 
                 image ? (
                     <Image source={{ uri: `data:image/png;base64,${image}` }} style={styles.profileimage} />
                 ) : (
-                    <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic} />
+                    <Octicons name="feed-person" size={175} color={colorScheme === 'dark' ? "#242424" : "white"} style={styles.profilepic} />
                 )}
         </View>
 
 
-        <View style={styles.card}>
-            <Text style={styles.name}>{userFirstName} {userLastName}</Text>
+        <View style={[styles.card, eventTheme]}>
+            <Text style={[styles.name, textTheme]}>{userFirstName} {userLastName}</Text>
             <Text style={styles.status}>{posName} {userClass}</Text>
             <View style={styles.divider} />
-            <Text style={styles.faculty}>{college}</Text>
-            <Text style={styles.details}>
+            <Text style={[styles.faculty, textTheme]}>{college}</Text>
+            <Text style={[styles.details, textTheme]}>
                 Major in {userMajor}
                 {userMinor.length > 0 && ` | Minor in ${userMinor}`}
             </Text>
-            <Text style={styles.details}>{grade} ({userGradYear})</Text>
+            <Text style={[styles.details, textTheme]}>{grade} ({userGradYear})</Text>
             <View style={styles.divider} />
             <View style={styles.interestsContainer}>
                 <View style={styles.interestTitlerow}>
-                    <Text style={styles.interestsTitle}>Interests</Text> 
+                    <Text style={[styles.interestsTitle, textTheme]}>Interests</Text> 
                 </View>
-            <View style={styles.interests}>
+            <View style={[styles.interests]}>
                 {userInterests.map((interest, index) => (
-                    <View key={index} style={styles.interest}>
-                            <Text style={styles.interestText}>{interest}</Text>
+                    <View key={index} style={[styles.interest, interestTheme]}>
+                            <Text style={[styles.interestText, interestTextTheme]}>{interest}</Text>
                     </View>
                 ))}
             </View>
@@ -154,11 +162,11 @@ const profileId = () => {
             <View style={styles.socialIcons}>
                 {linkedin ? 
                 <TouchableOpacity onPress={() => openLinkedInProfile(linkedin)}>
-                    <AntDesign name="linkedin-square" size={24} color="white" />
+                    <AntDesign name="linkedin-square" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
                 </TouchableOpacity> : ""}
                 {instagram ? 
                 <TouchableOpacity onPress={() => openInstagramProfile(instagram)}>
-                    <AntDesign name="instagram" size={24} color="white" />
+                    <AntDesign name="instagram" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
                 </TouchableOpacity> : ""}
 
             
@@ -173,6 +181,24 @@ const profileId = () => {
 }
 
 const styles = StyleSheet.create({
+    containerLight: {
+        backgroundColor: 'white',
+    },
+    containerDark: {
+        backgroundColor: '#1a1a1a',
+    },
+    lightText: {
+        color: 'white',
+    },
+    darkText: {
+        color: 'black',
+    },
+    lightEvent:{
+        backgroundColor: '#134b91',
+    },
+    darkEvent: {
+        backgroundColor: '#86ebba',
+    },
     pageView: {
         flex: 1,
         backgroundColor: 'white',
@@ -218,7 +244,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     divider: {
-        borderBottomColor: 'white',
+        borderBottomColor: 'black',
         borderBottomWidth: 1,
         marginVertical: 10,
     },

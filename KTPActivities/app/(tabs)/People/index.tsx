@@ -1,5 +1,5 @@
 
-import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity, Platform} from 'react-native'
+import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity, Platform, useColorScheme} from 'react-native'
 import { router } from 'expo-router'
 import React from 'react'
 import { getAllUsersInfo } from '../../components/allUsersManager'
@@ -8,12 +8,15 @@ import { getUserInfo } from '../../components/userInfoManager';
 import PeopleLoader from '../../components/loaders/poepleLoader';
 
 const Person = (props) => {
+    const colorScheme = useColorScheme();
+
+    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight ;
     return (
         <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/profileId', params: { userID: props.user._id } })}>
                     <View style={styles.personContainer}>
             <Image source={require("../../../img/ktplogopng.png")} style={styles.personImage} />
             <View>
-                <Text style={styles.personName}>
+                <Text style={[styles.personName, textTheme]}>
                     {props.user.FirstName + " " + props.user.LastName}
                 </Text>
                 <Text style={styles.personMajors}>
@@ -37,11 +40,13 @@ const index = () => {
     const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => user.Position === pos));
     const [loading, setLoading] = React.useState(false);
     const navigation = useNavigation();
+    const colorScheme = useColorScheme();
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
           headerSearchBarOptions: {
             placeholder: "Search People",
+            textColor: colorScheme === 'dark' ? 'black' : 'white' ,
             onChangeText: (event) => searchUsers(event.nativeEvent.text),
             hideWhenScrolling: false,
           },
@@ -74,45 +79,51 @@ const index = () => {
         }
     }
 
+    const selectedButtonTheme = colorScheme === 'dark' ? styles.selectedButtonLight :  styles.selectedButtonDark ;
+    const unselectedButtonTheme = colorScheme === 'dark' ? styles.unselectedButtonLight : styles.unselectedButtonDark;
+    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark ;
+    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight ;
+
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, containerTheme]}>
             <ScrollView keyboardDismissMode='on-drag' contentInsetAdjustmentBehavior='automatic'>
             <View style={styles.buttonsContainer}>
             <Pressable 
-                style={[styles.unselectedButton, pos == 0 && styles.selectedButton]}
+                style={[styles.unselectedButton,unselectedButtonTheme, pos == 0 && selectedButtonTheme]}
                 onPress={() => changePosition(0)}
             >
-                <Text style={[{color: 'black'}, pos == 0 && {color: 'white', fontWeight: 'bold'}]}>Rushees</Text>
+                <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 0 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Rushees</Text>
             </Pressable>
             {user.Position >= 1 && (
                 <>
                 <Pressable 
-                    style={[styles.unselectedButton, pos == 1 && styles.selectedButton]}
+                    style={[styles.unselectedButton,unselectedButtonTheme, pos == 1 && selectedButtonTheme]}
                     onPress={() => changePosition(1)}
                 >
-                    <Text style={[{color: 'black'}, pos == 1 && {color: 'white', fontWeight: 'bold'}]}>Pledges</Text>
+                    <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 1 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Pledges</Text>
                 </Pressable>
                 </>
             )}
             <Pressable 
-                style={[styles.unselectedButton, pos == 2 && styles.selectedButton]}
+                style={[styles.unselectedButton,unselectedButtonTheme, pos == 2 && selectedButtonTheme]}
                 onPress={() => changePosition(2)}
             >
-                <Text style={[{color: 'black'}, pos == 2 && {color: 'white', fontWeight: 'bold'}]}>Brothers</Text>
+                <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 2 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Brothers</Text>
             </Pressable>
             <Pressable 
-                style={[styles.unselectedButton, pos == 3 && styles.selectedButton]}
+                style={[styles.unselectedButton,unselectedButtonTheme, pos == 3 && selectedButtonTheme]}
                 onPress={() => changePosition(3)}
             >
-                <Text style={[{color: 'black'}, pos == 3 && {color: 'white', fontWeight: 'bold'}]}>E-Board</Text>
+                <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 3 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>E-Board</Text>
             </Pressable>
             {user.Position >= 1 && (
                 <>
                 <Pressable 
-                    style={[styles.unselectedButton, pos == 4 && styles.selectedButton]}
+                    style={[styles.unselectedButton,unselectedButtonTheme, pos == 4 && selectedButtonTheme]}
                     onPress={() => changePosition(4)}
                 >
-                    <Text style={[{color: 'black'}, pos == 4 && {color: 'white', fontWeight: 'bold'}]}>Alumni</Text>
+                    <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 4 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Alumni</Text>
                 </Pressable>
                 </>
             )}
@@ -128,11 +139,11 @@ const index = () => {
                     />
                 )) : (
                     <View style={styles.noMembersContainer}>
-                    <Text style={styles.noMembers}>No members found</Text>
+                    <Text style={[styles.noMembers, textTheme]}>No members found</Text>
                     </View>
                 )
-            )}
-            
+            )}            
+
             </ScrollView>
         </View>
         )
@@ -141,8 +152,19 @@ const index = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
         marginTop: 10,
+    },
+    textLight: {
+        color: 'white',
+    },
+    textDark: {
+        color: 'black',
+    },
+    containerLight: {
+        backgroundColor: 'white',
+    },
+    containerDark: {
+        backgroundColor: '#1a1a1a',
     },
     buttonsContainer: {
         flexDirection: 'row',
@@ -151,17 +173,27 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         overflow: 'hidden',
         marginBottom: 10,
-        marginHorizontal: 10
+        marginHorizontal: 10,
+        marginTop: 5
     },
     unselectedButton: {
-        backgroundColor: 'lightgray',
         paddingVertical: 10,
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center'
     },
-    selectedButton: {
+    unselectedButtonDark: {
+        backgroundColor: '#363636',
+    },
+    unselectedButtonLight: {
+        backgroundColor: 'lightgray',
+    },
+    selectedButtonLight: {
         backgroundColor: '#134b91'
+    },
+    selectedButtonDark:{
+        backgroundColor: '#86ebba'
+
     },
     personContainer: {
         flexDirection: 'row',
