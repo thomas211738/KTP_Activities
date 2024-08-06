@@ -26,6 +26,8 @@ const profileId = () => {
     const [imageLoading, setImageLoading] = useState(true);
     const [instagram, setInstagram] = useState(null);
     const [linkedin, setLinkedin] = useState(null);
+    const [userClass, setUserClass] = useState("");
+
 
     React.useEffect(() => {
         axios.get(`${BACKEND_URL}/users/${userID}`)
@@ -48,6 +50,8 @@ const profileId = () => {
             }
             if (response.data.Instagram) setInstagram(response.data.Instagram);
             if (response.data.LinkedIn) setLinkedin(response.data.LinkedIn);
+            if (response.data.Class) setUserClass(`(${response.data.Class})`);
+
             
         })
         .catch((error) => {
@@ -123,7 +127,7 @@ const profileId = () => {
 
         <View style={styles.card}>
             <Text style={styles.name}>{userFirstName} {userLastName}</Text>
-            <Text style={styles.status}>{posName}</Text>
+            <Text style={styles.status}>{posName} {userClass}</Text>
             <View style={styles.divider} />
             <Text style={styles.faculty}>{college}</Text>
             <Text style={styles.details}>

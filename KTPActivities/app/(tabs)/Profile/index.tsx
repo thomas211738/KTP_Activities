@@ -46,6 +46,8 @@ const Index = () => {
     const [linkedinModalVisible, setLinkedinModalVisible] = useState(false);
     const [instagram, setInstagram] = useState(userInfo.Instagram);
     const [linkedIn, setLinkedIn] = useState(userInfo.LinkedIn);
+    const [userClass, setUserClass] = useState(`(${userInfo.Class})` || "");
+
 
     
     const fetchProfile = async () => {
@@ -238,7 +240,7 @@ const Index = () => {
                 <EditInterestModal visible={editModalVisible} onDelete={deleteInterest} onCancel={() => setEditModalVisible(false)} onPut={putInterest} interest={originalInterest}/>
                 <AddInterestModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postInterest} />
                 <AddigModal visible={igModalVisible} onCancel={() => setIgModalVisible(false)} onPost={postIg} Instagram={instagram}/>
-                <AddLinkedinModal visible={linkedinModalVisible} onCancel={() => setLinkedinModalVisible(false)} onPost={postLinkedIn} Linkedin={linkedIn}/>
+                <AddLinkedinModal visible={linkedinModalVisible} onCancel={() => setLinkedinModalVisible(false)} onPost={postLinkedIn} LinkedIn={linkedIn}/>
 
                 {/* IMAGE COMPONENT */}
                 {imageLoading ? <CircleLoader/> : 
@@ -260,7 +262,7 @@ const Index = () => {
                 {/* PROFILE CARD */}
                 <View style={styles.card}>
                     <Text style={styles.name}>{userInfo.FirstName} {userInfo.LastName}</Text>
-                    <Text style={styles.status}>{posName}</Text>
+                    <Text style={styles.status}>{posName} {userClass}</Text>
                     <View style={styles.divider} />
                     <Text style={styles.faculty}>{college}</Text>
                     <Text style={styles.details}>
