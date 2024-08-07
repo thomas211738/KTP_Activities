@@ -10,7 +10,7 @@ import PeopleLoader from '../../components/loaders/poepleLoader';
 const Person = (props) => {
     const colorScheme = useColorScheme();
 
-    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight ;
+    const textTheme = colorScheme === 'light' ? styles.textDark : styles.textLight ;
     return (
         <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/profileId', params: { userID: props.user._id } })}>
                     <View style={styles.personContainer}>
@@ -46,7 +46,7 @@ const index = () => {
         navigation.setOptions({
           headerSearchBarOptions: {
             placeholder: "Search People",
-            textColor: colorScheme === 'dark' ? 'black' : 'white' ,
+            textColor: colorScheme === 'light' ? 'black' : 'white' ,
             onChangeText: (event) => searchUsers(event.nativeEvent.text),
             hideWhenScrolling: false,
           },
@@ -79,10 +79,10 @@ const index = () => {
         }
     }
 
-    const selectedButtonTheme = colorScheme === 'dark' ? styles.selectedButtonLight :  styles.selectedButtonDark ;
-    const unselectedButtonTheme = colorScheme === 'dark' ? styles.unselectedButtonLight : styles.unselectedButtonDark;
-    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark ;
-    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight ;
+    const selectedButtonTheme = colorScheme === 'light' ? styles.selectedButtonLight :  styles.selectedButtonDark ;
+    const unselectedButtonTheme = colorScheme === 'light' ? styles.unselectedButtonLight : styles.unselectedButtonDark;
+    const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark ;
+    const textTheme = colorScheme === 'light' ? styles.textDark : styles.textLight ;
 
 
     return (
@@ -93,7 +93,7 @@ const index = () => {
                 style={[styles.unselectedButton,unselectedButtonTheme, pos == 0 && selectedButtonTheme]}
                 onPress={() => changePosition(0)}
             >
-                <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 0 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Rushees</Text>
+                <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 0 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Rushees</Text>
             </Pressable>
             {user.Position >= 1 && (
                 <>
@@ -101,7 +101,7 @@ const index = () => {
                     style={[styles.unselectedButton,unselectedButtonTheme, pos == 1 && selectedButtonTheme]}
                     onPress={() => changePosition(1)}
                 >
-                    <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 1 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Pledges</Text>
+                    <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 1 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Pledges</Text>
                 </Pressable>
                 </>
             )}
@@ -109,13 +109,13 @@ const index = () => {
                 style={[styles.unselectedButton,unselectedButtonTheme, pos == 2 && selectedButtonTheme]}
                 onPress={() => changePosition(2)}
             >
-                <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 2 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Brothers</Text>
+                <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 2 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Brothers</Text>
             </Pressable>
             <Pressable 
                 style={[styles.unselectedButton,unselectedButtonTheme, pos == 3 && selectedButtonTheme]}
                 onPress={() => changePosition(3)}
             >
-                <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 3 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>E-Board</Text>
+                <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 3 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>E-Board</Text>
             </Pressable>
             {user.Position >= 1 && (
                 <>
@@ -123,7 +123,7 @@ const index = () => {
                     style={[styles.unselectedButton,unselectedButtonTheme, pos == 4 && selectedButtonTheme]}
                     onPress={() => changePosition(4)}
                 >
-                    <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 4 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Alumni</Text>
+                    <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 4 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Alumni</Text>
                 </Pressable>
                 </>
             )}

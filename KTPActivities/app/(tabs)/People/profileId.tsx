@@ -111,12 +111,12 @@ const profileId = () => {
           }
       };
 
-    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark;
-    const textTheme = colorScheme === 'dark' ? styles.lightText : styles.darkText;
+    const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark;
+    const textTheme = colorScheme === 'light' ? styles.lightText : styles.darkText;
 
-    const eventTheme = colorScheme === 'dark' ? styles.lightEvent : styles.darkEvent;
-    const interestTheme = colorScheme === 'dark' ? styles.darkEvent : styles.lightEvent;
-    const interestTextTheme = colorScheme === 'dark' ? styles.darkText: styles.lightText;
+    const eventTheme = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
+    const interestTheme = colorScheme === 'light' ? styles.darkEvent : styles.lightEvent;
+    const interestTextTheme = colorScheme === 'light' ? styles.darkText: styles.lightText;
 
 
   return (
@@ -128,7 +128,7 @@ const profileId = () => {
                 image ? (
                     <Image source={{ uri: `data:image/png;base64,${image}` }} style={styles.profileimage} />
                 ) : (
-                    <Octicons name="feed-person" size={175} color={colorScheme === 'dark' ? "#242424" : "white"} style={styles.profilepic} />
+                    <Octicons name="feed-person" size={175} color={colorScheme === 'light' ? "#242424" : "white"} style={styles.profilepic} />
                 )}
         </View>
 
@@ -162,11 +162,11 @@ const profileId = () => {
             <View style={styles.socialIcons}>
                 {linkedin ? 
                 <TouchableOpacity onPress={() => openLinkedInProfile(linkedin)}>
-                    <AntDesign name="linkedin-square" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
+                    <AntDesign name="linkedin-square" size={24} color={colorScheme === 'light' ? "white" : "black"} />
                 </TouchableOpacity> : ""}
                 {instagram ? 
                 <TouchableOpacity onPress={() => openInstagramProfile(instagram)}>
-                    <AntDesign name="instagram" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
+                    <AntDesign name="instagram" size={24} color={colorScheme === 'light' ? "white" : "black"} />
                 </TouchableOpacity> : ""}
 
             

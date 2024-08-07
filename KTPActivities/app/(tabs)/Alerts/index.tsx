@@ -15,9 +15,9 @@ const AlertComponent = (props) => {
   const userInfo = getUserInfo();
   const colorScheme = useColorScheme();
 
-  const themeTitleTextStyle = colorScheme === 'dark' ? styles.darkText : styles.lightText ;
-  const themeTextStyle = colorScheme === 'dark' ? styles.darkText :  styles.lightText ;
-  const themeEventStyle = colorScheme === 'dark' ? styles.lightEvent : styles.darkEvent;
+  const themeTitleTextStyle = colorScheme === 'light' ? styles.darkText : styles.lightText ;
+  const themeTextStyle = colorScheme === 'light' ? styles.darkText :  styles.lightText ;
+  const themeEventStyle = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
 
     
   return (
@@ -30,7 +30,7 @@ const AlertComponent = (props) => {
       <Text style={styles.alertTime}>{props.time}</Text>
       {userInfo.Position === 3 || userInfo.Position === 5 && (
         <View style={styles.alertButtons}>
-          <Feather name="edit" size={24} color={colorScheme === 'dark' ? "black" : "white"} style={styles.editIcon} onPress={props.onEdit} />
+          <Feather name="edit" size={24} color={colorScheme === 'light' ? "black" : "white"} style={styles.editIcon} onPress={props.onEdit} />
           <MaterialIcons name="delete" size={25} color="#B22222" style={styles.deleteIcon} onPress={props.onDelete} />
         </View>
       )}
@@ -53,7 +53,7 @@ const index = () => {
 
   const fetchAlerts = async () => {
     try {
-      const response = await axios.get(`${BACKEND_URL}/alerts`);
+      const response = await axios.get(`http://10.0.0.129:5555/alerts`);
       setAlerts(response.data.data);
     } catch (err) {
       console.log(err.message);
@@ -73,11 +73,11 @@ const index = () => {
                 opacity: pressed ? 0.5 : 1,
               })}
             >
-              <Ionicons name="add" size={35} color={colorScheme === "dark" ? "#134b91" : "#86ebba"} />
+              <Ionicons name="add" size={35} color={colorScheme === "light" ? "#134b91" : "#86ebba"} />
             </Pressable>
           ) : undefined,
     });
-  }, [navigation]);
+  }, [navigation, userInfo.Position, colorScheme]);
 
   useFocusEffect(() => {
     fetchAlerts();
@@ -121,7 +121,7 @@ const index = () => {
 
   const postAlert = async (alertName, alertDescription) => {
     try {
-      await axios.post(`${BACKEND_URL}/alerts`, {
+      await axios.post(`http://10.0.0.129:5555/alerts`, {
         "AlertName": alertName,
         "Description": alertDescription
       });
@@ -134,7 +134,7 @@ const index = () => {
 
   const putAlert = async (alertName, alertDescription) => {
     try {
-      await axios.put(`${BACKEND_URL}/alerts/${alertID}`, {
+      await axios.put(`http://10.0.0.129:5555/alerts/${alertID}`, {
         "AlertName": alertName,
         "Description": alertDescription
       });
@@ -160,7 +160,7 @@ const index = () => {
 
   const deleteAlert = async (id) => {
     try {
-      await axios.delete(`${BACKEND_URL}/alerts/${id}`);
+      await axios.delete(`http://10.0.0.129:5555/alerts/${id}`);
       const updatedAlerts = alerts.filter(alert => alert._id != id);
       setAlerts(updatedAlerts);
     } catch (err) {
@@ -169,8 +169,8 @@ const index = () => {
   }
 
   const groupedAlerts = groupAlertsByDate(alerts);
-  const themeContainerStyle = colorScheme === 'dark' ? styles.lightcontainer : styles.darkcontainer;
-  const themeTextStyle = colorScheme === 'dark' ? styles.bluetext : styles.greentext;
+  const themeContainerStyle = colorScheme === 'light' ? styles.lightcontainer : styles.darkcontainer;
+  const themeTextStyle = colorScheme === 'light' ? styles.bluetext : styles.greentext;
 
 
 

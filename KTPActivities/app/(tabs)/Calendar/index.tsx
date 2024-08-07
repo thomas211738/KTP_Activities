@@ -22,6 +22,7 @@ const index = ({ navigation }) => {
     const userInfo = getUserInfo();
 
 
+
     const fetchEvents = async () => {
         try {
             const response = await axios.get(`${BACKEND_URL}/events`);
@@ -34,7 +35,7 @@ const index = ({ navigation }) => {
         }
     };
 
-    useFocusEffect(() => {
+    useEffect(() => {
         fetchEvents();
     });
 
@@ -73,10 +74,10 @@ const index = ({ navigation }) => {
     };
 
     const groupedEvents = groupEventsByDate(events);
-    const themeContainerStyle = colorScheme === 'dark' ? styles.lightcontainer : styles.darkcontainer;
-    const themeTitleTextStyle = colorScheme === 'dark' ? styles.darkText : styles.lightText ;
-    const themeTextStyle = colorScheme === 'dark' ?  styles.lightText : styles.darkText;
-    const themeEventStyle = colorScheme === 'dark' ? styles.lightEvent : styles.darkEvent;
+    const themeContainerStyle = colorScheme === 'light' ? styles.lightcontainer : styles.darkcontainer;
+    const themeTitleTextStyle = colorScheme === 'light' ? styles.darkText : styles.lightText ;
+    const themeTextStyle = colorScheme === 'light' ?  styles.lightText : styles.darkText;
+    const themeEventStyle = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
 
 
 
@@ -105,7 +106,7 @@ const index = ({ navigation }) => {
                                                     <Feather
                                                         name="edit"
                                                         size={23}
-                                                        color={colorScheme=== 'dark' ?  "white" : "black"}
+                                                        color={colorScheme=== 'light' ?  "white" : "black"}
                                                         onPress={() => router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } })}
                                                     />
                                                 )}
@@ -113,7 +114,7 @@ const index = ({ navigation }) => {
                                                     <MaterialIcons
                                                         name="delete"
                                                         size={25}
-                                                        color={colorScheme=== 'dark' ?  "white" : "black"}
+                                                        color={colorScheme=== 'light' ?  "white" : "black"}
                                                         style={styles.iconSpacing}
                                                         onPress={() => confirmDeleteAlert(event.Name, event._id)}
                                                     />
@@ -121,8 +122,8 @@ const index = ({ navigation }) => {
                                             </View>
                                         </View>
                                         <Text style={[styles.eventText, themeTextStyle]}>
-                                            <MaterialIcons name="access-time-filled" size={15} color= {colorScheme=== 'dark' ?  "white" : "black"} /> {event.Time}{' '}
-                                            <Entypo name="location-pin" size={17} color={colorScheme=== 'dark' ?  "white" : "black"} /> {event.Location}
+                                            <MaterialIcons name="access-time-filled" size={15} color= {colorScheme=== 'light' ?  "white" : "black"} /> {event.Time}{' '}
+                                            <Entypo name="location-pin" size={17} color={colorScheme=== 'light' ?  "white" : "black"} /> {event.Location}
                                         </Text>
                                         <Text style={[styles.eventText, themeTextStyle]}>{event.Description}</Text>
                                     </View>
