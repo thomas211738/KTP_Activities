@@ -53,7 +53,7 @@ const index = () => {
 
   const fetchAlerts = async () => {
     try {
-      const response = await axios.get(`http://10.0.0.129:5555/alerts`);
+      const response = await axios.get(`${BACKEND_URL}/alerts`);
       setAlerts(response.data.data);
     } catch (err) {
       console.log(err.message);
@@ -121,7 +121,7 @@ const index = () => {
 
   const postAlert = async (alertName, alertDescription) => {
     try {
-      await axios.post(`http://10.0.0.129:5555/alerts`, {
+      await axios.post(`${BACKEND_URL}/alerts`, {
         "AlertName": alertName,
         "Description": alertDescription
       });
@@ -134,7 +134,7 @@ const index = () => {
 
   const putAlert = async (alertName, alertDescription) => {
     try {
-      await axios.put(`http://10.0.0.129:5555/alerts/${alertID}`, {
+      await axios.put(`${BACKEND_URL}/alerts/${alertID}`, {
         "AlertName": alertName,
         "Description": alertDescription
       });
@@ -160,7 +160,7 @@ const index = () => {
 
   const deleteAlert = async (id) => {
     try {
-      await axios.delete(`http://10.0.0.129:5555/alerts/${id}`);
+      await axios.delete(`${BACKEND_URL}/alerts/${id}`);
       const updatedAlerts = alerts.filter(alert => alert._id != id);
       setAlerts(updatedAlerts);
     } catch (err) {
