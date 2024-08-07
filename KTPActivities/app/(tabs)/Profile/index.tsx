@@ -193,8 +193,6 @@ const Index = () => {
     }
 
 
-
-
     const postimage = async (file) => {
         try {
             const formData = new FormData();
@@ -241,13 +239,12 @@ const Index = () => {
     const eventTheme = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
     const interestTheme = colorScheme === 'light' ? styles.darkEvent : styles.lightEvent;
     const interestTextTheme = colorScheme === 'light' ? styles.darkText: styles.lightText;
+    const dividerTheme = colorScheme === 'light' ? styles.dividerlight : styles.dividerdark;
 
     const toggleSwitch = () => {
-        console.log("here");
         setIsEnabled(previousState => !previousState);
         const newScheme = isEnabled ? 'light' : 'dark';
         Appearance.setColorScheme(newScheme);
-        console.log(newScheme);
       };
 
 
@@ -281,14 +278,14 @@ const Index = () => {
                 <View style={[styles.card, eventTheme]}>
                     <Text style={[styles.name, textTheme]}>{userInfo.FirstName} {userInfo.LastName}</Text>
                     <Text style={styles.status}>{posName} {userClass}</Text>
-                    <View style={styles.divider} />
+                    <View style={[styles.divider, dividerTheme]} />
                     <Text style={[styles.faculty, textTheme]}>{college}</Text>
                     <Text style={[styles.details, textTheme]}>
                         Major in {userInfo.Major.join(' and')}
                         {userInfo.Minor.length > 0 && ` | Minor in ${userInfo.Minor.join(' and')}`}
                     </Text>
                     <Text style={[styles.details, textTheme]}>{grade} ({userInfo.GradYear})</Text>
-                    <View style={styles.divider} />
+                    <View style={[styles.divider, dividerTheme]} />
                     <View style={[styles.interestsContainer]}>
                         <View style={styles.interestTitlerow}>
                             <Text style={[styles.interestsTitle, textTheme]}>Interests</Text>
@@ -407,8 +404,13 @@ const styles = StyleSheet.create({
         color: '#0a9bf5',
         fontSize: 16,
     },
-    divider: {
+    dividerlight: {
+        borderBottomColor: 'white',
+    },
+    dividerdark: {
         borderBottomColor: 'black',
+    },
+    divider: {
         borderBottomWidth: 1,
         marginVertical: 10,
     },

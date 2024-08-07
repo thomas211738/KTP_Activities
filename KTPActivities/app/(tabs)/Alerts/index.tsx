@@ -15,7 +15,6 @@ const AlertComponent = (props) => {
   const userInfo = getUserInfo();
   const colorScheme = useColorScheme();
 
-  const themeTitleTextStyle = colorScheme === 'light' ? styles.darkText : styles.lightText ;
   const themeTextStyle = colorScheme === 'light' ? styles.darkText :  styles.lightText ;
   const themeEventStyle = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
 
@@ -219,7 +218,7 @@ const styles = StyleSheet.create({
       color: 'black',
   },
   lightEvent:{
-      backgroundColor: 'white',
+      backgroundColor: '#dedede',
   },
   darkEvent: {
       backgroundColor: '#363636',

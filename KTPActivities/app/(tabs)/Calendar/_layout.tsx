@@ -10,8 +10,6 @@ export default function Layout() {
 
   const colorScheme =  useColorScheme();
 
-  console.log(colorScheme);
-
   return (
     <Stack>
       <Stack.Screen

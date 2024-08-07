@@ -117,6 +117,8 @@ const profileId = () => {
     const eventTheme = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
     const interestTheme = colorScheme === 'light' ? styles.darkEvent : styles.lightEvent;
     const interestTextTheme = colorScheme === 'light' ? styles.darkText: styles.lightText;
+    const dividerTheme = colorScheme === 'light' ? styles.dividerlight : styles.dividerdark;
+
 
 
   return (
@@ -136,14 +138,14 @@ const profileId = () => {
         <View style={[styles.card, eventTheme]}>
             <Text style={[styles.name, textTheme]}>{userFirstName} {userLastName}</Text>
             <Text style={styles.status}>{posName} {userClass}</Text>
-            <View style={styles.divider} />
+            <View style={[styles.divider, dividerTheme]} />
             <Text style={[styles.faculty, textTheme]}>{college}</Text>
             <Text style={[styles.details, textTheme]}>
                 Major in {userMajor}
                 {userMinor.length > 0 && ` | Minor in ${userMinor}`}
             </Text>
             <Text style={[styles.details, textTheme]}>{grade} ({userGradYear})</Text>
-            <View style={styles.divider} />
+            <View style={[styles.divider, dividerTheme]} />
             <View style={styles.interestsContainer}>
                 <View style={styles.interestTitlerow}>
                     <Text style={[styles.interestsTitle, textTheme]}>Interests</Text> 
@@ -199,6 +201,12 @@ const styles = StyleSheet.create({
     darkEvent: {
         backgroundColor: '#86ebba',
     },
+    dividerlight: {
+        borderBottomColor: 'white',
+    },
+    dividerdark: {
+        borderBottomColor: 'black',
+    },
     pageView: {
         flex: 1,
         backgroundColor: 'white',
@@ -244,7 +252,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     divider: {
-        borderBottomColor: 'black',
         borderBottomWidth: 1,
         marginVertical: 10,
     },
