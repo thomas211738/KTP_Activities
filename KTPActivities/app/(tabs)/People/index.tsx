@@ -1,32 +1,58 @@
 
-import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity, Platform, useColorScheme} from 'react-native'
+import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity, Platform, useColorScheme } from 'react-native'
 import { router } from 'expo-router'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { getAllUsersInfo } from '../../components/allUsersManager'
 import { useNavigation } from '@react-navigation/native'
-import { getUserInfo } from '../../components/userInfoManager'; 
+import { getUserInfo } from '../../components/userInfoManager';
 import PeopleLoader from '../../components/loaders/poepleLoader';
+import { GetImage } from '../../components/pictures';
 
 const Person = (props) => {
+    const [photoURI, setPhotoURI] = useState(null);
     const colorScheme = useColorScheme();
 
-    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight ;
+    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight;
+
+    useEffect(() => {
+        const fetchPhoto = async () => {
+            try {
+                const photo = await GetImage(props.user.ProfilePhoto);
+                setPhotoURI(`data:image/png;base64,${photo}`);
+            } catch (err) {
+                console.log(err.message);
+            }
+        };
+        fetchPhoto();
+    }, [props.user.ProfilePhoto]);
+
     return (
         <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/profileId', params: { userID: props.user._id } })}>
-                    <View style={styles.personContainer}>
-            <Image source={require("../../../img/ktplogopng.png")} style={styles.personImage} />
-            <View>
-                <Text style={[styles.personName, textTheme]}>
-                    {props.user.FirstName + " " + props.user.LastName}
-                </Text>
-                <Text style={styles.personMajors}>
-                    {props.user.Position == 3 ? 
-                        props.user.Eboard_Position :
-                        `${props.user.Major.join(" and ")} Major${props.user.Minor.length !== 0 && props.user.Minor[0] !== "" ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
-                    }
-                </Text>
+            <View style={styles.personContainer}>
+                {
+                    props.user.ProfilePhoto && photoURI ?
+                        <Image 
+                            source={{ uri: photoURI }} 
+                            style={[styles.personImage, { borderRadius: 30 }]} 
+                        />
+                        :
+                        <Image 
+                            source={require("../../../img/ktplogopng.png")} 
+                            style={styles.personImage} 
+                        />
+                }
+                <View>
+                    <Text style={[styles.personName, textTheme]}>
+                        {props.user.FirstName + " " + props.user.LastName}
+                    </Text>
+                    <Text style={styles.personMajors}>
+                        {props.user.Position == 3 ?
+                            props.user.Eboard_Position :
+                            `${props.user.Major.join(" and ")} Major${props.user.Minor.length !== 0 && props.user.Minor[0] !== "" ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
+                        }
+                    </Text>
+                </View>
             </View>
-        </View>
         </TouchableOpacity>
 
     )
@@ -44,14 +70,14 @@ const index = () => {
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
-          headerSearchBarOptions: {
-            placeholder: "Search People",
-            textColor: colorScheme === 'dark' ? 'black' : 'white' ,
-            onChangeText: (event) => searchUsers(event.nativeEvent.text),
-            hideWhenScrolling: false,
-          },
+            headerSearchBarOptions: {
+                placeholder: "Search People",
+                textColor: colorScheme === 'dark' ? 'black' : 'white',
+                onChangeText: (event) => searchUsers(event.nativeEvent.text),
+                hideWhenScrolling: false,
+            },
         });
-      }, [navigation]);
+    }, [navigation]);
 
     const searchUsers = (text) => {
         setSearch(text);
@@ -66,12 +92,12 @@ const index = () => {
     }
 
     const changePosition = (position) => {
-        if(position !== pos) {
+        if (position !== pos) {
             setLoading(true);
             setSearch('');
             setPos(position);
             if (position === 2) {
-              setFilteredUsers(users.filter(user => user.Position === 2 || user.Position === 5));
+                setFilteredUsers(users.filter(user => user.Position === 2 || user.Position === 5));
             } else {
                 setFilteredUsers(users.filter(user => user.Position === position));
             }
@@ -79,74 +105,74 @@ const index = () => {
         }
     }
 
-    const selectedButtonTheme = colorScheme === 'dark' ? styles.selectedButtonLight :  styles.selectedButtonDark ;
+    const selectedButtonTheme = colorScheme === 'dark' ? styles.selectedButtonLight : styles.selectedButtonDark;
     const unselectedButtonTheme = colorScheme === 'dark' ? styles.unselectedButtonLight : styles.unselectedButtonDark;
-    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark ;
-    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight ;
+    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark;
+    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight;
 
 
     return (
         <View style={[styles.container, containerTheme]}>
             <ScrollView keyboardDismissMode='on-drag' contentInsetAdjustmentBehavior='automatic'>
-            <View style={styles.buttonsContainer}>
-            <Pressable 
-                style={[styles.unselectedButton,unselectedButtonTheme, pos == 0 && selectedButtonTheme]}
-                onPress={() => changePosition(0)}
-            >
-                <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 0 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Rushees</Text>
-            </Pressable>
-            {user.Position >= 1 && (
-                <>
-                <Pressable 
-                    style={[styles.unselectedButton,unselectedButtonTheme, pos == 1 && selectedButtonTheme]}
-                    onPress={() => changePosition(1)}
-                >
-                    <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 1 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Pledges</Text>
-                </Pressable>
-                </>
-            )}
-            <Pressable 
-                style={[styles.unselectedButton,unselectedButtonTheme, pos == 2 && selectedButtonTheme]}
-                onPress={() => changePosition(2)}
-            >
-                <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 2 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Brothers</Text>
-            </Pressable>
-            <Pressable 
-                style={[styles.unselectedButton,unselectedButtonTheme, pos == 3 && selectedButtonTheme]}
-                onPress={() => changePosition(3)}
-            >
-                <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 3 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>E-Board</Text>
-            </Pressable>
-            {user.Position >= 1 && (
-                <>
-                <Pressable 
-                    style={[styles.unselectedButton,unselectedButtonTheme, pos == 4 && selectedButtonTheme]}
-                    onPress={() => changePosition(4)}
-                >
-                    <Text style={[(colorScheme === "dark" ? { color: 'black'} : { color: 'white'}), pos == 4 && (colorScheme === "dark" ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Alumni</Text>
-                </Pressable>
-                </>
-            )}
-            </View>
-            
-            {loading ? (
-                <PeopleLoader />
-            ) : (
-                filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                    <Person
-                    key={user._id}
-                    user={user}
-                    />
-                )) : (
-                    <View style={styles.noMembersContainer}>
-                    <Text style={[styles.noMembers, textTheme]}>No members found</Text>
-                    </View>
-                )
-            )}            
+                <View style={styles.buttonsContainer}>
+                    <Pressable
+                        style={[styles.unselectedButton, unselectedButtonTheme, pos == 0 && selectedButtonTheme]}
+                        onPress={() => changePosition(0)}
+                    >
+                        <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 0 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>Rushees</Text>
+                    </Pressable>
+                    {user.Position >= 1 && (
+                        <>
+                            <Pressable
+                                style={[styles.unselectedButton, unselectedButtonTheme, pos == 1 && selectedButtonTheme]}
+                                onPress={() => changePosition(1)}
+                            >
+                                <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 1 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>Pledges</Text>
+                            </Pressable>
+                        </>
+                    )}
+                    <Pressable
+                        style={[styles.unselectedButton, unselectedButtonTheme, pos == 2 && selectedButtonTheme]}
+                        onPress={() => changePosition(2)}
+                    >
+                        <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 2 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>Brothers</Text>
+                    </Pressable>
+                    <Pressable
+                        style={[styles.unselectedButton, unselectedButtonTheme, pos == 3 && selectedButtonTheme]}
+                        onPress={() => changePosition(3)}
+                    >
+                        <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 3 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>E-Board</Text>
+                    </Pressable>
+                    {user.Position >= 1 && (
+                        <>
+                            <Pressable
+                                style={[styles.unselectedButton, unselectedButtonTheme, pos == 4 && selectedButtonTheme]}
+                                onPress={() => changePosition(4)}
+                            >
+                                <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 4 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>Alumni</Text>
+                            </Pressable>
+                        </>
+                    )}
+                </View>
+
+                {loading ? (
+                    <PeopleLoader />
+                ) : (
+                    filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                        <Person
+                            key={user._id}
+                            user={user}
+                        />
+                    )) : (
+                        <View style={styles.noMembersContainer}>
+                            <Text style={[styles.noMembers, textTheme]}>No members found</Text>
+                        </View>
+                    )
+                )}
 
             </ScrollView>
         </View>
-        )
+    )
 }
 
 const styles = StyleSheet.create({
@@ -191,7 +217,7 @@ const styles = StyleSheet.create({
     selectedButtonLight: {
         backgroundColor: '#134b91'
     },
-    selectedButtonDark:{
+    selectedButtonDark: {
         backgroundColor: '#86ebba'
 
     },

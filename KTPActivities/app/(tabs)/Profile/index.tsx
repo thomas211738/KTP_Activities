@@ -54,6 +54,7 @@ const Index = () => {
     const fetchProfile = async () => {
         try {
             const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
+            console.log(response.data.ProfilePhoto);
             
             if (response.data.ProfilePhoto) {
                 const image = await GetImage(response.data.ProfilePhoto);
