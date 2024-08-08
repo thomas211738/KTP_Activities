@@ -8,6 +8,7 @@ import colleges from '../../components/buinfo';
 import { Octicons } from '@expo/vector-icons';
 import CircleLoader from '../../components/loaders/circleLoader';
 import {GetImage} from '../../components/pictures';
+import ViewProfileLoader from '../../components/loaders/viewProfileLoader';
 
 
 
@@ -27,6 +28,8 @@ const profileId = () => {
     const [instagram, setInstagram] = useState(null);
     const [linkedin, setLinkedin] = useState(null);
     const [userClass, setUserClass] = useState("");
+    const [loading, setLoading] = useState(true);
+
     const colorScheme = useColorScheme();
 
 
@@ -42,6 +45,10 @@ const profileId = () => {
             setPosition(response.data.Position);
             setEboardPosition(response.data.Eboard_Position);
             setUserInterests(response.data.Interests);
+            if (response.data.Instagram) setInstagram(response.data.Instagram);
+            if (response.data.LinkedIn) setLinkedin(response.data.LinkedIn);
+            if (response.data.Class) setUserClass(`(${response.data.Class})`);
+            setLoading(false);
             if (response.data.ProfilePhoto) {
                 const image = await GetImage(response.data.ProfilePhoto);
                 setImage(image);
@@ -49,9 +56,6 @@ const profileId = () => {
             }else{
                 setImageLoading(false);
             }
-            if (response.data.Instagram) setInstagram(response.data.Instagram);
-            if (response.data.LinkedIn) setLinkedin(response.data.LinkedIn);
-            if (response.data.Class) setUserClass(`(${response.data.Class})`);
 
             
         })
@@ -134,7 +138,10 @@ const profileId = () => {
                 )}
         </View>
 
+        
 
+        {loading ? <ViewProfileLoader/> : 
+        <>
         <View style={[styles.card, eventTheme]}>
             <Text style={[styles.name, textTheme]}>{userFirstName} {userLastName}</Text>
             <Text style={styles.status}>{posName} {userClass}</Text>
@@ -174,6 +181,11 @@ const profileId = () => {
             
             </View>
         </View>
+
+        </>}
+
+
+        
         </ScrollView>
         
 

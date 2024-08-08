@@ -31,6 +31,8 @@ import CircleLoader from '../../components/loaders/circleLoader';
 import { GetImage } from '../../components/pictures';
 import AddigModal from '../../components/igModal';
 import AddLinkedinModal from '../../components/linkedinModal';
+import ProfileLoader from '../../components/loaders/profileLoader';
+import { set } from 'date-fns';
 
 
 const Index = () => {
@@ -49,6 +51,7 @@ const Index = () => {
     const [userClass, setUserClass] = useState(`(${userInfo.Class})` || "");
     const colorScheme = useColorScheme();
     const [isEnabled, setIsEnabled] = useState((colorScheme === 'light') ? false : true);
+    const [loading, setLoading] = useState(true);
 
 
     
@@ -56,6 +59,11 @@ const Index = () => {
         try {
             const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
             
+            if (response.data.Interests){
+                setUserInterests(response.data.Interests);
+            }
+            if (response.data.Instagram) setInstagram(response.data.Instagram);
+            if (response.data.LinkedIn) setLinkedIn(response.data.LinkedIn);
             if (response.data.ProfilePhoto) {
                 const image = await GetImage(response.data.ProfilePhoto);
                 setImage(image);
@@ -63,21 +71,15 @@ const Index = () => {
             } else {
                 setImageLoading(false);
             }
-            if (response.data.Interests){
-                setUserInterests(response.data.Interests);
-            }
-            if (response.data.Instagram) setInstagram(response.data.Instagram);
-            if (response.data.LinkedIn) setLinkedIn(response.data.LinkedIn);
-            
             
         } catch (err) {
             console.log(err.message);
         }
     }
-    
+
     useEffect(() => {
         fetchProfile();
-    },[]);
+    }, []);
 
 
     const posName = ["Rushee", "Pledge", "Brother", userInfo.Eboard_Position , "Alumni", "Super Administrator"][userInfo.Position] || "";
@@ -275,7 +277,10 @@ const Index = () => {
                 
 
                 {/* PROFILE CARD */}
-                <View style={[styles.card, eventTheme]}>
+                
+                {userInfo ? (
+                <>
+                    <View style={[styles.card, eventTheme]}>
                     <Text style={[styles.name, textTheme]}>{userInfo.FirstName} {userInfo.LastName}</Text>
                     <Text style={styles.status}>{posName} {userClass}</Text>
                     <View style={[styles.divider, dividerTheme]} />
@@ -335,6 +340,9 @@ const Index = () => {
                     </TouchableOpacity>
                     <Entypo name="log-out" size={20} color={colorScheme === 'light' ? "white" : "black"} />
                 </View>
+
+                </>) : (<ProfileLoader/>)}
+                
             </ScrollView>
         </View>
     );
