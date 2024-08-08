@@ -78,7 +78,7 @@ const index = () => {
     });
   }, [navigation, userInfo.Position, colorScheme]);
 
-  useFocusEffect(() => {
+  useEffect(() => {
     fetchAlerts();
   });
 

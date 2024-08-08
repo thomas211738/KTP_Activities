@@ -51,7 +51,7 @@ const index = () => {
             hideWhenScrolling: false,
           },
         });
-      }, [navigation, colorScheme]);
+      }, [colorScheme]);
 
     const searchUsers = (text) => {
         setSearch(text);

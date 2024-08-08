@@ -4,15 +4,11 @@ import axios from 'axios';
 import Entypo from '@expo/vector-icons/Entypo';
 import { MaterialIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, set } from 'date-fns';
 import { BACKEND_URL } from '@env';
 import { router } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
 import CalendarLoader from '../../components/loaders/calendarLoader';
 import { getUserInfo } from '../../components/userInfoManager';
-
-
-
 
 
 const index = ({ navigation }) => {
@@ -20,6 +16,7 @@ const index = ({ navigation }) => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const userInfo = getUserInfo();
+
 
 
 
@@ -35,9 +32,10 @@ const index = ({ navigation }) => {
         }
     };
 
+
     useEffect(() => {
         fetchEvents();
-    });
+    }, []);
 
     const formatDate = (dateString) => {
         const date = parseISO(dateString);
@@ -71,6 +69,7 @@ const index = ({ navigation }) => {
         } catch (err) {
             console.log(err);
         }
+        fetchEvents();
     };
 
     const groupedEvents = groupEventsByDate(events);
@@ -106,15 +105,17 @@ const index = ({ navigation }) => {
                                                     <Feather
                                                         name="edit"
                                                         size={23}
-                                                        color={colorScheme=== 'light' ?  "white" : "black"}
-                                                        onPress={() => router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } })}
+                                                        color={colorScheme === 'light' ? "white" : "black"}
+                                                        onPress={() => {
+                                                            router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } });
+                                                        }}
                                                     />
                                                 )}
                                                 {userInfo.Position === 3 || userInfo.Position === 5 && (
                                                     <MaterialIcons
                                                         name="delete"
                                                         size={25}
-                                                        color={colorScheme=== 'light' ?  "white" : "black"}
+                                                        color={colorScheme === 'light' ? "white" : "black"}
                                                         style={styles.iconSpacing}
                                                         onPress={() => confirmDeleteAlert(event.Name, event._id)}
                                                     />
@@ -122,8 +123,8 @@ const index = ({ navigation }) => {
                                             </View>
                                         </View>
                                         <Text style={[styles.eventText, themeTextStyle]}>
-                                            <MaterialIcons name="access-time-filled" size={15} color= {colorScheme=== 'light' ?  "white" : "black"} /> {event.Time}{' '}
-                                            <Entypo name="location-pin" size={17} color={colorScheme=== 'light' ?  "white" : "black"} /> {event.Location}
+                                            <MaterialIcons name="access-time-filled" size={15} color={colorScheme === 'light' ? "white" : "black"} /> {event.Time}{' '}
+                                            <Entypo name="location-pin" size={17} color={colorScheme === 'light' ? "white" : "black"} /> {event.Location}
                                         </Text>
                                         <Text style={[styles.eventText, themeTextStyle]}>{event.Description}</Text>
                                     </View>

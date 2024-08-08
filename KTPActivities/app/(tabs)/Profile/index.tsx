@@ -48,7 +48,7 @@ const Index = () => {
     const [linkedIn, setLinkedIn] = useState(userInfo.LinkedIn);
     const [userClass, setUserClass] = useState(`(${userInfo.Class})` || "");
     const colorScheme = useColorScheme();
-    const [isEnabled, setIsEnabled] = useState(false);
+    const [isEnabled, setIsEnabled] = useState((colorScheme === 'light') ? false : true);
 
 
     
