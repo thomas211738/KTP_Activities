@@ -10,6 +10,7 @@ import AddAlertModal from '../../components/addAlertModal';
 import EditAlertModal from '../../components/editAlertModal';
 import { useNavigation } from '@react-navigation/native'
 import { getUserInfo } from '../../components/userInfoManager';
+import AlertsLoader from '../../components/loaders/alertsLoader';
 
 const AlertComponent = (props) => {
   const userInfo = getUserInfo();
@@ -20,20 +21,24 @@ const AlertComponent = (props) => {
 
     
   return (
-    <View style={[styles.alertContainer,themeEventStyle ]}>
-      <Image source={require("../../../img/ktplogopng.png")} style={styles.alertImage} />
-      <View style={styles.alertTextContainer}>
-        <Text style={[styles.alertName, themeTextStyle]}>{props.alertName}</Text>
-        <Text style={themeTextStyle} > {props.description}</Text>
-      </View>
-      <Text style={styles.alertTime}>{props.time}</Text>
-      {userInfo.Position === 3 || userInfo.Position === 5 && (
-        <View style={styles.alertButtons}>
-          <Feather name="edit" size={24} color={colorScheme === 'light' ? "black" : "white"} style={styles.editIcon} onPress={props.onEdit} />
-          <MaterialIcons name="delete" size={25} color="#B22222" style={styles.deleteIcon} onPress={props.onDelete} />
+    <>
+      <View style={[styles.alertContainer,themeEventStyle ]}>
+        <Image source={require("../../../img/ktplogopng.png")} style={styles.alertImage} />
+        <View style={styles.alertTextContainer}>
+          <Text style={[styles.alertName, themeTextStyle]}>{props.alertName}</Text>
+          <Text style={themeTextStyle} > {props.description}</Text>
         </View>
-      )}
-    </View>
+        <Text style={styles.alertTime}>{props.time}</Text>
+        {userInfo.Position === 3 || userInfo.Position === 5 && (
+          <View style={styles.alertButtons}>
+            <Feather name="edit" size={24} color={colorScheme === 'light' ? "black" : "white"} style={styles.editIcon} onPress={props.onEdit} />
+            <MaterialIcons name="delete" size={25} color="#B22222" style={styles.deleteIcon} onPress={props.onDelete} />
+          </View>
+        )}
+      </View>
+    </>
+    
+    
   );
 }
 
@@ -42,6 +47,7 @@ const index = () => {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [alertID, setAlertID] = useState('');
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
   const userInfo = getUserInfo();
   const colorScheme = useColorScheme();
@@ -54,6 +60,7 @@ const index = () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/alerts`);
       setAlerts(response.data.data);
+      setLoading(false);
     } catch (err) {
       console.log(err.message);
     }
@@ -176,6 +183,9 @@ const index = () => {
   return (
     <View style={[styles.container, themeContainerStyle]}>
       <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior='automatic' >
+      
+      {loading ? (<AlertsLoader/>) : (
+        <>
         {userInfo.Position === 3 || userInfo.Position === 5 ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
         {userInfo.Position === 3 || userInfo.Position === 5 ? <EditAlertModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putAlert} alertID={alertID}/> : ''}
         {Object.keys(groupedAlerts).map((date, index) => (
@@ -199,6 +209,9 @@ const index = () => {
             ))}
           </View>
         ))}
+        
+        </>
+      )}
       </ScrollView>
     </View>
   );

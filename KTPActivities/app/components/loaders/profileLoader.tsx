@@ -13,9 +13,9 @@ const profileLoader = () => {
             backgroundColor="#b8b8b8"
             foregroundColor="#ecebeb"
     >
-            <Rect x="10" y="10" rx="0" ry="0" width="390" height="400" /> 
-            <Rect x="10" y="430" rx="0" ry="0" width="390" height="50" />
-            <Rect x="10" y="500" rx="0" ry="0" width="390" height="50" />
+            <Rect x="10" y="10" rx="10" ry="10" width="390" height="400" /> 
+            <Rect x="10" y="430" rx="10" ry="10" width="390" height="50" />
+            <Rect x="10" y="500" rx="10" ry="10" width="390" height="50" />
     </ContentLoader>
   )
 }

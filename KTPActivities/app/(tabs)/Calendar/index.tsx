@@ -21,6 +21,7 @@ const index = ({ navigation }) => {
 
 
     const fetchEvents = async () => {
+        console.log('fetching events');
         try {
             const response = await axios.get(`${BACKEND_URL}/events`);
             const sortedEvents = response.data.data.sort((a, b) => new Date(a.Day) - new Date(b.Day));
@@ -83,59 +84,62 @@ const index = ({ navigation }) => {
 
     if (loading) {
         return <CalendarLoader />;
+    } else {
+        return (
+            <SafeAreaView style={[styles.container, themeContainerStyle]}>
+                <ScrollView
+                    contentInsetAdjustmentBehavior='automatic'
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.scrollcontainer}>
+                        {Object.keys(groupedEvents).map((date, index) => (
+                            <View key={index} style={styles.dateGroup}>
+                                <Text style={[styles.eventDate, themeTitleTextStyle]}>{date}</Text>
+                                {groupedEvents[date].map((event, eventIndex) => (
+                                    <View key={eventIndex} style={styles.eventWrapper}>
+                                        <View style={[styles.eventContainer, themeEventStyle]}>
+                                            <View style={styles.titleContainer}>
+                                                <Text style={[styles.eventTitle, themeTextStyle]}>{event.Name}</Text>
+                                                <View style={styles.icon}>
+                                                    {userInfo.Position === 3 || userInfo.Position === 5 && (
+                                                        <Feather
+                                                            name="edit"
+                                                            size={23}
+                                                            color={colorScheme === 'light' ? "white" : "black"}
+                                                            onPress={() => {
+                                                                router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } });
+                                                            }}
+                                                        />
+                                                    )}
+                                                    {userInfo.Position === 3 || userInfo.Position === 5 && (
+                                                        <MaterialIcons
+                                                            name="delete"
+                                                            size={25}
+                                                            color={colorScheme === 'light' ? "white" : "black"}
+                                                            style={styles.iconSpacing}
+                                                            onPress={() => confirmDeleteAlert(event.Name, event._id)}
+                                                        />
+                                                    )}
+                                                </View>
+                                            </View>
+                                            <Text style={[styles.eventText, themeTextStyle]}>
+                                                <MaterialIcons name="access-time-filled" size={15} color={colorScheme === 'light' ? "white" : "black"} /> {event.Time}{' '}
+                                                <Entypo name="location-pin" size={17} color={colorScheme === 'light' ? "white" : "black"} /> {event.Location}
+                                            </Text>
+                                            <Text style={[styles.eventText, themeTextStyle]}>{event.Description}</Text>
+                                        </View>
+                                    </View>
+                                ))}
+                            </View>
+                        ))}
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+        );
+
     }
 
-    return (
-        <SafeAreaView style={[styles.container, themeContainerStyle]}>
-            <ScrollView
-                contentInsetAdjustmentBehavior='automatic'
-                showsVerticalScrollIndicator={false}
-            >
-                <View style={styles.scrollcontainer}>
-                    {Object.keys(groupedEvents).map((date, index) => (
-                        <View key={index} style={styles.dateGroup}>
-                            <Text style={[styles.eventDate, themeTitleTextStyle]}>{date}</Text>
-                            {groupedEvents[date].map((event, eventIndex) => (
-                                <View key={eventIndex} style={styles.eventWrapper}>
-                                    <View style={[styles.eventContainer, themeEventStyle]}>
-                                        <View style={styles.titleContainer}>
-                                            <Text style={[styles.eventTitle, themeTextStyle]}>{event.Name}</Text>
-                                            <View style={styles.icon}>
-                                                {userInfo.Position === 3 || userInfo.Position === 5 && (
-                                                    <Feather
-                                                        name="edit"
-                                                        size={23}
-                                                        color={colorScheme === 'light' ? "white" : "black"}
-                                                        onPress={() => {
-                                                            router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } });
-                                                        }}
-                                                    />
-                                                )}
-                                                {userInfo.Position === 3 || userInfo.Position === 5 && (
-                                                    <MaterialIcons
-                                                        name="delete"
-                                                        size={25}
-                                                        color={colorScheme === 'light' ? "white" : "black"}
-                                                        style={styles.iconSpacing}
-                                                        onPress={() => confirmDeleteAlert(event.Name, event._id)}
-                                                    />
-                                                )}
-                                            </View>
-                                        </View>
-                                        <Text style={[styles.eventText, themeTextStyle]}>
-                                            <MaterialIcons name="access-time-filled" size={15} color={colorScheme === 'light' ? "white" : "black"} /> {event.Time}{' '}
-                                            <Entypo name="location-pin" size={17} color={colorScheme === 'light' ? "white" : "black"} /> {event.Location}
-                                        </Text>
-                                        <Text style={[styles.eventText, themeTextStyle]}>{event.Description}</Text>
-                                    </View>
-                                </View>
-                            ))}
-                        </View>
-                    ))}
-                </View>
-            </ScrollView>
-        </SafeAreaView>
-    );
+
 };
 
 const styles = StyleSheet.create({
