@@ -6,33 +6,21 @@ import { getAllUsersInfo } from '../../components/allUsersManager'
 import { useNavigation } from '@react-navigation/native'
 import { getUserInfo } from '../../components/userInfoManager';
 import PeopleLoader from '../../components/loaders/poepleLoader';
-import { GetImage } from '../../components/pictures';
+import axios from 'axios';
+import { BACKEND_URL } from '@env';
 
 const Person = (props) => {
-    const [photoURI, setPhotoURI] = useState(null);
     const colorScheme = useColorScheme();
 
     const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight;
-
-    useEffect(() => {
-        const fetchPhoto = async () => {
-            try {
-                const photo = await GetImage(props.user.ProfilePhoto);
-                setPhotoURI(`data:image/png;base64,${photo}`);
-            } catch (err) {
-                console.log(err.message);
-            }
-        };
-        fetchPhoto();
-    }, [props.user.ProfilePhoto]);
 
     return (
         <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/profileId', params: { userID: props.user._id } })}>
             <View style={styles.personContainer}>
                 {
-                    props.user.ProfilePhoto && photoURI ?
+                    props.user.ProfilePhoto ?
                         <Image 
-                            source={{ uri: photoURI }} 
+                            source={{ uri: props.image }} 
                             style={[styles.personImage, { borderRadius: 30 }]} 
                         />
                         :
@@ -65,8 +53,13 @@ const index = () => {
     const [search, setSearch] = React.useState('');
     const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => user.Position === pos));
     const [loading, setLoading] = React.useState(false);
+    const [photos, setPhotos] = React.useState({});
     const navigation = useNavigation();
     const colorScheme = useColorScheme();
+
+    useEffect(() => {
+        fetchAllPhotos();
+    }, []);
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
@@ -78,6 +71,19 @@ const index = () => {
             },
         });
     }, [navigation]);
+
+    const fetchAllPhotos = async () => {
+        try {
+            const response = await axios.get(`${BACKEND_URL}/users/photo/all`);
+            const photosData = {};
+            response.data.data.forEach(photo => {
+                photosData[photo.fileid] = `data:image/png;base64,${photo.data}`;   
+            });
+            setPhotos(photosData);
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
 
     const searchUsers = (text) => {
         setSearch(text);
@@ -162,6 +168,7 @@ const index = () => {
                         <Person
                             key={user._id}
                             user={user}
+                            image={photos[user.ProfilePhoto]}
                         />
                     )) : (
                         <View style={styles.noMembersContainer}>
