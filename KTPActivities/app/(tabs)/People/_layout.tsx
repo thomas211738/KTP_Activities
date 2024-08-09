@@ -13,11 +13,11 @@ export default function Layout() {
           name="index"
           options={{
             headerTitleStyle: {
-              color: colorScheme === "dark" ? "#1a1a1a" : "white",
+              color: colorScheme === 'light' ? "#1a1a1a" : "white",
             },
   
             headerStyle: {
-              backgroundColor: colorScheme === "dark" ? "white" : "#1a1a1a",
+              backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
             },
             headerTitle: "People",
             headerBlurEffect: "regular",
@@ -30,11 +30,11 @@ export default function Layout() {
           name="profileId"
           options={{
             headerTitleStyle: {
-              color: colorScheme === "dark" ? "#1a1a1a" : "white",
+              color: colorScheme === 'light' ? "#1a1a1a" : "white",
             },
   
             headerStyle: {
-              backgroundColor: colorScheme === "dark" ? "white" : "#1a1a1a",
+              backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
             },
             headerTitle: "",
           }}

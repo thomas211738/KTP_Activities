@@ -8,6 +8,7 @@ import colleges from '../../components/buinfo';
 import { Octicons } from '@expo/vector-icons';
 import CircleLoader from '../../components/loaders/circleLoader';
 import {GetImage} from '../../components/pictures';
+import ViewProfileLoader from '../../components/loaders/viewProfileLoader';
 
 
 
@@ -27,6 +28,8 @@ const profileId = () => {
     const [instagram, setInstagram] = useState(null);
     const [linkedin, setLinkedin] = useState(null);
     const [userClass, setUserClass] = useState("");
+    const [loading, setLoading] = useState(true);
+
     const colorScheme = useColorScheme();
 
 
@@ -42,6 +45,10 @@ const profileId = () => {
             setPosition(response.data.Position);
             setEboardPosition(response.data.Eboard_Position);
             setUserInterests(response.data.Interests);
+            if (response.data.Instagram) setInstagram(response.data.Instagram);
+            if (response.data.LinkedIn) setLinkedin(response.data.LinkedIn);
+            if (response.data.Class) setUserClass(`(${response.data.Class})`);
+            setLoading(false);
             if (response.data.ProfilePhoto) {
                 const image = await GetImage(response.data.ProfilePhoto);
                 setImage(image);
@@ -49,9 +56,6 @@ const profileId = () => {
             }else{
                 setImageLoading(false);
             }
-            if (response.data.Instagram) setInstagram(response.data.Instagram);
-            if (response.data.LinkedIn) setLinkedin(response.data.LinkedIn);
-            if (response.data.Class) setUserClass(`(${response.data.Class})`);
 
             
         })
@@ -111,12 +115,14 @@ const profileId = () => {
           }
       };
 
-    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark;
-    const textTheme = colorScheme === 'dark' ? styles.lightText : styles.darkText;
+    const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark;
+    const textTheme = colorScheme === 'light' ? styles.lightText : styles.darkText;
 
-    const eventTheme = colorScheme === 'dark' ? styles.lightEvent : styles.darkEvent;
-    const interestTheme = colorScheme === 'dark' ? styles.darkEvent : styles.lightEvent;
-    const interestTextTheme = colorScheme === 'dark' ? styles.darkText: styles.lightText;
+    const eventTheme = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
+    const interestTheme = colorScheme === 'light' ? styles.darkEvent : styles.lightEvent;
+    const interestTextTheme = colorScheme === 'light' ? styles.darkText: styles.lightText;
+    const dividerTheme = colorScheme === 'light' ? styles.dividerlight : styles.dividerdark;
+
 
 
   return (
@@ -128,22 +134,25 @@ const profileId = () => {
                 image ? (
                     <Image source={{ uri: `data:image/png;base64,${image}` }} style={styles.profileimage} />
                 ) : (
-                    <Octicons name="feed-person" size={175} color={colorScheme === 'dark' ? "#242424" : "white"} style={styles.profilepic} />
+                    <Octicons name="feed-person" size={175} color={colorScheme === 'light' ? "#242424" : "white"} style={styles.profilepic} />
                 )}
         </View>
 
+        
 
+        {loading ? <ViewProfileLoader/> : 
+        <>
         <View style={[styles.card, eventTheme]}>
             <Text style={[styles.name, textTheme]}>{userFirstName} {userLastName}</Text>
             <Text style={styles.status}>{posName} {userClass}</Text>
-            <View style={styles.divider} />
+            <View style={[styles.divider, dividerTheme]} />
             <Text style={[styles.faculty, textTheme]}>{college}</Text>
             <Text style={[styles.details, textTheme]}>
                 Major in {userMajor}
                 {userMinor.length > 0 && ` | Minor in ${userMinor}`}
             </Text>
             <Text style={[styles.details, textTheme]}>{grade} ({userGradYear})</Text>
-            <View style={styles.divider} />
+            <View style={[styles.divider, dividerTheme]} />
             <View style={styles.interestsContainer}>
                 <View style={styles.interestTitlerow}>
                     <Text style={[styles.interestsTitle, textTheme]}>Interests</Text> 
@@ -162,16 +171,21 @@ const profileId = () => {
             <View style={styles.socialIcons}>
                 {linkedin ? 
                 <TouchableOpacity onPress={() => openLinkedInProfile(linkedin)}>
-                    <AntDesign name="linkedin-square" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
+                    <AntDesign name="linkedin-square" size={24} color={colorScheme === 'light' ? "white" : "black"} />
                 </TouchableOpacity> : ""}
                 {instagram ? 
                 <TouchableOpacity onPress={() => openInstagramProfile(instagram)}>
-                    <AntDesign name="instagram" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
+                    <AntDesign name="instagram" size={24} color={colorScheme === 'light' ? "white" : "black"} />
                 </TouchableOpacity> : ""}
 
             
             </View>
         </View>
+
+        </>}
+
+
+        
         </ScrollView>
         
 
@@ -198,6 +212,12 @@ const styles = StyleSheet.create({
     },
     darkEvent: {
         backgroundColor: '#86ebba',
+    },
+    dividerlight: {
+        borderBottomColor: 'white',
+    },
+    dividerdark: {
+        borderBottomColor: 'black',
     },
     pageView: {
         flex: 1,
@@ -244,7 +264,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     divider: {
-        borderBottomColor: 'black',
         borderBottomWidth: 1,
         marginVertical: 10,
     },

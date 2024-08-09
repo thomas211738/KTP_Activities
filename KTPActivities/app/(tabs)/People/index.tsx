@@ -12,8 +12,7 @@ import { BACKEND_URL } from '@env';
 const Person = (props) => {
     const colorScheme = useColorScheme();
 
-    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight;
-
+    const textTheme = colorScheme === 'light' ? styles.textDark : styles.textLight ;
     return (
         <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/profileId', params: { userID: props.user._id } })}>
             <View style={styles.personContainer}>
@@ -70,7 +69,7 @@ const index = () => {
                 hideWhenScrolling: false,
             },
         });
-    }, [navigation]);
+    }, [colorScheme]);
 
     const fetchAllPhotos = async () => {
         try {
@@ -111,71 +110,71 @@ const index = () => {
         }
     }
 
-    const selectedButtonTheme = colorScheme === 'dark' ? styles.selectedButtonLight : styles.selectedButtonDark;
-    const unselectedButtonTheme = colorScheme === 'dark' ? styles.unselectedButtonLight : styles.unselectedButtonDark;
-    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark;
-    const textTheme = colorScheme === 'dark' ? styles.textDark : styles.textLight;
+    const selectedButtonTheme = colorScheme === 'light' ? styles.selectedButtonLight :  styles.selectedButtonDark ;
+    const unselectedButtonTheme = colorScheme === 'light' ? styles.unselectedButtonLight : styles.unselectedButtonDark;
+    const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark ;
+    const textTheme = colorScheme === 'light' ? styles.textDark : styles.textLight ;
 
 
     return (
         <View style={[styles.container, containerTheme]}>
             <ScrollView keyboardDismissMode='on-drag' contentInsetAdjustmentBehavior='automatic'>
-                <View style={styles.buttonsContainer}>
-                    <Pressable
-                        style={[styles.unselectedButton, unselectedButtonTheme, pos == 0 && selectedButtonTheme]}
-                        onPress={() => changePosition(0)}
-                    >
-                        <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 0 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>Rushees</Text>
-                    </Pressable>
-                    {user.Position >= 1 && (
-                        <>
-                            <Pressable
-                                style={[styles.unselectedButton, unselectedButtonTheme, pos == 1 && selectedButtonTheme]}
-                                onPress={() => changePosition(1)}
-                            >
-                                <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 1 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>Pledges</Text>
-                            </Pressable>
-                        </>
-                    )}
-                    <Pressable
-                        style={[styles.unselectedButton, unselectedButtonTheme, pos == 2 && selectedButtonTheme]}
-                        onPress={() => changePosition(2)}
-                    >
-                        <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 2 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>Brothers</Text>
-                    </Pressable>
-                    <Pressable
-                        style={[styles.unselectedButton, unselectedButtonTheme, pos == 3 && selectedButtonTheme]}
-                        onPress={() => changePosition(3)}
-                    >
-                        <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 3 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>E-Board</Text>
-                    </Pressable>
-                    {user.Position >= 1 && (
-                        <>
-                            <Pressable
-                                style={[styles.unselectedButton, unselectedButtonTheme, pos == 4 && selectedButtonTheme]}
-                                onPress={() => changePosition(4)}
-                            >
-                                <Text style={[(colorScheme === "dark" ? { color: 'black' } : { color: 'white' }), pos == 4 && (colorScheme === "dark" ? { color: 'white', fontWeight: 'bold' } : { color: 'black', fontWeight: 'bold' })]}>Alumni</Text>
-                            </Pressable>
-                        </>
-                    )}
-                </View>
 
-                {loading ? (
-                    <PeopleLoader />
-                ) : (
-                    filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                        <Person
-                            key={user._id}
-                            user={user}
-                            image={photos[user.ProfilePhoto]}
-                        />
-                    )) : (
-                        <View style={styles.noMembersContainer}>
-                            <Text style={[styles.noMembers, textTheme]}>No members found</Text>
-                        </View>
-                    )
-                )}
+            <View style={styles.buttonsContainer}>
+            <Pressable 
+                style={[styles.unselectedButton,unselectedButtonTheme, pos == 0 && selectedButtonTheme]}
+                onPress={() => changePosition(0)}
+            >
+                <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 0 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Rushees</Text>
+            </Pressable>
+            {user.Position >= 1 && (
+                <>
+                <Pressable 
+                    style={[styles.unselectedButton,unselectedButtonTheme, pos == 1 && selectedButtonTheme]}
+                    onPress={() => changePosition(1)}
+                >
+                    <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 1 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Pledges</Text>
+                </Pressable>
+                </>
+            )}
+            <Pressable 
+                style={[styles.unselectedButton,unselectedButtonTheme, pos == 2 && selectedButtonTheme]}
+                onPress={() => changePosition(2)}
+            >
+                <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 2 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Brothers</Text>
+            </Pressable>
+            <Pressable 
+                style={[styles.unselectedButton,unselectedButtonTheme, pos == 3 && selectedButtonTheme]}
+                onPress={() => changePosition(3)}
+            >
+                <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 3 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>E-Board</Text>
+            </Pressable>
+            {user.Position >= 1 && (
+                <>
+                <Pressable 
+                    style={[styles.unselectedButton,unselectedButtonTheme, pos == 4 && selectedButtonTheme]}
+                    onPress={() => changePosition(4)}
+                >
+                    <Text style={[(colorScheme === 'light' ? { color: 'black'} : { color: 'white'}), pos == 4 && (colorScheme === 'light' ? {color: 'white', fontWeight: 'bold'} : {color: 'black', fontWeight: 'bold'})]}>Alumni</Text>
+                </Pressable>
+                </>
+            )}
+            </View>
+            
+            {loading ? (
+                <PeopleLoader />
+            ) : (
+                filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                    <Person
+                    key={user._id}
+                    user={user}
+                    />
+                )) : (
+                    <View style={styles.noMembersContainer}>
+                    <Text style={[styles.noMembers, textTheme]}>No members found</Text>
+                    </View>
+                )
+            )}            
 
             </ScrollView>
         </View>

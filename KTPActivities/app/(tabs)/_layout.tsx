@@ -8,12 +8,12 @@ import { useColorScheme } from 'react-native';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: colorScheme === 'dark' ? 'Royalblue' : '#86ebba' }}>
+    <Tabs screenOptions={{ tabBarActiveTintColor: colorScheme === 'light' ? 'royalblue' : '#86ebba' }}>
       <Tabs.Screen
         name="Calendar"
         options={{
           tabBarStyle:{
-            backgroundColor: colorScheme === 'dark' ? 'white' : '#1a1a1a',
+            backgroundColor: colorScheme === 'light' ? 'white' : '#1a1a1a',
           },
           headerShown: false,
           title: 'Calendar',
@@ -26,7 +26,7 @@ export default function TabLayout() {
         
         options={{
           tabBarStyle:{
-            backgroundColor: colorScheme === 'dark' ? 'white' : '#1a1a1a',
+            backgroundColor: colorScheme === 'light' ? 'white' : '#1a1a1a',
           },
           headerShown: false,
           title: 'People',
@@ -37,7 +37,7 @@ export default function TabLayout() {
         name="Alerts"
         options={{
           tabBarStyle:{
-            backgroundColor: colorScheme === 'dark' ? 'white' : '#1a1a1a',
+            backgroundColor: colorScheme === 'light' ? 'white' : '#1a1a1a',
           },
           title: 'Alerts',
           headerShown: false,
@@ -48,7 +48,7 @@ export default function TabLayout() {
         name="Profile"
         options={{
           tabBarStyle:{
-            backgroundColor: colorScheme === 'dark' ? 'white' : '#1a1a1a',
+            backgroundColor: colorScheme === 'light' ? 'white' : '#1a1a1a',
           },
           headerShown: false,
           title: 'Profile',

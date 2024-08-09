@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import React from 'react';
 import { ActivityIndicator, Platform, View} from 'react-native';
@@ -30,7 +31,6 @@ const HomeScreen = ({navigation}) => {
     iosClientId: GOOGLE_AUTH_IOS_CLIENT_ID,
     androidClientId: GOOGLE_AUTH_ANDROID_CLIENT_ID,
   });
-
 
   if (Platform.OS === "ios"){
     
@@ -99,9 +99,6 @@ const HomeScreen = ({navigation}) => {
   
 
   }
-
-  
-
 
   if (loading)
     return (

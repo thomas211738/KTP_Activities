@@ -1,6 +1,6 @@
 
 // React Imports
-import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, useColorScheme} from 'react-native';
+import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, useColorScheme, Switch, Appearance} from 'react-native';
 import React, { useState, useEffect } from 'react';
 
 // Sign Out Functionality
@@ -31,6 +31,8 @@ import CircleLoader from '../../components/loaders/circleLoader';
 import { GetImage } from '../../components/pictures';
 import AddigModal from '../../components/igModal';
 import AddLinkedinModal from '../../components/linkedinModal';
+import ProfileLoader from '../../components/loaders/profileLoader';
+import { set } from 'date-fns';
 
 
 const Index = () => {
@@ -48,6 +50,8 @@ const Index = () => {
     const [linkedIn, setLinkedIn] = useState(userInfo.LinkedIn);
     const [userClass, setUserClass] = useState(`(${userInfo.Class})` || "");
     const colorScheme = useColorScheme();
+    const [isEnabled, setIsEnabled] = useState((colorScheme === 'light') ? false : true);
+    const [loading, setLoading] = useState(true);
 
 
     
@@ -56,6 +60,11 @@ const Index = () => {
             const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
             console.log(response.data.ProfilePhoto);
             
+            if (response.data.Interests){
+                setUserInterests(response.data.Interests);
+            }
+            if (response.data.Instagram) setInstagram(response.data.Instagram);
+            if (response.data.LinkedIn) setLinkedIn(response.data.LinkedIn);
             if (response.data.ProfilePhoto) {
                 const image = await GetImage(response.data.ProfilePhoto);
                 setImage(image);
@@ -63,21 +72,15 @@ const Index = () => {
             } else {
                 setImageLoading(false);
             }
-            if (response.data.Interests){
-                setUserInterests(response.data.Interests);
-            }
-            if (response.data.Instagram) setInstagram(response.data.Instagram);
-            if (response.data.LinkedIn) setLinkedIn(response.data.LinkedIn);
-            
             
         } catch (err) {
             console.log(err.message);
         }
     }
-    
+
     useEffect(() => {
         fetchProfile();
-    },[]);
+    }, []);
 
 
     const posName = ["Rushee", "Pledge", "Brother", userInfo.Eboard_Position , "Alumni", "Super Administrator"][userInfo.Position] || "";
@@ -193,8 +196,6 @@ const Index = () => {
     }
 
 
-
-
     const postimage = async (file) => {
         try {
             const formData = new FormData();
@@ -235,12 +236,19 @@ const Index = () => {
         }
     }
 
-    const containerTheme = colorScheme === 'dark' ? styles.containerLight : styles.containerDark;
-    const textTheme = colorScheme === 'dark' ? styles.lightText : styles.darkText;
+    const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark;
+    const textTheme = colorScheme === 'light' ? styles.lightText : styles.darkText;
 
-    const eventTheme = colorScheme === 'dark' ? styles.lightEvent : styles.darkEvent;
-    const interestTheme = colorScheme === 'dark' ? styles.darkEvent : styles.lightEvent;
-    const interestTextTheme = colorScheme === 'dark' ? styles.darkText: styles.lightText;
+    const eventTheme = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
+    const interestTheme = colorScheme === 'light' ? styles.darkEvent : styles.lightEvent;
+    const interestTextTheme = colorScheme === 'light' ? styles.darkText: styles.lightText;
+    const dividerTheme = colorScheme === 'light' ? styles.dividerlight : styles.dividerdark;
+
+    const toggleSwitch = () => {
+        setIsEnabled(previousState => !previousState);
+        const newScheme = isEnabled ? 'light' : 'dark';
+        Appearance.setColorScheme(newScheme);
+      };
 
 
     return (
@@ -262,30 +270,33 @@ const Index = () => {
 
 
 
-                <FontAwesome name="circle" size={50} color={colorScheme === 'dark' ? "white" : "#1a1a1a"} style={styles.profilepiccircle}/>
+                <FontAwesome name="circle" size={50} color={colorScheme === 'light' ? "white" : "#1a1a1a"} style={styles.profilepiccircle}/>
                 <TouchableOpacity onPress={pickImage}>
-                    <FontAwesome name="circle" size={40} color={colorScheme === 'dark' ? "#134b91" : "#86ebba"} style={[styles.profilepiccirclebg]}/>
-                    <Feather name="edit-2" size={20} color={colorScheme === 'dark' ? "white" : "black"} style={styles.editpic}/>
+                    <FontAwesome name="circle" size={40} color={colorScheme === 'light' ? "#134b91" : "#86ebba"} style={[styles.profilepiccirclebg]}/>
+                    <Feather name="edit-2" size={20} color={colorScheme === 'light' ? "white" : "black"} style={styles.editpic}/>
                 </TouchableOpacity>
                 
 
                 {/* PROFILE CARD */}
-                <View style={[styles.card, eventTheme]}>
+                
+                {userInfo ? (
+                <>
+                    <View style={[styles.card, eventTheme]}>
                     <Text style={[styles.name, textTheme]}>{userInfo.FirstName} {userInfo.LastName}</Text>
                     <Text style={styles.status}>{posName} {userClass}</Text>
-                    <View style={styles.divider} />
+                    <View style={[styles.divider, dividerTheme]} />
                     <Text style={[styles.faculty, textTheme]}>{college}</Text>
                     <Text style={[styles.details, textTheme]}>
                         Major in {userInfo.Major.join(' and')}
                         {userInfo.Minor.length > 0 && ` | Minor in ${userInfo.Minor.join(' and')}`}
                     </Text>
                     <Text style={[styles.details, textTheme]}>{grade} ({userInfo.GradYear})</Text>
-                    <View style={styles.divider} />
+                    <View style={[styles.divider, dividerTheme]} />
                     <View style={[styles.interestsContainer]}>
                         <View style={styles.interestTitlerow}>
                             <Text style={[styles.interestsTitle, textTheme]}>Interests</Text>
                             <TouchableOpacity style={styles.addInterestIcon} onPress={() => setAddModalVisible(true)}>
-                                <Ionicons name="add" size={30} color={colorScheme === 'dark' ? "white" : "black"} />
+                                <Ionicons name="add" size={30} color={colorScheme === 'light' ? "white" : "black"} />
                             </TouchableOpacity>    
                         </View>
                     <View style={[styles.interests]}>
@@ -300,12 +311,22 @@ const Index = () => {
                     </View>
                     <View style={styles.socialIcons}>
                         <TouchableOpacity onPress={() => setLinkedinModalVisible(true)}>
-                            <AntDesign name="linkedin-square" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
+                            <AntDesign name="linkedin-square" size={24} color={colorScheme === 'light' ? "white" : "black"} />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => setIgModalVisible(true)}>
-                            <AntDesign name="instagram" size={24} color={colorScheme === 'dark' ? "white" : "black"} />
+                            <AntDesign name="instagram" size={24} color={colorScheme === 'light' ? "white" : "black"} />
                         </TouchableOpacity>
                     </View>
+                </View>
+
+                <View style={[styles.signOutCard, eventTheme]}>
+
+                    <Text style={[styles.darkmodeButtonText, textTheme]}>Dark Mode</Text>
+                    <Switch
+                    ios_backgroundColor="#3e3e3e"
+                    onChange={toggleSwitch}
+                    value={isEnabled}
+                    />
                 </View>
 
                 {/* SIGNOUT CARD */}
@@ -318,8 +339,11 @@ const Index = () => {
                     }}>
                         <Text style={styles.signOutButtonText}>Sign Out</Text>
                     </TouchableOpacity>
-                    <Entypo name="log-out" size={20} color={colorScheme === 'dark' ? "white" : "black"} />
+                    <Entypo name="log-out" size={20} color={colorScheme === 'light' ? "white" : "black"} />
                 </View>
+
+                </>) : (<ProfileLoader/>)}
+                
             </ScrollView>
         </View>
     );
@@ -389,8 +413,13 @@ const styles = StyleSheet.create({
         color: '#0a9bf5',
         fontSize: 16,
     },
-    divider: {
+    dividerlight: {
+        borderBottomColor: 'white',
+    },
+    dividerdark: {
         borderBottomColor: 'black',
+    },
+    divider: {
         borderBottomWidth: 1,
         marginVertical: 10,
     },
@@ -452,6 +481,11 @@ const styles = StyleSheet.create({
         marginTop: 20,
         flexDirection: 'row',
         justifyContent: "space-between",
+        alignItems: "center",
+    },
+    darkmodeButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     signOutButtonText: {
         color: '#ff4f4f',

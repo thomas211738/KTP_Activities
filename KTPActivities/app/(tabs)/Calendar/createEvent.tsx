@@ -53,6 +53,7 @@ const createEvent = () => {
     axios
       .post(`${BACKEND_URL}/events`, data)
       .then(() => {
+        
         router.back();
       })
       .catch((error) => {
