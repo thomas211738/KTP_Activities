@@ -13,8 +13,9 @@ const Person = (props) => {
     const colorScheme = useColorScheme();
 
     const textTheme = colorScheme === 'light' ? styles.textDark : styles.textLight ;
+
     return (
-        <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/profileId', params: { userID: props.user._id } })}>
+        <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/profileId', params: { userID: props.user._id, userImage: props.image } })}>
             <View style={styles.personContainer}>
                 {
                     props.user.ProfilePhoto ?
