@@ -168,6 +168,7 @@ const index = () => {
                     <Person
                     key={user._id}
                     user={user}
+                    image={photos[user.ProfilePhoto]}
                     />
                 )) : (
                     <View style={styles.noMembersContainer}>
