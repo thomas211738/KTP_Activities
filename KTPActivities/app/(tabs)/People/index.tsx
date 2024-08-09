@@ -1,11 +1,13 @@
 
-import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity, Platform, useColorScheme} from 'react-native'
+import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity, Platform, useColorScheme } from 'react-native'
 import { router } from 'expo-router'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { getAllUsersInfo } from '../../components/allUsersManager'
 import { useNavigation } from '@react-navigation/native'
-import { getUserInfo } from '../../components/userInfoManager'; 
+import { getUserInfo } from '../../components/userInfoManager';
 import PeopleLoader from '../../components/loaders/poepleLoader';
+import axios from 'axios';
+import { BACKEND_URL } from '@env';
 
 const Person = (props) => {
     const colorScheme = useColorScheme();
@@ -13,20 +15,31 @@ const Person = (props) => {
     const textTheme = colorScheme === 'light' ? styles.textDark : styles.textLight ;
     return (
         <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/profileId', params: { userID: props.user._id } })}>
-                    <View style={styles.personContainer}>
-            <Image source={require("../../../img/ktplogopng.png")} style={styles.personImage} />
-            <View>
-                <Text style={[styles.personName, textTheme]}>
-                    {props.user.FirstName + " " + props.user.LastName}
-                </Text>
-                <Text style={styles.personMajors}>
-                    {props.user.Position == 3 ? 
-                        props.user.Eboard_Position :
-                        `${props.user.Major.join(" and ")} Major${props.user.Minor.length !== 0 && props.user.Minor[0] !== "" ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
-                    }
-                </Text>
+            <View style={styles.personContainer}>
+                {
+                    props.user.ProfilePhoto ?
+                        <Image 
+                            source={{ uri: props.image }} 
+                            style={[styles.personImage, { borderRadius: 30 }]} 
+                        />
+                        :
+                        <Image 
+                            source={require("../../../img/ktplogopng.png")} 
+                            style={styles.personImage} 
+                        />
+                }
+                <View>
+                    <Text style={[styles.personName, textTheme]}>
+                        {props.user.FirstName + " " + props.user.LastName}
+                    </Text>
+                    <Text style={styles.personMajors}>
+                        {props.user.Position == 3 ?
+                            props.user.Eboard_Position :
+                            `${props.user.Major.join(" and ")} Major${props.user.Minor.length !== 0 && props.user.Minor[0] !== "" ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
+                        }
+                    </Text>
+                </View>
             </View>
-        </View>
         </TouchableOpacity>
 
     )
@@ -39,19 +52,37 @@ const index = () => {
     const [search, setSearch] = React.useState('');
     const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => user.Position === pos));
     const [loading, setLoading] = React.useState(false);
+    const [photos, setPhotos] = React.useState({});
     const navigation = useNavigation();
     const colorScheme = useColorScheme();
 
+    useEffect(() => {
+        fetchAllPhotos();
+    }, []);
+
     React.useLayoutEffect(() => {
         navigation.setOptions({
-          headerSearchBarOptions: {
-            placeholder: "Search People",
-            textColor: colorScheme === 'light' ? 'black' : 'white' ,
-            onChangeText: (event) => searchUsers(event.nativeEvent.text),
-            hideWhenScrolling: false,
-          },
+            headerSearchBarOptions: {
+                placeholder: "Search People",
+                textColor: colorScheme === 'dark' ? 'black' : 'white',
+                onChangeText: (event) => searchUsers(event.nativeEvent.text),
+                hideWhenScrolling: false,
+            },
         });
-      }, [colorScheme]);
+    }, [colorScheme]);
+
+    const fetchAllPhotos = async () => {
+        try {
+            const response = await axios.get(`${BACKEND_URL}/users/photo/all`);
+            const photosData = {};
+            response.data.data.forEach(photo => {
+                photosData[photo.fileid] = `data:image/png;base64,${photo.data}`;   
+            });
+            setPhotos(photosData);
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
 
     const searchUsers = (text) => {
         setSearch(text);
@@ -66,12 +97,12 @@ const index = () => {
     }
 
     const changePosition = (position) => {
-        if(position !== pos) {
+        if (position !== pos) {
             setLoading(true);
             setSearch('');
             setPos(position);
             if (position === 2) {
-              setFilteredUsers(users.filter(user => user.Position === 2 || user.Position === 5));
+                setFilteredUsers(users.filter(user => user.Position === 2 || user.Position === 5));
             } else {
                 setFilteredUsers(users.filter(user => user.Position === position));
             }
@@ -88,6 +119,7 @@ const index = () => {
     return (
         <View style={[styles.container, containerTheme]}>
             <ScrollView keyboardDismissMode='on-drag' contentInsetAdjustmentBehavior='automatic'>
+
             <View style={styles.buttonsContainer}>
             <Pressable 
                 style={[styles.unselectedButton,unselectedButtonTheme, pos == 0 && selectedButtonTheme]}
@@ -146,7 +178,7 @@ const index = () => {
 
             </ScrollView>
         </View>
-        )
+    )
 }
 
 const styles = StyleSheet.create({
@@ -191,7 +223,7 @@ const styles = StyleSheet.create({
     selectedButtonLight: {
         backgroundColor: '#134b91'
     },
-    selectedButtonDark:{
+    selectedButtonDark: {
         backgroundColor: '#86ebba'
 
     },
