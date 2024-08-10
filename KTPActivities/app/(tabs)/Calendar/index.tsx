@@ -21,7 +21,6 @@ const index = ({ navigation }) => {
 
 
     const fetchEvents = async () => {
-        console.log('fetching events');
         try {
             const response = await axios.get(`${BACKEND_URL}/events`);
             const sortedEvents = response.data.data.sort((a, b) => new Date(a.Day) - new Date(b.Day));

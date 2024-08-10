@@ -7,13 +7,10 @@ import { AntDesign } from '@expo/vector-icons';
 import colleges from '../../components/buinfo';
 import { Octicons } from '@expo/vector-icons';
 import CircleLoader from '../../components/loaders/circleLoader';
-import {GetImage} from '../../components/pictures';
 import ViewProfileLoader from '../../components/loaders/viewProfileLoader';
 
-
-
 const profileId = () => {
-    const { userID } = useLocalSearchParams();
+    const { userID, userImage } = useLocalSearchParams();
     const [userFirstName, setuserFirstName] = useState('');
     const [userLastName, setuserLastName] = useState('');
     const [userGradYear, setUserGradYear] = useState("");
@@ -32,10 +29,9 @@ const profileId = () => {
 
     const colorScheme = useColorScheme();
 
-
     React.useEffect(() => {
         axios.get(`${BACKEND_URL}/users/${userID}`)
-        .then(async (response) => {
+        .then((response) => {
             setuserFirstName(response.data.FirstName);
             setuserLastName(response.data.LastName);
             setUserGradYear(response.data.GradYear);
@@ -50,13 +46,11 @@ const profileId = () => {
             if (response.data.Class) setUserClass(`(${response.data.Class})`);
             setLoading(false);
             if (response.data.ProfilePhoto) {
-                const image = await GetImage(response.data.ProfilePhoto);
-                setImage(image);
+                setImage(userImage);
                 setImageLoading(false);
             }else{
                 setImageLoading(false);
             }
-
             
         })
         .catch((error) => {
@@ -132,7 +126,7 @@ const profileId = () => {
         <View style={[styles.container, containerTheme]}>
             {imageLoading ? <CircleLoader/> : 
                 image ? (
-                    <Image source={{ uri: `data:image/png;base64,${image}` }} style={styles.profileimage} />
+                    <Image source={{ uri: image }} style={styles.profileimage} />
                 ) : (
                     <Octicons name="feed-person" size={175} color={colorScheme === 'light' ? "#242424" : "white"} style={styles.profilepic} />
                 )}
@@ -166,8 +160,6 @@ const profileId = () => {
             </View>
             </View>
 
-            
-
             <View style={styles.socialIcons}>
                 {linkedin ? 
                 <TouchableOpacity onPress={() => openLinkedInProfile(linkedin)}>
@@ -177,8 +169,6 @@ const profileId = () => {
                 <TouchableOpacity onPress={() => openInstagramProfile(instagram)}>
                     <AntDesign name="instagram" size={24} color={colorScheme === 'light' ? "white" : "black"} />
                 </TouchableOpacity> : ""}
-
-            
             </View>
         </View>
 
