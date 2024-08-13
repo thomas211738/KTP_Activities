@@ -74,10 +74,10 @@ const index = () => {
 
     const fetchAllPhotos = async () => {
         try {
-            const response = await axios.get(`${BACKEND_URL}/users/photo/all`);
+            const response = await axios.get(`${BACKEND_URL}/photo/photos`);
             const photosData = {};
             response.data.data.forEach(photo => {
-                photosData[photo.fileid] = `data:image/png;base64,${photo.data}`;   
+                photosData[photo._id] = `data:image/png;base64,${photo.data}`;   
             });
             setPhotos(photosData);
         } catch (err) {

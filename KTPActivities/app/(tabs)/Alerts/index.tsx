@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { BACKEND_URL } from '@env';
-import { useFocusEffect } from '@react-navigation/native';
 import AddAlertModal from '../../components/addAlertModal';
 import EditAlertModal from '../../components/editAlertModal';
 import { useNavigation } from '@react-navigation/native'
@@ -87,7 +86,7 @@ const index = () => {
 
   useEffect(() => {
     fetchAlerts();
-  });
+  },[]);
 
   const formatTime = (dateString) => {
     const date = parseISO(dateString);

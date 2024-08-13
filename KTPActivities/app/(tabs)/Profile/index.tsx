@@ -32,8 +32,7 @@ import { GetImage } from '../../components/pictures';
 import AddigModal from '../../components/igModal';
 import AddLinkedinModal from '../../components/linkedinModal';
 import ProfileLoader from '../../components/loaders/profileLoader';
-import { set } from 'date-fns';
-
+import { constructNow } from 'date-fns';
 
 const Index = () => {
     const userInfo = getUserInfo();
@@ -194,39 +193,50 @@ const Index = () => {
         }
     }
 
+    async function getBase64FromUri(uri) {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64data = reader.result.split(',')[1];
+            resolve(base64data);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        return base64;
+      }
+      
+
 
     const postimage = async (file) => {
         try {
-            const formData = new FormData();
-            formData.append('file', {
-                uri: file.uri,
-                name: 'photo.jpg',
-                type: 'image/jpeg',
-            });
 
+            const base64String = await getBase64FromUri(file.uri);
+            const dbimage = {data: base64String};
+            
+            let imageID
             if(userInfo.ProfilePhoto) {
-                await axios.delete(`${BACKEND_URL}/users/photo/${userInfo.ProfilePhoto}`);
+                imageID = await axios.put(`${BACKEND_URL}/photo/photo`, dbimage)
+
+            } else{
+                imageID = await axios.post(`${BACKEND_URL}/photo/photo`, dbimage)
             }
 
-            const imageID = await axios.post(`${BACKEND_URL}/users/photo`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                  },
-            });
-            const image = await GetImage(imageID.data.fileId);
-
+            const image = await GetImage(imageID.data.fileID);
             setImage(image);
             setImageLoading(false);
-            addFileIDToUser(imageID.data.fileId);
+            addFileIDToUser(imageID.data.fileID);
         } catch (err) {
             console.log(err.message);
         }
     }
 
-      const addFileIDToUser = async (fileID) => {
+      const addFileIDToUser = async (file_ID) => {
         try {
 
-            const updateduser = {Position: userInfo.Position.toString(), ProfilePhoto: fileID};
+            const updateduser = {Position: userInfo.Position.toString(), ProfilePhoto: file_ID};
             await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
                 updateduser
             );
@@ -262,7 +272,7 @@ const Index = () => {
                 {/* IMAGE COMPONENT */}
                 {imageLoading ? <CircleLoader/> : 
                     image ? (
-                        <Image source={{ uri: `data:image/png;base64,${image}` }} style={styles.profileimage} />
+                        <Image source={{ uri: `data:image/jpeg;base64,${image}` }} style={styles.profileimage} />
                     ) : (
                         <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic} />
                     )}
