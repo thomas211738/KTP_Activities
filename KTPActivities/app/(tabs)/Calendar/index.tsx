@@ -17,9 +17,6 @@ const index = ({ navigation }) => {
     const [loading, setLoading] = useState(true);
     const userInfo = getUserInfo();
 
-
-
-
     const fetchEvents = async () => {
         try {
             const response = await axios.get(`${BACKEND_URL}/events`);
@@ -100,7 +97,7 @@ const index = ({ navigation }) => {
                                             <View style={styles.titleContainer}>
                                                 <Text style={[styles.eventTitle, themeTextStyle]}>{event.Name}</Text>
                                                 <View style={styles.icon}>
-                                                    {userInfo.Position === 3 || userInfo.Position === 5 && (
+                                                    {userInfo.Position.toString() === "3" || userInfo.Position.toString() === "5" ? (
                                                         <Feather
                                                             name="edit"
                                                             size={23}
@@ -109,8 +106,8 @@ const index = ({ navigation }) => {
                                                                 router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } });
                                                             }}
                                                         />
-                                                    )}
-                                                    {userInfo.Position === 3 || userInfo.Position === 5 && (
+                                                    ):""}
+                                                    {userInfo.Position === 3 || userInfo.Position === 5 ? (
                                                         <MaterialIcons
                                                             name="delete"
                                                             size={25}
@@ -118,7 +115,7 @@ const index = ({ navigation }) => {
                                                             style={styles.iconSpacing}
                                                             onPress={() => confirmDeleteAlert(event.Name, event._id)}
                                                         />
-                                                    )}
+                                                    ): ""}
                                                 </View>
                                             </View>
                                             <Text style={[styles.eventText, themeTextStyle]}>

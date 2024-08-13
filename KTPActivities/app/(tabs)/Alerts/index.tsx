@@ -28,12 +28,12 @@ const AlertComponent = (props) => {
           <Text style={themeTextStyle} > {props.description}</Text>
         </View>
         <Text style={styles.alertTime}>{props.time}</Text>
-        {userInfo.Position === 3 || userInfo.Position === 5 && (
+        {userInfo.Position === 3 || userInfo.Position === 5 ? (
           <View style={styles.alertButtons}>
             <Feather name="edit" size={24} color={colorScheme === 'light' ? "black" : "white"} style={styles.editIcon} onPress={props.onEdit} />
             <MaterialIcons name="delete" size={25} color="#B22222" style={styles.deleteIcon} onPress={props.onDelete} />
           </View>
-        )}
+        ): ""}
       </View>
     </>
     
@@ -50,10 +50,6 @@ const index = () => {
   const navigation = useNavigation();
   const userInfo = getUserInfo();
   const colorScheme = useColorScheme();
-
-  
-
-
 
   const fetchAlerts = async () => {
     try {
@@ -185,6 +181,7 @@ const index = () => {
       
       {loading ? (<AlertsLoader/>) : (
         <>
+
         {userInfo.Position === 3 || userInfo.Position === 5 ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
         {userInfo.Position === 3 || userInfo.Position === 5 ? <EditAlertModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putAlert} alertID={alertID}/> : ''}
         {Object.keys(groupedAlerts).map((date, index) => (
