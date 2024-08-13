@@ -51,7 +51,7 @@ const Index = () => {
     const colorScheme = useColorScheme();
     const [isEnabled, setIsEnabled] = useState((colorScheme === 'light') ? false : true);
     const [loading, setLoading] = useState(true);
-
+    const [profileID, setProfileID] = useState(null);
 
     
     const fetchProfile = async () => {
@@ -65,12 +65,11 @@ const Index = () => {
             if (response.data.LinkedIn) setLinkedIn(response.data.LinkedIn);
             if (response.data.ProfilePhoto) {
                 const image = await GetImage(response.data.ProfilePhoto);
+                setProfileID(response.data.ProfilePhoto)
                 setImage(image);
-                setImageLoading(false);
-            } else {
-                setImageLoading(false);
             }
-            
+            setImageLoading(false);
+
         } catch (err) {
             console.log(err.message);
         }
@@ -217,8 +216,8 @@ const Index = () => {
             const dbimage = {data: base64String};
             
             let imageID
-            if(userInfo.ProfilePhoto) {
-                imageID = await axios.put(`${BACKEND_URL}/photo/photo/${userInfo.ProfilePhoto}`, dbimage)
+            if(profileID) {
+                imageID = await axios.put(`${BACKEND_URL}/photo/photo/${profileID}`, dbimage)
 
             } else{
                 imageID = await axios.post(`${BACKEND_URL}/photo/photo`, dbimage)
@@ -292,7 +291,7 @@ const Index = () => {
                 <>
                     <View style={[styles.card, eventTheme]}>
                     <Text style={[styles.name, textTheme]}>{userInfo.FirstName} {userInfo.LastName}</Text>
-                    <Text style={styles.status}>{posName} {userClass}</Text>
+                    <Text style={styles.status}>{posName} { userClass == "undefined" ? userClass : ""}</Text>
                     <View style={[styles.divider, dividerTheme]} />
                     <Text style={[styles.faculty, textTheme]}>{college}</Text>
                     <Text style={[styles.details, textTheme]}>

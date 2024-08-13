@@ -124,7 +124,7 @@ router.put("/:id", async (request, response) => {
 });
 
 // delete a User
-router.delete("/user/:id", async (request, response) => {
+router.delete("/:id", async (request, response) => {
     try {
         await Users.findByIdAndDelete(request.params.id);
         return response
