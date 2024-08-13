@@ -17,8 +17,6 @@ router.post("/photo", async(request, res) => {
                 message: "Send data",
         })} else{
         
-        console.log(data);
-
         const newUserPhoto = new UserPhotos({data : data});
 
         const savedUserPhoto = await newUserPhoto.save();
@@ -38,6 +36,7 @@ router.post("/photo", async(request, res) => {
 // Get one photo by id
 router.get('/photo/:id', async (request, response) => {
     try {
+        
         const { id } = request.params;
         const userphoto = await UserPhotos.findById(id);
         return response.status(200).json(userphoto);
@@ -64,10 +63,19 @@ router.get('/photo/:id', async (request, response) => {
 
   router.put("/photo/:id", async (request, response) => {
     try {
-        const { id } = request.params;
-        const file = request.body;
-        const result = await UserPhotos.findByIdAndUpdate(id, {file});
-        return response.status(200).json(result._id);
+        const {
+            data
+        } = request.body;
+
+        if ( !request.body.data ) {
+            return response.status(400).send({
+                message: "Send data",
+        })} else{
+            const { id } = request.params;
+            const result = await UserPhotos.findByIdAndUpdate(id, {data : data});
+            const fileId = {fileID: result._id}
+            return response.status(200).json(fileId);
+        }
 
     }catch (error) {
         console.log(error.message);
@@ -81,7 +89,7 @@ router.get('/photo/:id', async (request, response) => {
         await UserPhotos.findByIdAndDelete(request.params.id);
         return response
             .status(200)
-            .send({ message: "User deleted successfully" });
+            .send({ message: "User Photo deleted successfully" });
     } catch (error) {
         console.log(error.message);
         response.status(500).send({ message: error.message });

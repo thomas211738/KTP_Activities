@@ -218,7 +218,7 @@ const Index = () => {
             
             let imageID
             if(userInfo.ProfilePhoto) {
-                imageID = await axios.put(`${BACKEND_URL}/photo/photo`, dbimage)
+                imageID = await axios.put(`${BACKEND_URL}/photo/photo/${userInfo.ProfilePhoto}`, dbimage)
 
             } else{
                 imageID = await axios.post(`${BACKEND_URL}/photo/photo`, dbimage)

@@ -1,9 +1,6 @@
 
 import express from "express";
 import { Users } from "../models/userModel.js";
-import { ObjectId } from 'mongodb';
-import mongoose from "mongoose";
-import { gfs } from "../index.js";
 
 const router = express.Router();
 
