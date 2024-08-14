@@ -22,6 +22,10 @@ const eventSchema = mongoose.Schema(
         type: String,
         required: true,
     },
+    Position: {
+        type: Number,
+        required: true,
+    }
     },
     {
         timestamps: true,

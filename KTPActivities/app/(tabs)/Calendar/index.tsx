@@ -20,7 +20,8 @@ const index = ({ navigation }) => {
     const fetchEvents = async () => {
         try {
             const response = await axios.get(`${BACKEND_URL}/events`);
-            const sortedEvents = response.data.data.sort((a, b) => new Date(a.Day) - new Date(b.Day));
+            const events = response.data.data.filter((event) => event.Position <= userInfo.Position);
+            const sortedEvents = events.sort((a, b) => new Date(a.Day) - new Date(b.Day));
             setEvents(sortedEvents);
             setLoading(false);
         } catch (err) {
@@ -28,7 +29,6 @@ const index = ({ navigation }) => {
             setLoading(false);
         }
     };
-
 
     useEffect(() => {
         fetchEvents();
@@ -69,12 +69,22 @@ const index = ({ navigation }) => {
         fetchEvents();
     };
 
+    const positions = {
+        0: "Open rush",
+        0.5: "Closed rush",
+        1: "Pledge",
+        2: "Brother",
+        3: "E-board",
+        4: "Alumni",
+        5: "Super"
+    }
+
     const groupedEvents = groupEventsByDate(events);
     const themeContainerStyle = colorScheme === 'light' ? styles.lightcontainer : styles.darkcontainer;
     const themeTitleTextStyle = colorScheme === 'light' ? styles.darkText : styles.lightText ;
     const themeTextStyle = colorScheme === 'light' ?  styles.lightText : styles.darkText;
     const themeEventStyle = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
-
+    const positionTextStyle = colorScheme === 'light' ? styles.darkPositionTextContainer : styles.lightPositionTextContainer;
 
 
 
@@ -123,6 +133,11 @@ const index = ({ navigation }) => {
                                                 <Entypo name="location-pin" size={17} color={colorScheme === 'light' ? "white" : "black"} /> {event.Location}
                                             </Text>
                                             <Text style={[styles.eventText, themeTextStyle]}>{event.Description}</Text>
+                                            <View style={styles.positionContainer}>
+                                                <View style={[styles.positionTextContainer, positionTextStyle]}>
+                                                    <Text style={themeTitleTextStyle}>{positions[event.Position]}</Text>
+                                                </View>
+                                            </View>
                                         </View>
                                     </View>
                                 ))}
@@ -197,6 +212,22 @@ const styles = StyleSheet.create({
     titleContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+    },
+    positionContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: 10
+    },
+    positionTextContainer: {
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 30  
+    },
+    lightPositionTextContainer: {
+        backgroundColor: '#134b91',
+    },
+    darkPositionTextContainer: {
+        backgroundColor: '#86ebba',
     },
     icon: {
         flexDirection: 'row',

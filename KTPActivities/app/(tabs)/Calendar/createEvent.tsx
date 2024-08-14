@@ -10,6 +10,7 @@ const createEvent = () => {
   const [eventTime, setEventTime] = React.useState('');
   const [eventLocation, setEventLocation] = React.useState('');
   const [eventDescription, setEventDescription] = React.useState('');
+  const [eventPosition, setEventPosition] = React.useState('');
 
   const validateDate = (date) => {
     const regex = /^\d{4}-\d{2}-\d{2}$/;
@@ -32,7 +33,7 @@ const createEvent = () => {
   };
 
   const handleCreateEvent = () => {
-    if (!eventName || !eventDay || !eventTime || !eventLocation || !eventDescription) {
+    if (!eventName || !eventDay || !eventTime || !eventLocation || !eventDescription || !eventPosition) {
       Alert.alert('Validation Error', 'All fields are required and must be at least one character long.');
       return;
     }
@@ -48,6 +49,7 @@ const createEvent = () => {
       Time: eventTime,
       Location: eventLocation,
       Description: eventDescription,
+      Position: eventPosition
     };
 
     axios
@@ -74,6 +76,8 @@ const createEvent = () => {
             <TextInput style={styles.boxEntry} onChangeText={setEventTime} value={eventTime} />
             <Text style={styles.boxTitle}>Location</Text>
             <TextInput style={styles.boxEntry} onChangeText={setEventLocation} value={eventLocation} />
+            <Text style={styles.boxTitle}>Position</Text>
+            <TextInput style={styles.boxEntry} onChangeText={setEventPosition} value={eventPosition} />
             <Text style={styles.boxTitle}>Description</Text>
             <TextInput style={[styles.boxEntry, { height: 55 }]} multiline onChangeText={setEventDescription} value={eventDescription} />
             <View style={styles.buttonContainer}>
