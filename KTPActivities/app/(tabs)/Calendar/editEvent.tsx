@@ -1,5 +1,5 @@
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useLocalSearchParams, router } from 'expo-router';
 import { BACKEND_URL } from '@env';
@@ -11,6 +11,7 @@ const editEvent = () => {
   const [eventTime, setEventTime] = React.useState('');
   const [eventLocation, setEventLocation] = React.useState('');
   const [eventDescription, setEventDescription] = React.useState('');
+  const [eventPosition, setEventPosition] = React.useState('');
 
   React.useEffect(() => {
     axios.get(`${BACKEND_URL}/events/${eventID}`)
@@ -20,6 +21,7 @@ const editEvent = () => {
         setEventTime(response.data.Time);
         setEventLocation(response.data.Location);
         setEventDescription(response.data.Description);
+        setEventPosition(response.data.Position);
       })
       .catch((error) => {
         console.log(error);
@@ -47,7 +49,7 @@ const editEvent = () => {
   };
 
   const handleEditEvent = () => {
-    if (!eventName || !eventDay || !eventTime || !eventLocation || !eventDescription) {
+    if (!eventName || !eventDay || !eventTime || !eventLocation || !eventDescription || !eventPosition) {
       Alert.alert('Validation Error', 'All fields are required and must be at least one character long.');
       return;
     }
@@ -63,6 +65,7 @@ const editEvent = () => {
       Time: eventTime,
       Location: eventLocation,
       Description: eventDescription,
+      Position: eventPosition
     };
 
     axios
@@ -89,6 +92,8 @@ const editEvent = () => {
           <TextInput style={styles.boxEntry} onChangeText={setEventTime} value={eventTime} />
           <Text style={styles.boxTitle}>Location</Text>
           <TextInput style={styles.boxEntry} onChangeText={setEventLocation} value={eventLocation} />
+          <Text style={styles.boxTitle}>Position</Text>
+          <TextInput style={styles.boxEntry} onChangeText={setEventPosition} value={eventPosition} />
           <Text style={styles.boxTitle}>Description</Text>
           <TextInput style={[styles.boxEntry, { height: 55 }]} multiline onChangeText={setEventDescription} value={eventDescription} />
           <View style={styles.buttonContainer}>

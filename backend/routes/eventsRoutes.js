@@ -40,6 +40,7 @@ router.post("/", async (request, response) => {
             Time,
             Location,
             Description,
+            Position
         } = request.body;
 
         if (
@@ -47,7 +48,8 @@ router.post("/", async (request, response) => {
             !request.body.Day ||
             !request.body.Time ||
             !request.body.Location ||
-            !request.body.Description
+            !request.body.Description ||
+            !request.body.Position
         ) {
             return response.status(400).send({
                 message:
@@ -60,6 +62,7 @@ router.post("/", async (request, response) => {
             Time,
             Location,
             Description,
+            Position
         });
         await newevent.save();
         return response
@@ -79,7 +82,8 @@ router.put("/:id", async (request, response) => {
             !request.body.Day ||
             !request.body.Time ||
             !request.body.Location ||
-            !request.body.Description
+            !request.body.Description || 
+            !request.body.Position
         ) {
             return response.status(400).send({
                 message:
