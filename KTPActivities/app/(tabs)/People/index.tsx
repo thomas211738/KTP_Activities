@@ -11,7 +11,6 @@ import { BACKEND_URL } from '@env';
 
 const Person = (props) => {
     const colorScheme = useColorScheme();
-
     const textTheme = colorScheme === 'light' ? styles.textDark : styles.textLight ;
 
     return (
@@ -104,6 +103,8 @@ const index = () => {
             setPos(position);
             if (position === 2) {
                 setFilteredUsers(users.filter(user => user.Position === 2 || user.Position === 5));
+            } else if (position === 0){
+                setFilteredUsers(users.filter(user => user.Position === 0 || user.Position === 0.5));
             } else {
                 setFilteredUsers(users.filter(user => user.Position === position));
             }

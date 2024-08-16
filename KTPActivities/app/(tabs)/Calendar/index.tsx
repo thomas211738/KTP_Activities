@@ -10,8 +10,7 @@ import { router } from 'expo-router';
 import CalendarLoader from '../../components/loaders/calendarLoader';
 import { getUserInfo } from '../../components/userInfoManager';
 
-
-const index = ({ navigation }) => {
+const index = () => {
     const colorScheme = useColorScheme();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -86,8 +85,6 @@ const index = ({ navigation }) => {
     const themeEventStyle = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
     const positionTextStyle = colorScheme === 'light' ? styles.darkPositionTextContainer : styles.lightPositionTextContainer;
 
-
-
     if (loading) {
         return <CalendarLoader />;
     } else {
@@ -147,10 +144,7 @@ const index = ({ navigation }) => {
                 </ScrollView>
             </SafeAreaView>
         );
-
     }
-
-
 };
 
 const styles = StyleSheet.create({

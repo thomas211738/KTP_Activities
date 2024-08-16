@@ -149,7 +149,6 @@ const Index = () => {
           aspect: [4, 3],
           quality: 1,
         });
-        
 
         if (!result.canceled) {
             setImageLoading(true);
@@ -207,11 +206,8 @@ const Index = () => {
         return base64;
       }
       
-
-
     const postimage = async (file) => {
         try {
-
             const base64String = await getBase64FromUri(file.uri);
             const dbimage = {data: base64String};
             
@@ -232,7 +228,7 @@ const Index = () => {
         }
     }
 
-      const addFileIDToUser = async (file_ID) => {
+    const addFileIDToUser = async (file_ID) => {
         try {
 
             const updateduser = {Position: userInfo.Position.toString(), ProfilePhoto: file_ID};
@@ -328,7 +324,6 @@ const Index = () => {
                 </View>
 
                 <View style={[styles.signOutCard, eventTheme]}>
-
                     <Text style={[styles.darkmodeButtonText, textTheme]}>Dark Mode</Text>
                     <Switch
                     ios_backgroundColor="#3e3e3e"

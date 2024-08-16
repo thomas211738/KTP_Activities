@@ -8,6 +8,7 @@ import colleges from '../../components/buinfo';
 import { Octicons } from '@expo/vector-icons';
 import CircleLoader from '../../components/loaders/circleLoader';
 import ViewProfileLoader from '../../components/loaders/viewProfileLoader';
+import { getUserInfo } from '../../components/userInfoManager';
 
 const profileId = () => {
     const { userID, userImage } = useLocalSearchParams();
@@ -26,7 +27,7 @@ const profileId = () => {
     const [linkedin, setLinkedin] = useState(null);
     const [userClass, setUserClass] = useState("");
     const [loading, setLoading] = useState(true);
-
+    const userInfo = getUserInfo();
     const colorScheme = useColorScheme();
 
     React.useEffect(() => {
@@ -109,6 +110,20 @@ const profileId = () => {
           }
       };
 
+      const changePosition = async (position) => {
+        try {
+            let newPosition = 0;
+            if (position == 0) newPosition = 0.5;
+
+            const updateduser = {Position: newPosition.toString()};
+            await axios.put(`${BACKEND_URL}/users/${userID}`,
+                updateduser
+            );
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark;
     const textTheme = colorScheme === 'light' ? styles.lightText : styles.darkText;
 
@@ -172,10 +187,24 @@ const profileId = () => {
             </View>
         </View>
 
-        </>}
-
-
+        {
+            userInfo.Position === 3 || userInfo.Position === 5 ? 
+            position === 0 || position === 0.5 ? 
+                <View style={[styles.signOutCard, eventTheme]}>
+                    <TouchableOpacity onPress={() => changePosition(position)}>
+                        {position === 0 ? 
+                        <Text style={[styles.darkmodeButtonText, textTheme]}>Promote to Closed Rush</Text> :
+                        <Text style={[styles.darkmodeButtonText, textTheme]}>Remove from Closed Rush</Text>
+                        }
+                    </TouchableOpacity>
+                </View> 
+            : "" : ""
+        }
         
+
+
+
+        </>}
         </ScrollView>
         
 
@@ -320,6 +349,10 @@ const styles = StyleSheet.create({
     },
     signOutButtonText: {
         color: '#ff4f4f',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    darkmodeButtonText: {
         fontSize: 16,
         fontWeight: 'bold',
     },

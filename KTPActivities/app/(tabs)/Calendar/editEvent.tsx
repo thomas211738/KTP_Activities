@@ -21,7 +21,7 @@ const editEvent = () => {
         setEventTime(response.data.Time);
         setEventLocation(response.data.Location);
         setEventDescription(response.data.Description);
-        setEventPosition(response.data.Position);
+        setEventPosition(response.data.Position.toString());
       })
       .catch((error) => {
         console.log(error);
