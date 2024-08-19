@@ -34,7 +34,7 @@ const EditInterestModal = (props) => {
                     }
             }
                 } style={[styles.postButton, !interest && styles.disabledButton]}>
-              <Text>Post</Text>
+              <Text>Add</Text>
             </Pressable>
           </View>
         </View>
@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
   },
   modalView: {
     backgroundColor: 'white',
-    width: '70%',
-    height: '50%',
+    width: '80%',
+    height: '40%',
     alignItems: 'center',
     justifyContent: 'space-evenly',
     borderRadius: 25
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   deleteButton:{
     alignItems: 'center',
-    backgroundColor: 'red',
+    backgroundColor: '#ff4f4f',
     padding: 15,
     borderRadius: 5,
     marginBottom: 10

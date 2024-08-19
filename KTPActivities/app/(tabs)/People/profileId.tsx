@@ -153,7 +153,7 @@ const profileId = () => {
         <>
         <View style={[styles.card, eventTheme]}>
             <Text style={[styles.name, textTheme]}>{userFirstName} {userLastName}</Text>
-            <Text style={styles.status}>{posName} { userClass == "undefined" ? userClass : ""}</Text>
+            <Text style={styles.status}>{posName} { userClass != "(undefined)" ? userClass : ""}</Text>
             <View style={[styles.divider, dividerTheme]} />
             <Text style={[styles.faculty, textTheme]}>{college}</Text>
             <Text style={[styles.details, textTheme]}>
