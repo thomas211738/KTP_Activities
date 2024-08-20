@@ -1,9 +1,10 @@
-import { View, Text, SafeAreaView, Image, StatusBar, Button, StyleSheet, Platform} from 'react-native'
+import { View, Text, SafeAreaView, Image, StatusBar, Button, StyleSheet, Platform, ScrollView} from 'react-native'
 import React from 'react'
 import { useNavigation } from '@react-navigation/native';
 import GoogleButton from './components/googleButton';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import AndroidAuth from './components/androidAuth';
+import Animated, {FadeIn} from 'react-native-reanimated';
 
 export default function SignInScreen({ promptAsync }) {
     const mynavigation = useNavigation();
@@ -11,25 +12,21 @@ export default function SignInScreen({ promptAsync }) {
     return (
         <RootSiblingParent>
             <SafeAreaView style = {home.container}>
-            <View style = {home.container}>
-            <Image source={require('../img/ktplogopng.png')} style={home.logo} />
-            <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
-            <StatusBar style="auto" />
-            </View>
-            {/* <View style = {home.Button}>
-            <Link href="/signup"> Signup </Link>
-            </View>
-            <View style={{ flexDirection: 'row', margin: 5}}>
-            <Button title="Login" onPress={() => mynavigation.navigate('(tabs)')} />
-            </View> */}
+            {/* <Animated.ScrollView entering={FadeIn}> */}
+              <View style = {home.container}>
+              <Image source={require('../img/ktplogopng.png')} style={home.logo} />
+              <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
+              </View>
+            
+                {Platform.OS === "ios" ? (
+                  <GoogleButton promptAsync={() => promptAsync()} />
+                ) : (
+                  <AndroidAuth/>
+                )}
 
-           
-              {Platform.OS === "ios" ? (
-                 <GoogleButton promptAsync={() => promptAsync()} />
-              ) : (
-                <AndroidAuth/>
-              )}
+            {/* </Animated.ScrollView> */}
             </SafeAreaView>
+
         </RootSiblingParent>
   );
 }

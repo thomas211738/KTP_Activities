@@ -1,5 +1,4 @@
 
-import axios from 'axios';
 import React from 'react';
 import { ActivityIndicator, Platform, View} from 'react-native';
 import * as WebBrowser from "expo-web-browser";
@@ -13,20 +12,23 @@ import {
 import { auth } from "./firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignInScreen from './signin';
-import { router} from 'expo-router';
+import { Redirect, router} from 'expo-router';
 import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID, BACKEND_URL } from '@env';
 import { ValidateUser } from './components/auth';
 import Toast from 'react-native-root-toast';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import { setUserInfo } from './components/userInfoManager'; 
 import { setAllUsersInfo } from './components/allUsersManager';
-
+import Splash from './components/splash';
 
 WebBrowser.maybeCompleteAuthSession();
 
 //HOME SCREEN
 const HomeScreen = ({navigation}) => {
   const [loading, setLoading] = React.useState(false);
+  const [isAnimating, setIsAnimating] = React.useState<boolean>(true);
+  const [validation, setValidation] = React.useState(0);
+  
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     iosClientId: GOOGLE_AUTH_IOS_CLIENT_ID,
     androidClientId: GOOGLE_AUTH_ANDROID_CLIENT_ID,
@@ -34,18 +36,6 @@ const HomeScreen = ({navigation}) => {
 
   if (Platform.OS === "ios"){
     
-    const getLocalUser = async () => {
-      try {
-        setLoading(true);
-        const userJSON = await AsyncStorage.getItem("@user");
-        const userData = userJSON ? JSON.parse(userJSON) : null;
-  
-      } catch (e) {
-        console.log(e, "Error getting local user");
-      } finally {
-        setLoading(false);
-      }
-    };
   
     React.useEffect(() => {
   
@@ -58,17 +48,18 @@ const HomeScreen = ({navigation}) => {
     }, [response]);
   
     React.useEffect(() => {
-      getLocalUser();
       const unsub = onAuthStateChanged(auth, async (user) => {
         if (user) {
+          setLoading(true);
           await AsyncStorage.setItem("@user", JSON.stringify(user));
   
           const validation = await ValidateUser(user.providerData[0].email);
+          setLoading(false);
   
           if (validation.status === 1) {   
             setUserInfo(validation.user); 
             setAllUsersInfo(validation.allUsers);
-            router.replace("/(tabs)/Calendar");
+            setValidation(1);
           } else if (validation.status === 0) {
             setAllUsersInfo(validation.allUsers);
             router.push({
@@ -89,7 +80,6 @@ const HomeScreen = ({navigation}) => {
             });
             await signOut(auth);
             await AsyncStorage.removeItem("@user");
-  
           }
         } else {
         }
@@ -100,16 +90,16 @@ const HomeScreen = ({navigation}) => {
 
   }
 
-  if (loading)
-    return (
-      <RootSiblingParent>
+  return isAnimating ? <Splash setIsAnimating={setIsAnimating} /> : 
+  loading ? 
+  <>
+    <RootSiblingParent>
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator size={"large"} />
       </View>
-      </RootSiblingParent>
-    );
-
-  return <SignInScreen promptAsync={promptAsync} />;
+    </RootSiblingParent>
+  </> :
+  validation === 1 ? <Redirect href={'(tabs)/Calendar'} /> : <SignInScreen promptAsync={promptAsync} />;
   
 }
 export default HomeScreen

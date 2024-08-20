@@ -93,8 +93,9 @@ const index = () => {
                 <ScrollView
                     contentInsetAdjustmentBehavior='automatic'
                     showsVerticalScrollIndicator={false}
-                >
+                >   
                     <View style={styles.scrollcontainer}>
+
                         {Object.keys(groupedEvents).map((date, index) => (
                             <View key={index} style={styles.dateGroup}>
                                 <Text style={[styles.eventDate, themeTitleTextStyle]}>{date}</Text>
@@ -140,6 +141,7 @@ const index = () => {
                                 ))}
                             </View>
                         ))}
+
                     </View>
                 </ScrollView>
             </SafeAreaView>
