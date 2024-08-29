@@ -34,7 +34,7 @@ export default function SignInScreen({ promptAsync }) {
 const home = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#5E89B2',
+      backgroundColor: '#134b91',
       alignItems: 'center',
       justifyContent: 'center',
     },
