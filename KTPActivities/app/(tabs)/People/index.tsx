@@ -8,6 +8,7 @@ import { getUserInfo } from '../../components/userInfoManager';
 import PeopleLoader from '../../components/loaders/poepleLoader';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
+import { Octicons } from '@expo/vector-icons';
 
 const Person = (props) => {
     const colorScheme = useColorScheme();
@@ -23,10 +24,7 @@ const Person = (props) => {
                             style={[styles.personImage, { borderRadius: 30 }]} 
                         />
                         :
-                        <Image 
-                            source={require("../../../img/ktplogopng.png")} 
-                            style={styles.personImage} 
-                        />
+                        <Octicons name="feed-person" size={50} color={colorScheme === 'light' ? "#242424" : "white"} style={{borderRadius: 15, marginRight: 5}} />
                 }
                 <View>
                     <Text style={[styles.personName, textTheme]}>

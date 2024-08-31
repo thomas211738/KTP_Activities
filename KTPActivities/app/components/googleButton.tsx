@@ -15,7 +15,7 @@ const GoogleButton = ({ promptAsync }) => {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: 'white',
+    backgroundColor: '#dedede',
     padding: 15,
     borderRadius: 20,
     alignItems: 'center',

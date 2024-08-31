@@ -269,9 +269,8 @@ const Index = () => {
                     image ? (
                         <Image source={{ uri: `data:image/jpeg;base64,${image}` }} style={styles.profileimage} />
                     ) : (
-                        <Octicons name="feed-person" size={175} color="#242424" style={styles.profilepic} />
+                        <Octicons name="feed-person" size={175} color={colorScheme === 'light' ? "#242424" : "white"} style={styles.profilepic} />
                     )}
-
 
 
                 <FontAwesome name="circle" size={50} color={colorScheme === 'light' ? "white" : "#1a1a1a"} style={styles.profilepiccircle}/>
