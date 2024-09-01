@@ -62,7 +62,7 @@ const index = () => {
         navigation.setOptions({
             headerSearchBarOptions: {
                 placeholder: "Search People",
-                textColor: colorScheme === 'dark' ? 'black' : 'white',
+                textColor: colorScheme === 'light' ? 'black' : 'white',
                 onChangeText: (event) => searchUsers(event.nativeEvent.text),
                 hideWhenScrolling: false,
             },
