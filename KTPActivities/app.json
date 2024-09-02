@@ -6,16 +6,15 @@
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/new_icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png"
+      "image": "./assets/new_splash.png"
     },
     "plugins": [
-      "expo-router", 
+      "expo-router",
       "expo-image-picker",
       "@react-native-google-signin/google-signin"
-      
     ],
     "assetBundlePatterns": [
       "**/*"
@@ -24,8 +23,12 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.KTPActivities",
       "infoPlist": {
-        "LSApplicationQueriesSchemes": ["instagram", "linkedin"]
-      }
+        "LSApplicationQueriesSchemes": [
+          "instagram",
+          "linkedin"
+        ]
+      },
+      "buildNumber": "3"
     },
     "android": {
       "adaptiveIcon": {
@@ -48,9 +51,6 @@
     },
     "scheme": [
       "ktpactivities"
-    ],
-    "updates": {
-      "url": "https://u.expo.dev/78d7b599-c910-4187-ba8e-3aa9aba9eec9"
-    }
+    ]
   }
 }
