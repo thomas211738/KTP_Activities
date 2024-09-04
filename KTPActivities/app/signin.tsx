@@ -6,6 +6,7 @@ import { RootSiblingParent } from 'react-native-root-siblings';
 import AndroidAuth from './components/androidAuth';
 import Animated, {FadeIn} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 
 
 export default function SignInScreen({ promptAsync }) {
@@ -18,14 +19,20 @@ export default function SignInScreen({ promptAsync }) {
               <View style = {home.container}>
               <Image source={require('../img/ktplogopng.png')} style={home.logo} />
               <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
+
               </View>
+
             
                 {Platform.OS === "ios" ? (
                   <GoogleButton promptAsync={() => promptAsync()} />
                 ) : (
                   <AndroidAuth/>
                 )}
+
+                <Button title='Testing' onPress={() => router.push({pathname: 'testing'})}></Button>
+              
             {/* </Animated.ScrollView> */}
+
             </SafeAreaView>            
 
 

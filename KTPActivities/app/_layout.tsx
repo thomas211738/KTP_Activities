@@ -48,6 +48,10 @@ export default function Layout() {
           name="(tabs)"
           options={{ headerShown: false }}
         />
+         <Stack.Screen
+          name="testing"
+          options={{ headerShown: false }}
+        />
     </Stack>
    
   );
