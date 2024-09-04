@@ -27,7 +27,7 @@ export default function Layout() {
           headerLargeTitle: true,
           ...(Platform.OS === "ios" && colorScheme === 'light' && { headerTransparent: true }),
           headerLargeTitleShadowVisible: false,
-          headerRight: userInfo.Position === 3 || userInfo.Position === 5 ? () => (
+          headerRight: userInfo.Position.toString() === "3" || userInfo.Position.toString() === "5" ? () => (
             <Pressable
               onPress={async () => {
                 router.push("(tabs)/Calendar/createEvent");

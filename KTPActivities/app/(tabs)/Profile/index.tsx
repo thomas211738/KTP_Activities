@@ -56,7 +56,15 @@ const Index = () => {
     
     const fetchProfile = async () => {
         try {
-            const response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
+
+            let response;
+
+            if (userInfo._id) {
+                response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
+            } else{
+                response = await axios.get(`${BACKEND_URL}/users/email/${userInfo.BUEmail}`);
+            }
+
             
             if (response.data.Interests){
                 setUserInterests(response.data.Interests);

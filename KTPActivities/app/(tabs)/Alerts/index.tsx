@@ -63,7 +63,7 @@ const index = () => {
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-        headerRight: userInfo.Position === 3 || userInfo.Position === 5 ? () => (
+        headerRight: userInfo.Position.toString() === "3" || userInfo.Position.toString() === "5" ? () => (
             <Pressable
               onPress={async () => 
                 setAddModalVisible(true)

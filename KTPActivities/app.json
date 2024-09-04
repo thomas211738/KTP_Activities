@@ -28,7 +28,7 @@
           "linkedin"
         ]
       },
-      "buildNumber": "3"
+      "buildNumber": "4"
     },
     "android": {
       "adaptiveIcon": {
@@ -36,7 +36,8 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.KTPActivities",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"

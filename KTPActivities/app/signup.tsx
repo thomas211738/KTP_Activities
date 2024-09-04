@@ -47,7 +47,7 @@ const SignupPage = () => {
     );
   };
 
-  const handleFinishPress = () => {
+  const handleFinishPress = async () => {
 
     let postedMinor = [];
     if (userMinor.length > 0) {
@@ -66,15 +66,15 @@ const SignupPage = () => {
         Interests: [],
       };
 
+      setUserInfo(new_user);
+
+
       axios
       .post(`${BACKEND_URL}/users`, new_user)
-      .then(() => {
-        router.replace("/(tabs)/Calendar");
-      })
       .catch((error) => {
         console.log(error);
       });
-      setUserInfo(new_user);
+      router.replace("/(tabs)/Calendar");
 
     }
   };
