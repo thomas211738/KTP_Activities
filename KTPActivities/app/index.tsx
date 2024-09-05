@@ -19,14 +19,12 @@ import Toast from 'react-native-root-toast';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import { setUserInfo } from './components/userInfoManager'; 
 import { setAllUsersInfo } from './components/allUsersManager';
-import Splash from './components/splash';
 
 WebBrowser.maybeCompleteAuthSession();
 
 //HOME SCREEN
 const HomeScreen = ({navigation}) => {
-  const [loading, setLoading] = React.useState(false);
-  const [isAnimating, setIsAnimating] = React.useState<boolean>(true);
+  const [loading, setLoading] = React.useState(true);
   const [validation, setValidation] = React.useState(0);
   
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
@@ -50,7 +48,6 @@ const HomeScreen = ({navigation}) => {
     React.useEffect(() => {
       const unsub = onAuthStateChanged(auth, async (user) => {
         if (user) {
-          setLoading(true);
           await AsyncStorage.setItem("@user", JSON.stringify(user));
   
           const validation = await ValidateUser(user.providerData[0].email);
@@ -82,6 +79,7 @@ const HomeScreen = ({navigation}) => {
             await AsyncStorage.removeItem("@user");
           }
         } else {
+          setLoading(false);
         }
       });
       return () => unsub();
@@ -90,8 +88,7 @@ const HomeScreen = ({navigation}) => {
 
   }
 
-  return isAnimating ? <Splash setIsAnimating={setIsAnimating} /> : 
-  loading ? 
+  return loading ? 
   <>
     <RootSiblingParent>
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
