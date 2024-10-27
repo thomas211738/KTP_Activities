@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Linking, useColorScheme} from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Linking, useColorScheme, Pressable} from 'react-native'
 import React, {useState} from 'react'
 import { useLocalSearchParams, router } from 'expo-router';
 import {BACKEND_URL} from '@env';
@@ -8,6 +8,8 @@ import colleges from '../../components/buinfo';
 import { Octicons } from '@expo/vector-icons';
 import CircleLoader from '../../components/loaders/circleLoader';
 import ViewProfileLoader from '../../components/loaders/viewProfileLoader';
+import { getUserInfo } from '../../components/userInfoManager';
+import ScheduleChatModal from '../../components/scheduleChatModal';
 
 const profileId = () => {
     const { userID, userImage } = useLocalSearchParams();
@@ -26,7 +28,8 @@ const profileId = () => {
     const [linkedin, setLinkedin] = useState(null);
     const [userClass, setUserClass] = useState("");
     const [loading, setLoading] = useState(true);
-
+    const [scheduleChatVisible, setScheduleChatVisible] = useState(false);
+    const userInfo = getUserInfo();
     const colorScheme = useColorScheme();
 
     React.useEffect(() => {
@@ -51,7 +54,6 @@ const profileId = () => {
             }else{
                 setImageLoading(false);
             }
-            
         })
         .catch((error) => {
             console.log(error);
@@ -108,6 +110,24 @@ const profileId = () => {
             console.error("An error occurred while opening the URL:", error);
           }
       };
+
+      const changePosition = async (position) => {
+        try {
+            let newPosition = 0;
+            if (position == 0) newPosition = 0.5;
+
+            const updateduser = {Position: newPosition.toString()};
+            await axios.put(`${BACKEND_URL}/users/${userID}`,
+                updateduser
+            );
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const scheduleCoffeeChat = () => {
+        setScheduleChatVisible(true);
+    }
 
     const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark;
     const textTheme = colorScheme === 'light' ? styles.lightText : styles.darkText;
@@ -172,10 +192,36 @@ const profileId = () => {
             </View>
         </View>
 
+        {
+            userInfo.Position === 3 || userInfo.Position === 5 ? 
+            position === 0 || position === 0.5 ? 
+                <View style={[styles.signOutCard, eventTheme]}>
+                    <TouchableOpacity onPress={() => changePosition(position)}>
+                        {position === 0 ? 
+                        <Text style={[styles.darkmodeButtonText, textTheme]}>Promote to Closed Rush</Text> :
+                        <Text style={[styles.darkmodeButtonText, textTheme]}>Remove from Closed Rush</Text>
+                        }
+                    </TouchableOpacity>
+                </View> 
+            : "" : ""
+        }
+
+        {
+            loading ? <View style={styles.scheduleButtonContainer}>Loading</View>
+            : 
+            userInfo.Position >= 0 && position >= 2 ? 
+            <TouchableOpacity style={styles.scheduleButtonContainer} onPress={() => scheduleCoffeeChat()}>
+                <ScheduleChatModal visible={scheduleChatVisible} onCancel={() => setScheduleChatVisible(false)} onSend={() => {}}>
+
+                </ScheduleChatModal>
+                <Text style={styles.scheduleButton}>
+                    Schedule coffee chat
+                </Text>
+            </TouchableOpacity>
+            : ""
+        }
+
         </>}
-
-
-        
         </ScrollView>
         
 
@@ -320,6 +366,23 @@ const styles = StyleSheet.create({
     },
     signOutButtonText: {
         color: '#ff4f4f',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    scheduleButtonContainer: {
+        flex: 1,
+        backgroundColor: '#134b91',
+        width: '90%',
+        padding: 15,
+        margin: 10,
+        alignSelf: 'center',
+        borderRadius: 10,
+        alignItems: 'center'
+    },
+    scheduleButton: {
+        color: 'white'
+    },
+    darkmodeButtonText: {
         fontSize: 16,
         fontWeight: 'bold',
     },
