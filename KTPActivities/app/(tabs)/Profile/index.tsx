@@ -353,10 +353,20 @@ const Index = () => {
                 </View>
 
                 </>) : (<ProfileLoader/>)}
+    <View style={[styles.resourcesCard, eventTheme]}>
+        <TouchableOpacity onPress={() => {
+            // Add your functionality for the resources button here
+            router.push("(tabs)/Profile/resources"); // Example: Navigate to a resources page
+        }}>
+
+        <Text style={styles.resourcesButtonText}>Resources</Text>
+        </TouchableOpacity>
+        <Entypo name="book" size={20} color={colorScheme === 'light' ? "white" : "black"} />
+    </View>
                 
             </ScrollView>
         </View>
-    );
+     );
 }
 
 const styles = StyleSheet.create({
@@ -502,6 +512,22 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
+    resourcesCard: {
+            padding: 10,
+            borderRadius: 10,
+            width: '95%',
+            alignSelf: 'center',
+            marginTop: 20,
+            flexDirection: 'row',
+            justifyContent: "space-between",
+            alignItems: "center",
+    },
+     resourcesButtonText: {
+            color: '#0a9bf5', // You can customize this color
+            fontSize: 16,
+            fontWeight: 'bold',
+    }
+
 });
 
 export default Index;
