@@ -7,7 +7,7 @@ import json
 load_dotenv()
 connection_string = os.getenv('mongoDBURL')
 PORT = os.getenv('APP_PORT')
-URL = f"https://api-pq35yjnshq-uc.a.run.app/users"
+URL = ""
 
 users = requests.get(URL).json()
 
