@@ -40,6 +40,7 @@ const profileId = () => {
             setUserMajor(response.data.Major.join(' and '));
             if (response.data.Minor.length > 0) setUserMinor(response.data.Minor.join(' and '));
             setPosition(response.data.Position);
+            console.log(userInfo.Position);
             setEboardPosition(response.data.Eboard_Position);
             setUserInterests(response.data.Interests);
             if (response.data.Instagram) setInstagram(response.data.Instagram);
