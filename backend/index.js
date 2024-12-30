@@ -10,7 +10,7 @@ import alertsRoute from './routes/alertsRoutes.js';
 import completedTaskRoute from './routes/completedTaskRoutes.js';
 import { onRequest } from 'firebase-functions/v2/https';
 import userphotosRoute from './routes/userphotosRoutes.js';
-
+import notificationRoute from './routes/notificationsRoutes.js';
 
 const mongoDBURL = process.env.MONGODB_URL
 
@@ -26,6 +26,7 @@ app.use('/tasks', taskRoute);
 app.use('/alerts', alertsRoute);
 app.use('/completed-tasks', completedTaskRoute);
 app.use('/photo', userphotosRoute);
+app.use('/notifications', notificationRoute);
 
 app.get('/', (request, response) => {
     return response.status(234).send('Welcome To the KTP App');

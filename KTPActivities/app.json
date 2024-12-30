@@ -20,6 +20,9 @@
       "**/*"
     ],
     "ios": {
+      "entitlements": {
+        "aps-environment": "development"
+      },
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.KTPActivities",
       "infoPlist": {

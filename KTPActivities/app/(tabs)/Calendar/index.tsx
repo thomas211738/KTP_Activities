@@ -5,19 +5,56 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { MaterialIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import { format, parseISO, set } from 'date-fns';
-import { BACKEND_URL } from '@env';
+import { BACKEND_URL, IP_ADDRESS } from '@env';
 import { router } from 'expo-router';
 import CalendarLoader from '../../components/loaders/calendarLoader';
 import { getUserInfo } from '../../components/userInfoManager';
+import { CheckNotificationStatus, registerForPushNotificationsAsync } from '../../components/notificationStatus';
 
 const index = () => {
     const colorScheme = useColorScheme();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const userInfo = getUserInfo();
+    const [expoPushToken, setExpoPushToken] = useState('');
 
     const fetchEvents = async () => {
         try {
+            let dbTocken = await CheckNotificationStatus(userInfo._id);
+
+
+            if (dbTocken === 0) {
+                const token = await registerForPushNotificationsAsync();
+
+                if (token === null) {
+                    console.log('User token is NOT registered and user has notifications DISABLED');
+                } else if (token.startsWith('ExponentPushToken')) {
+                    try {
+                        await axios.post(`${IP_ADDRESS}/notifications`, {
+                            userID: `${userInfo._id}`,
+                            token: `${token}`,
+                        });
+                        console.log('Token added to database');
+                    } catch (err) {
+                        console.log(err);
+                    }
+                    console.log('User token is NOT registered and user has notifications enabled, so token was added to database');
+                } else {
+                    console.log('BAD TOKEN');
+                }
+
+            } else {
+                const token = await registerForPushNotificationsAsync();
+                if (token === null){
+                    await axios.delete(`${IP_ADDRESS}/notifications/token/${dbTocken}`);
+                    console.log('Token deleted from database');
+                    console.log('User token is alrady registered and user still has notifications DISABLED, so token was deleted from database');
+                } else {
+                    console.log('User token is alrady registered and user still has notifications enabled');
+                }
+                
+            }
+
             const response = await axios.get(`${BACKEND_URL}/events`);
             const events = response.data.data.filter((event) => event.Position <= userInfo.Position);
             const sortedEvents = events.sort((a, b) => new Date(a.Day) - new Date(b.Day));
