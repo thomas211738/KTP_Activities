@@ -42,6 +42,23 @@ export default function Layout() {
             headerLargeTitleShadowVisible: false,
           }}
         />
+        <Stack.Screen
+          name="notifications"
+          options={{
+            headerTitleStyle: {
+              color: colorScheme === 'light' ? "#1a1a1a" : "white",
+            },
+  
+            headerStyle: {
+              backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
+            },
+            headerTitle: "Notifications",
+            headerBlurEffect: "regular",
+            ...(Platform.OS === "ios" && { headerTransparent: true }),
+            headerLargeTitle: true,
+            headerLargeTitleShadowVisible: false,
+          }}
+        />
     </Stack>
    
   );

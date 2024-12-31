@@ -265,7 +265,7 @@ const Index = () => {
 
     return (
         <View style={[styles.container, containerTheme]}>
-            <ScrollView contentInsetAdjustmentBehavior='automatic'>
+            <ScrollView contentInsetAdjustmentBehavior='automatic' contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
                 {/* MODALS */}
                 <EditInterestModal visible={editModalVisible} onDelete={deleteInterest} onCancel={() => setEditModalVisible(false)} onPut={putInterest} interest={originalInterest}/>
                 <AddInterestModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postInterest} />
@@ -339,6 +339,30 @@ const Index = () => {
                     />
                 </View>
 
+                {userInfo.Position >= 1 && (
+                    <View style={[styles.resourcesCard, eventTheme]}>
+                        <TouchableOpacity onPress={() => {
+                            // Add your functionality for the resources button here
+                            router.push("(tabs)/Profile/resources"); // Example: Navigate to a resources page
+                        }}>
+                            <Text style={styles.resourcesButtonText}>Resources</Text>
+                        </TouchableOpacity>
+                        <Entypo name="book" size={20} color={colorScheme === 'light' ? "white" : "black"} />
+                    </View>
+                )}
+
+                {userInfo.Position === 3 || userInfo.Position === 5 && (
+                    <View style={[styles.resourcesCard, eventTheme]}>
+                        <TouchableOpacity onPress={() => {
+                            // Add your functionality for the resources button here
+                            router.push("(tabs)/Profile/notifications"); // Example: Navigate to a resources page
+                        }}>
+                            <Text style={styles.resourcesButtonText}>Send new notification</Text>
+                        </TouchableOpacity>
+                        <Ionicons name="notifications" size={20} color={colorScheme === 'light' ? "white" : "black"} />
+                    </View>
+                )}
+
                 {/* SIGNOUT CARD */}
                 <View style={[styles.signOutCard, eventTheme]}>
                     <TouchableOpacity onPress={async () => {
@@ -353,16 +377,8 @@ const Index = () => {
                 </View>
 
                 </>) : (<ProfileLoader/>)}
-    <View style={[styles.resourcesCard, eventTheme]}>
-        <TouchableOpacity onPress={() => {
-            // Add your functionality for the resources button here
-            router.push("(tabs)/Profile/resources"); // Example: Navigate to a resources page
-        }}>
 
-        <Text style={styles.resourcesButtonText}>Resources</Text>
-        </TouchableOpacity>
-        <Entypo name="book" size={20} color={colorScheme === 'light' ? "white" : "black"} />
-    </View>
+
                 
             </ScrollView>
         </View>
@@ -370,6 +386,10 @@ const Index = () => {
 }
 
 const styles = StyleSheet.create({
+    scrollViewContent:{
+        paddingBottom: 20,
+
+    },
     container: {
         flex: 1,
         backgroundColor: 'white',        
