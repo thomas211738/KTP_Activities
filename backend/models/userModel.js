@@ -48,6 +48,9 @@ const userSchema = mongoose.Schema(
     Interests: {
         type: [String]
     },
+    websitePic: {
+        type: String
+    },
     LinkedIn: {
         type: String
     },
@@ -62,7 +65,7 @@ const userSchema = mongoose.Schema(
     },
     ProfilePhoto: {
         type: String
-    }
+    },
     },
     {
         timestamps: true,
