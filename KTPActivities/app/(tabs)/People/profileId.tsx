@@ -33,6 +33,7 @@ const profileId = () => {
     React.useEffect(() => {
         axios.get(`${BACKEND_URL}/users/${userID}`)
         .then((response) => {
+
             setuserFirstName(response.data.FirstName);
             setuserLastName(response.data.LastName);
             setUserGradYear(response.data.GradYear);
@@ -40,7 +41,6 @@ const profileId = () => {
             setUserMajor(response.data.Major.join(' and '));
             if (response.data.Minor.length > 0) setUserMinor(response.data.Minor.join(' and '));
             setPosition(response.data.Position);
-            console.log(userInfo.Position);
             setEboardPosition(response.data.Eboard_Position);
             setUserInterests(response.data.Interests);
             if (response.data.Instagram) setInstagram(response.data.Instagram);
@@ -190,7 +190,6 @@ const profileId = () => {
 
         {
             userInfo.Position === 3 || userInfo.Position === 5 ? 
-            position === 0 || position === 0.5 ? 
                 <View style={[styles.signOutCard, eventTheme]}>
                     <TouchableOpacity onPress={() => changePosition(position)}>
                         {position === 0 ? 
@@ -199,8 +198,18 @@ const profileId = () => {
                         }
                     </TouchableOpacity>
                 </View> 
-            : "" : ""
+             : ""
         }
+        {
+            userInfo.Position === 5 ? 
+                <View style={[styles.signOutCard, eventTheme]}>
+                    <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/indivisualNotification', params: { userID: userID } })}>
+                        <Text style={[styles.darkmodeButtonText, textTheme]}>Send Notification</Text> 
+                    </TouchableOpacity>
+                </View> 
+             : ""
+        }
+        
         
 
 

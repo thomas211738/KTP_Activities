@@ -355,7 +355,7 @@ const Index = () => {
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
                             // Add your functionality for the resources button here
-                            router.push("(tabs)/Profile/notifications"); // Example: Navigate to a resources page
+                            router.push({pathname: "(tabs)/Profile/notifications",  params: { userID: userInfo._id }} );
                         }}>
                             <Text style={styles.resourcesButtonText}>Send new notification</Text>
                         </TouchableOpacity>

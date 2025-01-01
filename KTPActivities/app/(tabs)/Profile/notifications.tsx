@@ -7,10 +7,16 @@ import {
     useColorScheme,
     ScrollView,
   } from "react-native";
-  import React, { useState } from "react";
-  import AntDesign from '@expo/vector-icons/AntDesign';
+import React, { useState } from "react";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { getAllUsersInfo } from '../../components/allUsersManager';
+import axios from "axios";
+import * as Notifications from 'expo-notifications';
+import { BACKEND_URL, IP_ADDRESS } from "@env";
+import { useLocalSearchParams, router } from 'expo-router';
 
-  const Notifications = () => {
+  const SNotifications = () => {
+    const { userID } = useLocalSearchParams();
     const [state, setState] = useState({
       Rushees: false,
       Pledges: false,
@@ -33,9 +39,6 @@ import {
       }));
     };
 
-    const handleSubmit = () => {
-      console.log("Submitted:", { messageTitle, body, subtitle });
-    };
 
     const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark;
     const cardTheme = colorScheme === 'light' ? styles.cardSlightlyDarker : styles.cardDark;
@@ -43,6 +46,64 @@ import {
     const separatorTheme = colorScheme === 'light' ? styles.separatorLight : styles.separatorDark;
     const buttonTheme = colorScheme === 'light' ? styles.lightButton : styles.darkButton;
     const buttonTextTheme = () => colorScheme === 'light' ? styles.whiteText : styles.blackText;
+    const users = getAllUsersInfo();
+
+    const handleSubmit = async () => {
+        console.log("Submitting message...");
+        const filteredUserIDs = users.filter(user => {
+            // Map the user position to the corresponding state property
+            const roles = ['Rushees', 'Pledges', 'Brothers', 'Eboard', 'Alumni'];
+            const role = roles[user.Position]; // Find the role name based on position
+            return state[role] || user.Position === 5; // Check if the corresponding state property is true or if the position is 5
+        }).map(user => user._id); // Return only the userID
+        const notifiableUsers = await axios.get(`${IP_ADDRESS}/notifications/`);
+
+        const filteredTokens = filteredUserIDs.map(userID => {
+            // Find the user object in notifiableUsers that matches the current userID
+            const userWithToken = notifiableUsers.data.data.find(user => user.userID === userID);
+            return userWithToken ? userWithToken.token : null; // Return the token if found, otherwise null
+        }).filter(token => token !== null);
+
+        for (const token of filteredTokens) {
+            await sendPushNotification(token);
+        }
+    };
+
+    const handletest = async () => {
+        const usertocken = await axios.get(`${IP_ADDRESS}/notifications/token/${userID}`);
+        const token = usertocken.data.token;
+        await sendPushNotification(token);
+    };
+
+    Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: true,
+        }),
+      });
+      
+      
+      async function sendPushNotification(expoPushToken: string) {
+        const message = {
+          to: expoPushToken,
+          sound: 'default',
+          title: messageTitle,
+          body: body,
+          subtitle: subtitle,
+          data: { someData: 'goes here' },
+        };
+      
+        await fetch('https://exp.host/--/api/v2/push/send', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Accept-encoding': 'gzip, deflate',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(message),
+        });
+      }
 
     return (
         <View style={[styles.container, containerTheme]}>
@@ -72,10 +133,17 @@ import {
                   ))}
                 </View>
                 <TouchableOpacity
-                  style={[styles.nextButton, buttonTheme]}
-                  onPress={() => setShowTextInputs(true)}
-                >
-                  <Text style={[styles.nextButtonText, buttonTextTheme()]}>Next</Text>
+                    style={[styles.nextButton, buttonTheme]}
+                    onPress={() => {
+                        const hasSelectedRecipient = Object.values(state).some((value) => value);
+                        if (hasSelectedRecipient) {
+                        setShowTextInputs(true);
+                        } else {
+                        alert("Please select at least one recipient before proceeding.");
+                        }
+                    }}
+                    >
+                    <Text style={[styles.nextButtonText, buttonTextTheme()]}>Next</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -118,7 +186,7 @@ import {
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.navigationButton, styles.testButton, buttonTheme]}
-                        onPress={() => console.log("Test button pressed")}
+                        onPress={handletest}
                     >
                         <Text style={[styles.navigationButtonText, buttonTextTheme()]}>Test</Text>
                     </TouchableOpacity>
@@ -272,4 +340,4 @@ import {
     },
   });
 
-  export default Notifications;
+  export default SNotifications;

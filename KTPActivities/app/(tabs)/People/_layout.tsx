@@ -40,6 +40,20 @@ export default function Layout() {
           }}
 
         />
+        <Stack.Screen
+          name="indivisualNotification"
+          options={{
+            headerTitleStyle: {
+              color: colorScheme === 'light' ? "#1a1a1a" : "white",
+            },
+  
+            headerStyle: {
+              backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
+            },
+            headerTitle: "",
+          }}
+
+        />
     </Stack>
    
   );
