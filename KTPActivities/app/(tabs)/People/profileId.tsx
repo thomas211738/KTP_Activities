@@ -138,7 +138,7 @@ const profileId = () => {
   return (
 
     <View style={[styles.pageView, containerTheme]}>
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[styles.container, containerTheme]}>
             {imageLoading ? <CircleLoader/> : 
                 image ? (
@@ -207,14 +207,13 @@ const profileId = () => {
                         <Text style={[styles.darkmodeButtonText, textTheme]}>Send Notification</Text> 
                     </TouchableOpacity>
                 </View> 
-             : ""
+            : ""
         }
+
         
-        
-
-
-
         </>}
+        <View style={{ marginBottom: 20 }}> 
+        </View>
         </ScrollView>
         
 
@@ -274,7 +273,6 @@ const styles = StyleSheet.create({
         marginTop: 10,
 
     },
-
     card: {
         backgroundColor: '#134b91',
         padding: 20,

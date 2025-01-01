@@ -19,7 +19,6 @@ import Toast from 'react-native-root-toast';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import { setUserInfo } from './components/userInfoManager'; 
 import { setAllUsersInfo } from './components/allUsersManager';
-import NotificationManager from './components/notificationsManager';
 
 WebBrowser.maybeCompleteAuthSession();
 

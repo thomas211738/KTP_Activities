@@ -16,7 +16,6 @@ const index = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const userInfo = getUserInfo();
-    const [expoPushToken, setExpoPushToken] = useState('');
 
     const fetchEvents = async () => {
         try {

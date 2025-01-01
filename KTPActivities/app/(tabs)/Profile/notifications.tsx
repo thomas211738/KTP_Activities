@@ -14,6 +14,8 @@ import axios from "axios";
 import * as Notifications from 'expo-notifications';
 import { BACKEND_URL, IP_ADDRESS } from "@env";
 import { useLocalSearchParams, router } from 'expo-router';
+import Toast from 'react-native-root-toast';
+import { RootSiblingParent } from 'react-native-root-siblings';
 
   const SNotifications = () => {
     const { userID } = useLocalSearchParams();
@@ -66,6 +68,17 @@ import { useLocalSearchParams, router } from 'expo-router';
 
         for (const token of filteredTokens) {
             await sendPushNotification(token);
+            Toast.show('Notification sent successfully', {
+                duration: Toast.durations.SHORT,
+                position: Toast.positions.BOTTOM,
+                shadow: true,
+                animation: true,
+                hideOnPress: true,
+                delay: 0,
+                backgroundColor: 'green',
+                textColor: 'white',
+                opacity: 1,
+            });
         }
     };
 
@@ -106,6 +119,7 @@ import { useLocalSearchParams, router } from 'expo-router';
       }
 
     return (
+        <RootSiblingParent>
         <View style={[styles.container, containerTheme]}>
           <ScrollView contentInsetAdjustmentBehavior='automatic' automaticallyAdjustKeyboardInsets>
             {!showTextInputs ? (
@@ -152,29 +166,29 @@ import { useLocalSearchParams, router } from 'expo-router';
                 <View style={[styles.card, cardTheme, styles.inputCard]}>
                   <Text style={[styles.label, textTheme]}>Title</Text>
                   <TextInput
-                    style={[styles.textInput, cardTheme]}
+                    style={[styles.textInput, cardTheme, textTheme]}
                     placeholder="Enter Message Title"
                     placeholderTextColor={colorScheme === 'light' ? "#999" : "#666"}
                     value={messageTitle}
                     onChangeText={setMessageTitle}
                   />
-      
-                  <Text style={[styles.label, textTheme]}>Body</Text>
-                  <TextInput
-                    style={[styles.textInput, cardTheme]}
-                    placeholder="Enter Body"
-                    placeholderTextColor={colorScheme === 'light' ? "#999" : "#666"}
-                    value={body}
-                    onChangeText={setBody}
-                  />
-      
+
                   <Text style={[styles.label, textTheme]}>Subtitle</Text>
                   <TextInput
-                    style={[styles.textInput, cardTheme]}
+                    style={[styles.textInput, cardTheme, textTheme]}
                     placeholder="Enter Subtitle"
                     placeholderTextColor={colorScheme === 'light' ? "#999" : "#666"}
                     value={subtitle}
                     onChangeText={setSubtitle}
+                  />
+      
+                  <Text style={[styles.label, textTheme]}>Body</Text>
+                  <TextInput
+                    style={[styles.textInput, cardTheme, textTheme]}
+                    placeholder="Enter Body"
+                    placeholderTextColor={colorScheme === 'light' ? "#999" : "#666"}
+                    value={body}
+                    onChangeText={setBody}
                   />
                 </View>
                 <View style={styles.buttonRow}>
@@ -201,6 +215,7 @@ import { useLocalSearchParams, router } from 'expo-router';
             )}
           </ScrollView>
         </View>
+        </RootSiblingParent>
       );      
   };
 

@@ -50,7 +50,7 @@ export default function Layout() {
             headerStyle: {
               backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
             },
-            headerTitle: "",
+            headerTitle: "Message",
           }}
 
         />

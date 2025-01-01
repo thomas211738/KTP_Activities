@@ -4,28 +4,17 @@ import ContentLoader, { Rect, Circle } from "react-content-loader/native";
 const CalendarLoader = () => (
     <ContentLoader 
         speed={2}
-        width={476}
+        width={500}
         height={650}
         viewBox="0 0 500 650"
         backgroundColor="#b8b8b8"
         foregroundColor="#ecebeb"
     >
         {/* First Loader */}
-        <Rect x="5" y="5" rx="0" ry="0" width="370" height="22" /> 
+        {/* Circles for the icons */}
 
-        <Circle cx="15" cy="41" r="9" />
-        <Rect x="30" y="34" rx="0" ry="0" width="100" height="16" /> 
-
-        <Circle cx="145" cy="41" r="9" />
-        <Rect x="160" y="34" rx="0" ry="0" width="100" height="16" />
-
-        <Rect x="5" y="55" rx="0" ry="0" width="370" height="7" /> 
-        <Rect x="5" y="69" rx="0" ry="0" width="370" height="7" /> 
-        <Rect x="5" y="83" rx="0" ry="0" width="370" height="7" /> 
-
-
-        {/* Second Loader */}
-        <Rect x="5" y="135" rx="0" ry="0" width="370" height="22" /> 
+            {/* Second Loader */}
+        <Rect x="5" y="155" rx="0" ry="0" width="370" height="550" /> 
 
         <Circle cx="15" cy="171" r="9" />
         <Rect x="30" y="164" rx="0" ry="0" width="100" height="16" /> 
