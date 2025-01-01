@@ -32,7 +32,6 @@ import { GetImage } from '../../components/pictures';
 import AddigModal from '../../components/igModal';
 import AddLinkedinModal from '../../components/linkedinModal';
 import ProfileLoader from '../../components/loaders/profileLoader';
-import { constructNow } from 'date-fns';
 
 const Index = () => {
     const userInfo = getUserInfo();

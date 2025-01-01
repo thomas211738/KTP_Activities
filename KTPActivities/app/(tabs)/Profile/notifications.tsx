@@ -20,12 +20,13 @@ import { RootSiblingParent } from 'react-native-root-siblings';
   const SNotifications = () => {
     const { userID } = useLocalSearchParams();
     const [state, setState] = useState({
-      Rushees: false,
-      Pledges: false,
-      Brothers: false,
-      Eboard: false,
-      Alumni: false,
-    });
+        OpenRushees: false,
+        ClosedRushees: false,
+        Pledges: false,
+        Brothers: false,
+        Eboard: false,
+        Alumni: false,
+      });
 
     const [messageTitle, setMessageTitle] = useState("");
     const [body, setBody] = useState("");
@@ -54,10 +55,18 @@ import { RootSiblingParent } from 'react-native-root-siblings';
         console.log("Submitting message...");
         const filteredUserIDs = users.filter(user => {
             // Map the user position to the corresponding state property
-            const roles = ['Rushees', 'Pledges', 'Brothers', 'Eboard', 'Alumni'];
+            const roles = {
+            0: 'OpenRushees',
+            0.5: 'ClosedRushees',
+            1: 'Pledges',
+            2: 'Brothers',
+            3: 'Eboard',
+            4: 'Alumni'
+            };
             const role = roles[user.Position]; // Find the role name based on position
             return state[role] || user.Position === 5; // Check if the corresponding state property is true or if the position is 5
         }).map(user => user._id); // Return only the userID
+        console.log(filteredUserIDs.length)
         const notifiableUsers = await axios.get(`${IP_ADDRESS}/notifications/`);
 
         const filteredTokens = filteredUserIDs.map(userID => {
@@ -137,7 +146,7 @@ import { RootSiblingParent } from 'react-native-root-siblings';
                           {state[key] && <AntDesign name="checkcircle" size={18} color={colorScheme === 'light' ? "#333" : "#ccc"} />}
                         </View>
                         <Text style={[styles.cardText, textTheme]}>
-                          {key}
+                            {key.replace(/([a-z])([A-Z])/g, '$1 $2')} {/* Add a space before uppercase letters */}
                         </Text>
                       </View>
                       {index < Object.keys(state).length - 1 && (
