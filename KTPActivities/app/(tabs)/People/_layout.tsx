@@ -54,6 +54,20 @@ export default function Layout() {
           }}
 
         />
+        <Stack.Screen
+          name="position"
+          options={{
+            headerTitleStyle: {
+              color: colorScheme === 'light' ? "#1a1a1a" : "white",
+            },
+  
+            headerStyle: {
+              backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
+            },
+            headerTitle: "Edit Position",
+          }}
+
+        />
     </Stack>
    
   );

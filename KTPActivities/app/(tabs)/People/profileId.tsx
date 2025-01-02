@@ -209,6 +209,15 @@ const profileId = () => {
                 </View> 
             : ""
         }
+        {
+            userInfo.Position === 5 ? 
+                <View style={[styles.signOutCard, eventTheme]}>
+                    <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/position', params: { userID: userID } })}>
+                        <Text style={[styles.darkmodeButtonText, textTheme]}>Change Position</Text> 
+                    </TouchableOpacity>
+                </View> 
+            : ""
+        }
 
         
         </>}
