@@ -10,7 +10,7 @@ import {
 import React from 'react'
 import axios from 'axios';
 import * as Notifications from 'expo-notifications';
-import { IP_ADDRESS } from '@env';
+import { BACKEND_URL } from '@env';
 import { useLocalSearchParams } from "expo-router";
 import { getUserInfo } from "../../components/userInfoManager";
 import Toast from 'react-native-root-toast';
@@ -34,7 +34,7 @@ const indivisualNotification = () => {
 
 
     const handletest = async () => {
-        const usertocken = await axios.get(`${IP_ADDRESS}/notifications/token/${userInfo._id}`);
+        const usertocken = await axios.get(`${BACKEND_URL}/notifications/token/${userInfo._id}`);
         const token = usertocken.data.token;
         if (!token) {
             console.log('No token found for sender');
@@ -73,7 +73,7 @@ const indivisualNotification = () => {
       }
 
     const handleSubmit = async () => {
-        const user2token = await axios.get(`${IP_ADDRESS}/notifications/token/${userID}`);
+        const user2token = await axios.get(`${BACKEND_URL}/notifications/token/${userID}`);
 
         const token = user2token.data.token;
         if (token === 0){

@@ -11,7 +11,7 @@ import {
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { IP_ADDRESS } from '@env';
+import { BACKEND_URL } from '@env';
 
 const Position = () => {
   const { userID } = useLocalSearchParams();
@@ -53,7 +53,7 @@ const Position = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get(`${IP_ADDRESS}/users/${userID}`);
+        const response = await axios.get(`${BACKEND_URL}/users/${userID}`);
         // The API presumably returns numeric positions. Make sure to handle 0.5 if that’s valid in your backend.
         setCurrentPosition(response.data.Position);
         if (response.data.Position === 3) {
@@ -79,7 +79,7 @@ const Position = () => {
     }
 
     if (newPosition === 3) {
-      axios.put(`${IP_ADDRESS}/users/${userID}`, {
+      axios.put(`${BACKEND_URL}/users/${userID}`, {
         Position: newPosition,
         Eboard_Position: newEboardPosition,
       })
@@ -93,7 +93,7 @@ const Position = () => {
         return;
     }
 
-    axios.put(`${IP_ADDRESS}/users/${userID}`, { Position: newPosition, Eboard_Position: '' })
+    axios.put(`${BACKEND_URL}/users/${userID}`, { Position: newPosition, Eboard_Position: '' })
       .then(() => {
         Alert.alert('Success', 'Position updated successfully.');
       })

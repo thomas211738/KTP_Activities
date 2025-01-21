@@ -12,10 +12,10 @@ export async function ValidateUser(userEmail) {
         if (user) {
             return { status: 1, user: user, allUsers: users };
         } else {
-            // const domain = userEmail.split('@');
-            // if (domain[1] !== 'bu.edu') {
-            //     return { status: -1, user: null, allUsers: users };
-            // }
+            const domain = userEmail.split('@');
+            if (domain[1] !== 'bu.edu') {
+                return { status: -1, user: null, allUsers: users };
+            }
 
             return { status: 0, user: null, allUsers: users };
         }

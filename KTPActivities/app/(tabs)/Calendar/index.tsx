@@ -5,7 +5,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { MaterialIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import { format, parseISO, set } from 'date-fns';
-import { BACKEND_URL, IP_ADDRESS } from '@env';
+import { BACKEND_URL } from '@env';
 import { router } from 'expo-router';
 import CalendarLoader from '../../components/loaders/calendarLoader';
 import { getUserInfo } from '../../components/userInfoManager';
@@ -29,7 +29,7 @@ const index = () => {
                     console.log('User token is NOT registered and user has notifications DISABLED');
                 } else if (token.startsWith('ExponentPushToken')) {
                     try {
-                        await axios.post(`${IP_ADDRESS}/notifications`, {
+                        await axios.post(`${BACKEND_URL}/notifications`, {
                             userID: `${userInfo._id}`,
                             token: `${token}`,
                         });
@@ -45,7 +45,7 @@ const index = () => {
             } else {
                 const token = await registerForPushNotificationsAsync();
                 if (token === null){
-                    await axios.delete(`${IP_ADDRESS}/notifications/token/${dbTocken}`);
+                    await axios.delete(`${BACKEND_URL}/notifications/token/${dbTocken}`);
                     console.log('Token deleted from database');
                     console.log('User token is alrady registered and user still has notifications DISABLED, so token was deleted from database');
                 } else {

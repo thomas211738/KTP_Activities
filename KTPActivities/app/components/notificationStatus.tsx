@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BACKEND_URL, IP_ADDRESS } from "@env";
+import { BACKEND_URL } from "@env";
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
@@ -8,7 +8,7 @@ import { Platform } from "react-native";
 export async function CheckNotificationStatus(userID) {
 
     try {
-        const response = await axios.get(`${IP_ADDRESS}/notifications/token/${userID}`);
+        const response = await axios.get(`${BACKEND_URL}/notifications/token/${userID}`);
         let token = response.data.token;
         return token;
 

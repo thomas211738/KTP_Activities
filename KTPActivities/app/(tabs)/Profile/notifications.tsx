@@ -12,7 +12,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { getAllUsersInfo } from '../../components/allUsersManager';
 import axios from "axios";
 import * as Notifications from 'expo-notifications';
-import { BACKEND_URL, IP_ADDRESS } from "@env";
+import { BACKEND_URL } from "@env";
 import { useLocalSearchParams, router } from 'expo-router';
 import Toast from 'react-native-root-toast';
 import { RootSiblingParent } from 'react-native-root-siblings';
@@ -67,7 +67,7 @@ import { RootSiblingParent } from 'react-native-root-siblings';
             return state[role] || user.Position === 5; // Check if the corresponding state property is true or if the position is 5
         }).map(user => user._id); // Return only the userID
         console.log(filteredUserIDs.length)
-        const notifiableUsers = await axios.get(`${IP_ADDRESS}/notifications/`);
+        const notifiableUsers = await axios.get(`${BACKEND_URL}/notifications/`);
 
         const filteredTokens = filteredUserIDs.map(userID => {
             // Find the user object in notifiableUsers that matches the current userID
@@ -92,7 +92,7 @@ import { RootSiblingParent } from 'react-native-root-siblings';
     };
 
     const handletest = async () => {
-        const usertocken = await axios.get(`${IP_ADDRESS}/notifications/token/${userID}`);
+        const usertocken = await axios.get(`${BACKEND_URL}/notifications/token/${userID}`);
         const token = usertocken.data.token;
         await sendPushNotification(token);
     };
