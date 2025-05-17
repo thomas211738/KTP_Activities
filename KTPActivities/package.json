@@ -40,7 +40,7 @@
     "expo-linking": "~7.0.4",
     "expo-modules-core": "~2.1.4",
     "expo-notifications": "~0.29.12",
-    "expo-random": "undefined",
+    "expo-random": "^14.0.1",
     "expo-router": "~4.0.17",
     "expo-splash-screen": "~0.29.21",
     "expo-status-bar": "~2.0.1",

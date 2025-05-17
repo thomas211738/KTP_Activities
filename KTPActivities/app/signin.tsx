@@ -1,6 +1,5 @@
 import { View, Text, SafeAreaView, Image, StatusBar, Button, StyleSheet, Platform, ScrollView} from 'react-native'
 import React from 'react'
-import { useNavigation } from '@react-navigation/native';
 import GoogleButton from './components/googleButton';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import AndroidAuth from './components/androidAuth';
@@ -10,7 +9,6 @@ import { router } from 'expo-router';
 
 
 export default function SignInScreen({ promptAsync }) {
-    const mynavigation = useNavigation();
     
     return (
         <RootSiblingParent>

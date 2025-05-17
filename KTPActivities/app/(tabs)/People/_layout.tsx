@@ -8,7 +8,7 @@ export default function Layout() {
   const colorScheme = useColorScheme();
    
   return (
-    <Stack>
+      <Stack>
         <Stack.Screen
           name="index"
           options={{
@@ -68,8 +68,7 @@ export default function Layout() {
           }}
 
         />
-    </Stack>
-   
+    </Stack>   
   );
 
 

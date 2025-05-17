@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function Layout() {
    
   return (
-    <Stack>
+      <Stack>
         <Stack.Screen
           name="index"
           options={{ headerShown: false }}
@@ -53,6 +53,7 @@ export default function Layout() {
           options={{ headerShown: false }}
         />
     </Stack>
+    
    
   );
 
