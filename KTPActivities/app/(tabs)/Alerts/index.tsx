@@ -43,7 +43,7 @@ const AlertComponent = (props) => {
 
 const index = () => {
   const [alerts, setAlerts] = useState([]);
-  const [addModalVisible, setAddModalVisible] = useState(false);
+  // const [addModalVisible, setAddModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [alertID, setAlertID] = useState('');
   const [loading, setLoading] = useState(true);
@@ -61,6 +61,7 @@ const index = () => {
     }
   }
 
+  /*
   React.useLayoutEffect(() => {
     navigation.setOptions({
         headerRight: userInfo.Position.toString() === "3" || userInfo.Position.toString() === "5" ? () => (
@@ -79,7 +80,7 @@ const index = () => {
           ) : undefined,
     });
   }, [navigation, userInfo.Position, colorScheme]);
-
+*/
   useEffect(() => {
     fetchAlerts();
   },[]);
@@ -119,19 +120,6 @@ const index = () => {
   
     return sortedAlertGroups;
   };
-
-  const postAlert = async (alertName, alertDescription) => {
-    try {
-      await axios.post(`${BACKEND_URL}/alerts`, {
-        "AlertName": alertName,
-        "Description": alertDescription
-      });
-      setAddModalVisible(false);
-      fetchAlerts();
-    } catch (err) {
-      console.log(err.message);
-    }
-  }
 
   const putAlert = async (alertName, alertDescription) => {
     try {
@@ -181,8 +169,6 @@ const index = () => {
       
       {loading ? (<AlertsLoader/>) : (
         <>
-
-        {userInfo.Position === 3 || userInfo.Position === 5 ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
         {userInfo.Position === 3 || userInfo.Position === 5 ? <EditAlertModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putAlert} alertID={alertID}/> : ''}
         {Object.keys(groupedAlerts).map((date, index) => (
           <View key={index + date} style={styles.dateContainer}>
