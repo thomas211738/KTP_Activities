@@ -27,7 +27,7 @@ import {
         onPress={() =>
           router.push({
             pathname: '(tabs)/People/profileId',
-            params: { userID: user._id, userImage: image },
+            params: { userID: user.id, userImage: image },
           })
         }
       >
@@ -230,7 +230,7 @@ import {
             <PeopleLoader />
           ) : filteredUsers.length > 0 ? (
             filteredUsers.map((user) => (
-              <Person key={user._id} user={user} image={photos[user.ProfilePhoto]} />
+              <Person key={user.id} user={user} image={photos[user.ProfilePhoto]} />
             ))
           ) : (
             <View style={styles.noMembersContainer}>

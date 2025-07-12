@@ -34,7 +34,7 @@ const indivisualNotification = () => {
 
 
     const handletest = async () => {
-        const usertocken = await axios.get(`${BACKEND_URL}/notifications/token/${userInfo._id}`);
+        const usertocken = await axios.get(`${BACKEND_URL}/notifications/token/${userInfo.id}`);
         const token = usertocken.data.token;
         if (!token) {
             console.log('No token found for sender');

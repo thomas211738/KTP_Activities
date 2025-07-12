@@ -19,7 +19,7 @@ const index = () => {
 
     const fetchEvents = async () => {
         try {
-            let dbTocken = await CheckNotificationStatus(userInfo._id);
+            let dbTocken = await CheckNotificationStatus(userInfo.id);
 
 
             if (dbTocken === 0) {
@@ -30,7 +30,7 @@ const index = () => {
                 } else if (token.startsWith('ExponentPushToken')) {
                     try {
                         await axios.post(`${BACKEND_URL}/notifications`, {
-                            userID: `${userInfo._id}`,
+                            userID: `${userInfo.id}`,
                             token: `${token}`,
                         });
                         console.log('Token added to database');
@@ -96,7 +96,7 @@ const index = () => {
     const deleteEvent = async (id) => {
         try {
             await axios.delete(`${BACKEND_URL}/events/${id}`);
-            const updatedEvents = events.filter(event => event._id !== id);
+            const updatedEvents = events.filter(event => event.id !== id);
             setEvents(updatedEvents);
         } catch (err) {
             console.log(err);
@@ -147,7 +147,7 @@ const index = () => {
                                                             size={23}
                                                             color={colorScheme === 'light' ? "white" : "black"}
                                                             onPress={() => {
-                                                                router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event._id } });
+                                                                router.push({ pathname: '(tabs)/Calendar/editEvent', params: { eventID: event.id } });
                                                             }}
                                                         />
                                                     ):""}
@@ -157,7 +157,7 @@ const index = () => {
                                                             size={25}
                                                             color={colorScheme === 'light' ? "white" : "black"}
                                                             style={styles.iconSpacing}
-                                                            onPress={() => confirmDeleteAlert(event.Name, event._id)}
+                                                            onPress={() => confirmDeleteAlert(event.Name, event.id)}
                                                         />
                                                     ): ""}
                                                 </View>

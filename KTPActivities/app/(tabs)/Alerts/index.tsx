@@ -150,7 +150,7 @@ const index = () => {
   const deleteAlert = async (id) => {
     try {
       await axios.delete(`${BACKEND_URL}/alerts/${id}`);
-      const updatedAlerts = alerts.filter(alert => alert._id != id);
+      const updatedAlerts = alerts.filter(alert => alert.id != id);
       setAlerts(updatedAlerts);
     } catch (err) {
       console.log(err.message);
@@ -176,16 +176,16 @@ const index = () => {
               <Text style={[styles.alertDateText,themeTextStyle ]}>{date}</Text>
             </View>
             {groupedAlerts[date].map((alert) => (
-              <View key={alert._id} style={styles.alertWrapper}>
+              <View key={alert.id} style={styles.alertWrapper}>
                 <AlertComponent
                   alertName={alert.AlertName}
                   description={alert.Description}
                   time={formatTime(alert.updatedAt)}
                   onEdit={() => {
-                    setAlertID(alert._id);
+                    setAlertID(alert.id);
                     setEditModalVisible(true);
                   }}
-                  onDelete={() => confirmDeleteAlert(alert._id)}
+                  onDelete={() => confirmDeleteAlert(alert.id)}
                 />
               </View>
             ))}

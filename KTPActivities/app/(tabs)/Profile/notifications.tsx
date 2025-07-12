@@ -65,7 +65,7 @@ import { RootSiblingParent } from 'react-native-root-siblings';
             };
             const role = roles[user.Position]; // Find the role name based on position
             return state[role] || user.Position === 5; // Check if the corresponding state property is true or if the position is 5
-        }).map(user => user._id); // Return only the userID
+        }).map(user => user.id); // Return only the userID
         console.log(filteredUserIDs.length)
         const notifiableUsers = await axios.get(`${BACKEND_URL}/notifications/`);
 

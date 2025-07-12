@@ -58,8 +58,8 @@ const Index = () => {
 
             let response;
 
-            if (userInfo._id) {
-                response = await axios.get(`${BACKEND_URL}/users/${userInfo._id}`);
+            if (userInfo.id) {
+                response = await axios.get(`${BACKEND_URL}/users/${userInfo.id}`);
             } else{
                 response = await axios.get(`${BACKEND_URL}/users/email/${userInfo.BUEmail}`);
             }
@@ -108,7 +108,7 @@ const Index = () => {
         try {
             userInfo.Interests.push(interest);
             let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major ,Colleges, Interests, Position: Position.toString() }))(userInfo);
-            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+            await axios.put(`${BACKEND_URL}/users/${userInfo.id}`,
                 updateduser
             );
             setAddModalVisible(false);
@@ -123,7 +123,7 @@ const Index = () => {
         try {
             let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Minor, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major, Minor ,Colleges, Interests, Position: Position.toString() }))(userInfo);
             updateduser.Interests[interestIndex] = interest;
-            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+            await axios.put(`${BACKEND_URL}/users/${userInfo.id}`,
                 updateduser
             );
             setEditModalVisible(false);
@@ -137,7 +137,7 @@ const Index = () => {
         try {
             let updateduser = (({ BUEmail, FirstName, LastName, GradYear, Major, Minor, Colleges, Interests, Position }) => ({ BUEmail, FirstName, LastName, GradYear, Major, Minor ,Colleges, Interests, Position: Position.toString() }))(userInfo);
             updateduser.Interests.splice(interestIndex, 1);
-            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+            await axios.put(`${BACKEND_URL}/users/${userInfo.id}`,
                 updateduser
             );
             setEditModalVisible(false);
@@ -176,7 +176,7 @@ const Index = () => {
     const postIg = async (instagram) => {
         try {
             const updateduser = {Position: userInfo.Position.toString(), Instagram: instagram};
-            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+            await axios.put(`${BACKEND_URL}/users/${userInfo.id}`,
                 updateduser
             );
             setIgModalVisible(false);
@@ -188,7 +188,7 @@ const Index = () => {
     const postLinkedIn = async (linkedin) => {
         try {
             const updateduser = {Position: userInfo.Position.toString(), LinkedIn: linkedin};
-            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+            await axios.put(`${BACKEND_URL}/users/${userInfo.id}`,
                 updateduser
             );
             setLinkedinModalVisible(false);
@@ -239,7 +239,7 @@ const Index = () => {
         try {
 
             const updateduser = {Position: userInfo.Position.toString(), ProfilePhoto: file_ID};
-            await axios.put(`${BACKEND_URL}/users/${userInfo._id}`,
+            await axios.put(`${BACKEND_URL}/users/${userInfo.id}`,
                 updateduser
             );
         } catch (err) {
@@ -354,7 +354,7 @@ const Index = () => {
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
                             // Add your functionality for the resources button here
-                            router.push({pathname: "(tabs)/Profile/notifications",  params: { userID: userInfo._id }} );
+                            router.push({pathname: "(tabs)/Profile/notifications",  params: { userID: userInfo.id }} );
                         }}>
                             <Text style={styles.resourcesButtonText}>Send new notification</Text>
                         </TouchableOpacity>
