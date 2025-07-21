@@ -21,6 +21,23 @@ export default function usersRoute(db) {
       response.status(500).send({ message: error.message });
     }
   });
+  // Get all Users ordered by Clout
+  router.get('/ordered-by-clout', async (request, response) => {
+    try {
+      const usersCollection = collection(db, 'users');
+      const q = query(usersCollection, orderBy('Clout', 'desc')); // Sort by Clout in descending order
+      const userSnapshot = await getDocs(q);
+      const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      return response.status(200).json({
+        count: userList.length,
+        data: userList,
+      });
+    } catch (error) {
+      console.error('Error fetching users ordered by Clout:', error);
+      response.status(500).send({ message: error.message });
+    }
+  });
 
   // Get a User by ID
   router.get('/:id', async (request, response) => {

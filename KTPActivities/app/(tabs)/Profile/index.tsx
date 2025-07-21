@@ -17,6 +17,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { Ionicons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 // Other Imports
 import { getUserInfo } from '../../components/userInfoManager'; 
@@ -338,7 +339,7 @@ const Index = () => {
                     />
                 </View>
 
-                {userInfo.Position >= 1 && (
+                {/* {userInfo.Position >= 1 && (
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
                             // Add your functionality for the resources button here
@@ -348,7 +349,7 @@ const Index = () => {
                         </TouchableOpacity>
                         <Entypo name="book" size={20} color={colorScheme === 'light' ? "white" : "black"} />
                     </View>
-                )}
+                )} */}
 
                 {userInfo.Position === 3 || userInfo.Position === 5 && (
                     <View style={[styles.resourcesCard, eventTheme]}>
@@ -359,6 +360,18 @@ const Index = () => {
                             <Text style={styles.resourcesButtonText}>Send new notification</Text>
                         </TouchableOpacity>
                         <Ionicons name="notifications" size={20} color={colorScheme === 'light' ? "white" : "black"} />
+                    </View>
+                )}
+
+                {userInfo.Position === 5 && (
+                    <View style={[styles.resourcesCard, eventTheme]}>
+                        <TouchableOpacity onPress={() => {
+                            // Add your functionality for the resources button here
+                            router.push({pathname: "(tabs)/Profile/leaderboard",  params: { userID: userInfo.id }} );
+                        }}>
+                            <Text style={styles.resourcesButtonText}>Clout Leaderboard</Text>
+                        </TouchableOpacity>
+                        <MaterialIcons name="leaderboard" size={20} color={colorScheme === 'light' ? "white" : "black"} />
                     </View>
                 )}
 

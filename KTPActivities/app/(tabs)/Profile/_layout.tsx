@@ -59,6 +59,23 @@ export default function Layout() {
             headerLargeTitleShadowVisible: false,
           }}
         />
+        <Stack.Screen
+          name="leaderboard"
+          options={{
+            headerTitleStyle: {
+              color: colorScheme === 'light' ? "#1a1a1a" : "white",
+            },
+  
+            headerStyle: {
+              backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
+            },
+            headerTitle: "Clout Leaderboard",
+            headerBlurEffect: "regular",
+            ...(Platform.OS === "ios" && { headerTransparent: true }),
+            headerLargeTitle: true,
+            headerLargeTitleShadowVisible: false,
+          }}
+        />
     </Stack>
    
   );

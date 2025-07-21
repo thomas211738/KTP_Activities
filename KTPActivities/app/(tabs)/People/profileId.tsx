@@ -9,6 +9,7 @@ import { Octicons } from '@expo/vector-icons';
 import CircleLoader from '../../components/loaders/circleLoader';
 import ViewProfileLoader from '../../components/loaders/viewProfileLoader';
 import { getUserInfo } from '../../components/userInfoManager';
+import { set } from 'date-fns';
 
 const profileId = () => {
     const { userID, userImage } = useLocalSearchParams();
@@ -54,6 +55,10 @@ const profileId = () => {
                 setImageLoading(false);
             }
             
+            const updateduser = {Position: response.data.Position, Clout: (response.data.Clout + 1)};
+            axios.put(`${BACKEND_URL}/users/${userID}`,
+                updateduser
+            );
         })
         .catch((error) => {
             console.log(error);
