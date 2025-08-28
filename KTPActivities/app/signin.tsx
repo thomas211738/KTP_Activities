@@ -3,9 +3,6 @@ import React from 'react'
 import GoogleButton from './components/googleButton';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import AndroidAuth from './components/androidAuth';
-import Animated, {FadeIn} from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
 
 
 export default function SignInScreen({ promptAsync }) {
@@ -16,18 +13,22 @@ export default function SignInScreen({ promptAsync }) {
               {/* <Animated.ScrollView entering={FadeIn}> */}
               <View style = {home.container}>
               <Image source={require('../img/ktplogopng.png')} style={home.logo} />
-              <Text style={home.text}>Ready to join Boston University's premier professional technology fraternity?</Text>
+                <Text style={home.text}>
+                Ready to join <Text style={{fontWeight: 'bold'}}>Boston University</Text>'s premier <Text style={{fontWeight: 'bold'}}>Professional Technology Fraternity</Text>?
+                </Text>
 
               </View>
 
             
-                {Platform.OS === "ios" ? (
-                  <GoogleButton promptAsync={() => promptAsync()} />
-                ) : (
-                  <AndroidAuth/>
-                )}
+                  <View style={{bottom: 40}}>
+                  {Platform.OS === "ios" ? (
+                    <GoogleButton promptAsync={() => promptAsync()} />
+                  ) : (
+                    <AndroidAuth/>
+                  )}
+                  </View>
 
-                <Button title='Testing' onPress={() => router.push({pathname: 'testing'})}></Button>
+              
               
             {/* </Animated.ScrollView> */}
 
@@ -58,12 +59,11 @@ const home = StyleSheet.create({
     },
     text: {
       marginTop: -20,
-      fontWeight: 'bold',
       padding: 12,
       paddingTop: 0,
       color: 'black',
       textAlign: 'center',
-      fontSize: 15,
+      fontSize: 16,
     },
 
   });

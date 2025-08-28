@@ -339,18 +339,6 @@ const Index = () => {
                     />
                 </View>
 
-                {/* {userInfo.Position >= 1 && (
-                    <View style={[styles.resourcesCard, eventTheme]}>
-                        <TouchableOpacity onPress={() => {
-                            // Add your functionality for the resources button here
-                            router.push("(tabs)/Profile/resources"); // Example: Navigate to a resources page
-                        }}>
-                            <Text style={styles.resourcesButtonText}>Resources</Text>
-                        </TouchableOpacity>
-                        <Entypo name="book" size={20} color={colorScheme === 'light' ? "white" : "black"} />
-                    </View>
-                )} */}
-
                 {userInfo.Position === 3 || userInfo.Position === 5 && (
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
@@ -363,7 +351,7 @@ const Index = () => {
                     </View>
                 )}
 
-                {userInfo.Position === 5 && (
+                {/* {userInfo.Position === 5 && (
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
                             // Add your functionality for the resources button here
@@ -373,7 +361,7 @@ const Index = () => {
                         </TouchableOpacity>
                         <MaterialIcons name="leaderboard" size={20} color={colorScheme === 'light' ? "white" : "black"} />
                     </View>
-                )}
+                )} */}
 
                 {/* SIGNOUT CARD */}
                 <View style={[styles.signOutCard, eventTheme]}>
@@ -519,6 +507,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         marginTop: 10,
+        columnGap: 5, // Added horizontal spacing between icons
     },
     icon: {
         width: 24,

@@ -33,7 +33,14 @@ const db = getFirestore(appFirebase);
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+const corsOptions = {
+  origin: 'https://www.ktpbostonu.com', // Replace with your frontend domain
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(corsOptions));
+app.options('*', cors());
 
 const PORT = process.env.APP_PORT;
 
@@ -56,4 +63,10 @@ app.listen(PORT, () => {
   console.log(`App is listening to port: ${PORT}`);
 });
 
-export const api = onRequest(app);
+export const api = onRequest(
+  {
+    cors: ['https://www.ktpbostonu.com'],
+    region: ['us-central1'], // Specify region for consistency
+  },
+  app
+);
