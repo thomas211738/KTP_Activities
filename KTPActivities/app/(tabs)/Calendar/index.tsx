@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import CalendarLoader from '../../components/loaders/calendarLoader';
 import { getUserInfo } from '../../components/userInfoManager';
 import { CheckNotificationStatus, registerForPushNotificationsAsync } from '../../components/notificationStatus';
+import KTPWrappedCard from '../../wrapped/ktpWrappedCard';
 
 const index = () => {
     const colorScheme = useColorScheme();
@@ -130,7 +131,10 @@ const index = () => {
                     contentInsetAdjustmentBehavior='automatic'
                     showsVerticalScrollIndicator={false}
                 >   
+                <KTPWrappedCard onPress={() => console.log("Card Pressed")} />
                     <View style={styles.scrollcontainer}>
+
+                        
 
                         {Object.keys(groupedEvents).map((date, index) => (
                             <View key={index} style={styles.dateGroup}>
