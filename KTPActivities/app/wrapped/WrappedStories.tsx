@@ -57,29 +57,31 @@ const WrappedStories = ({ onClose }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.progressBarContainer}>
-        {stories.map((_, index) => {
-          const width = progress.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['0%', '100%'],
-            extrapolate: 'clamp',
-          });
+      <View style={{ flex: 1 }}>
+        <View style={styles.progressBarContainer}>
+          {stories.map((_, index) => {
+            const width = progress.interpolate({
+              inputRange: [0, 1],
+              outputRange: ['0%', '100%'],
+              extrapolate: 'clamp',
+            });
 
-          return (
-            <View key={index} style={styles.progressBarBackground}>
-              {index < currentStoryIndex && <View style={styles.progressBarFill} />}
-              {index === currentStoryIndex && <Animated.View style={[styles.progressBarFill, { width }]} />}
-            </View>
-          );
-        })}
-      </View>
-      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-        <Text style={styles.closeButtonText}>X</Text>
-      </TouchableOpacity>
-      <CurrentStoryComponent />
-      <View style={styles.navigationContainer}>
-        <TouchableOpacity style={styles.navButton} onPress={prevStory} />
-        <TouchableOpacity style={styles.navButton} onPress={nextStory} />
+            return (
+              <View key={index} style={styles.progressBarBackground}>
+                {index < currentStoryIndex && <View style={styles.progressBarFill} />}
+                {index === currentStoryIndex && <Animated.View style={[styles.progressBarFill, { width }]} />}
+              </View>
+            );
+          })}
+        </View>
+        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <Text style={styles.closeButtonText}>X</Text>
+        </TouchableOpacity>
+        <CurrentStoryComponent />
+        <View style={styles.navigationContainer}>
+          <TouchableOpacity style={styles.navButton} onPress={prevStory} />
+          <TouchableOpacity style={styles.navButton} onPress={nextStory} />
+        </View>
       </View>
     </SafeAreaView>
   );
