@@ -67,7 +67,13 @@ import { RootSiblingParent } from 'react-native-root-siblings';
             return state[role] || user.Position === 5; // Check if the corresponding state property is true or if the position is 5
         }).map(user => user.id); // Return only the userID
         console.log(filteredUserIDs.length)
-        const notifiableUsers = await axios.get(`${BACKEND_URL}/notifications/`);
+        let notifiableUsers;
+        try {
+            notifiableUsers = await axios.get(`${BACKEND_URL}/notifications/`);
+        } catch (err) {
+            console.error("Error fetching notifiable users:", err.response ? err.response.data : err.message);
+            return;
+        }
 
         const filteredTokens = filteredUserIDs.map(userID => {
             // Find the user object in notifiableUsers that matches the current userID
@@ -92,7 +98,13 @@ import { RootSiblingParent } from 'react-native-root-siblings';
     };
 
     const handletest = async () => {
-        const usertocken = await axios.get(`${BACKEND_URL}/notifications/token/${userID}`);
+        let usertocken;
+        try {
+            usertocken = await axios.get(`${BACKEND_URL}/notifications/token/${userID}`);
+        } catch (err) {
+            console.error("Error fetching user token:", err.response ? err.response.data : err.message);
+            return;
+        }
         const token = usertocken.data.token;
         await sendPushNotification(token);
     };

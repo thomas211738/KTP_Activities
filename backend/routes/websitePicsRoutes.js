@@ -13,7 +13,7 @@ export default function websitePicsRoute(db) {
             }
             const websitePicsCollection = collection(db, 'web_pics');
             const newWebsitePic = { data };
-            const docRef = await addDoc(web_picsCollection, newWebsitePic);
+            const docRef = await addDoc(websitePicsCollection, newWebsitePic);
             const fileId = { fileID: docRef.id };
             res.status(200).send(fileId);
         } catch (err) {

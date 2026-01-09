@@ -59,7 +59,7 @@ const createEvent = () => {
         router.back();
       })
       .catch((error) => {
-        console.log(error.message);
+        console.error("Error creating event:", error.response ? error.response.data : error.message);
       });
   };
 

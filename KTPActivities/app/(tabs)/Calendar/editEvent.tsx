@@ -24,7 +24,7 @@ const editEvent = () => {
         setEventPosition(response.data.Position.toString());
       })
       .catch((error) => {
-        console.log(error);
+        console.error("Error fetching event data:", error.response ? error.response.data : error.message);
       });
   }, [eventID]);
 
@@ -74,7 +74,7 @@ const editEvent = () => {
         router.back();
       })
       .catch((error) => {
-        console.log(error.message);
+        console.error("Error updating event:", error.response ? error.response.data : error.message);
       });
   };
 

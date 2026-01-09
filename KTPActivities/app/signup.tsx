@@ -72,7 +72,7 @@ const SignupPage = () => {
       axios
       .post(`${BACKEND_URL}/users`, new_user)
       .catch((error) => {
-        console.log(error);
+        console.error("Error creating user:", error.response ? error.response.data : error.message);
       });
       router.replace("/(tabs)/Calendar");
 

@@ -79,7 +79,7 @@ const Index = () => {
             setImageLoading(false);
 
         } catch (err) {
-            console.log(err.message);
+            console.error("Error fetching profile:", err.response ? err.response.data : err.message);
         }
     }
 
@@ -115,7 +115,7 @@ const Index = () => {
             setAddModalVisible(false);
             fetchProfile();
         } catch (err) {
-            console.log(err);
+            console.error("Error posting interest:", err.response ? err.response.data : err.message);
         }
     }
 
@@ -130,7 +130,7 @@ const Index = () => {
             setEditModalVisible(false);
             fetchProfile();
         } catch (err) {
-            console.log(err);
+            console.error("Error updating interest:", err.response ? err.response.data : err.message);
         }
     }
 
@@ -144,7 +144,7 @@ const Index = () => {
             setEditModalVisible(false);
             fetchProfile();
         } catch (err) {
-            console.log(err);
+            console.error("Error deleting interest:", err.response ? err.response.data : err.message);
         }
     }
 
@@ -183,7 +183,7 @@ const Index = () => {
             setIgModalVisible(false);
             fetchProfile();
         } catch (err) {
-            console.log(err);
+            console.error("Error posting Instagram:", err.response ? err.response.data : err.message);
         }
     }
     const postLinkedIn = async (linkedin) => {
@@ -195,7 +195,7 @@ const Index = () => {
             setLinkedinModalVisible(false);
             fetchProfile();
         } catch (err) {
-            console.log(err);
+            console.error("Error posting LinkedIn:", err.response ? err.response.data : err.message);
         }
     }
 
@@ -232,7 +232,7 @@ const Index = () => {
             setImageLoading(false);
             addFileIDToUser(imageID.data.fileID);
         } catch (err) {
-            console.log(err.message);
+            console.error("Error posting image:", err.response ? err.response.data : err.message);
         }
     }
 
@@ -244,7 +244,7 @@ const Index = () => {
                 updateduser
             );
         } catch (err) {
-            console.log(err);
+            console.error("Error adding file ID to user:", err.response ? err.response.data : err.message);
         }
     }
 

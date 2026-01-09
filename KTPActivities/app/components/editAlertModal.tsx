@@ -14,7 +14,7 @@ const EditAlertModal = (props) => {
         setAlertDescription(response.data.Description);
       })
       .catch((error) => {
-        console.log(error);
+        console.error("Error fetching alert data:", error.response ? error.response.data : error.message);
       });
   }, [props.alertID]);
 

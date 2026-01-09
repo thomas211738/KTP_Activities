@@ -22,7 +22,7 @@ export default function Layout() {
       });
       setAddModalVisible(false);
     } catch (err) {
-      console.log(err.message);
+      console.error("Error posting alert:", err.response ? err.response.data : err.message);
     }
   }
 

@@ -23,7 +23,7 @@ const Splash = ({ setIsAnimating }) => {
   return (
     <View style={{ flex: 1 }}>
       <ImageBackground
-        source={require('./../../assets/new_splash.png')}
+        source={require('./../../assets/splash.png')}
         resizeMode="cover"
         style={styles.image}
       >

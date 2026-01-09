@@ -25,7 +25,7 @@ export async function ValidateUser(userEmail) {
             return { status: 0, user: null, allUsers: users };
         }
     } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching the users:', error);
         return 'Error occurred';
     }
 

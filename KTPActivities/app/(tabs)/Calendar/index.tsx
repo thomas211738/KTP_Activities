@@ -36,7 +36,7 @@ const index = () => {
                         });
                         console.log('Token added to database');
                     } catch (err) {
-                        console.log(err);
+                        console.error("Error posting notification token:", err.response ? err.response.data : err.message);
                     }
                     console.log('User token is NOT registered and user has notifications enabled, so token was added to database');
                 } else {
@@ -46,8 +46,12 @@ const index = () => {
             } else {
                 const token = await registerForPushNotificationsAsync();
                 if (token === null){
-                    await axios.delete(`${BACKEND_URL}/notifications/token/${dbTocken}`);
-                    console.log('Token deleted from database');
+                    try {
+                        await axios.delete(`${BACKEND_URL}/notifications/token/${dbTocken}`);
+                        console.log('Token deleted from database');
+                    } catch (err) {
+                        console.error("Error deleting notification token:", err.response ? err.response.data : err.message);
+                    }
                     console.log('User token is alrady registered and user still has notifications DISABLED, so token was deleted from database');
                 } else {
                     console.log('User token is alrady registered and user still has notifications enabled');
@@ -55,13 +59,18 @@ const index = () => {
                 
             }
 
-            const response = await axios.get(`${BACKEND_URL}/events`);
-            const events = response.data.data.filter((event) => event.Position <= userInfo.Position);
-            const sortedEvents = events.sort((a, b) => new Date(a.Day) - new Date(b.Day));
-            setEvents(sortedEvents);
-            setLoading(false);
+            try {
+                const response = await axios.get(`${BACKEND_URL}/events`);
+                const events = response.data.data.filter((event) => event.Position <= userInfo.Position);
+                const sortedEvents = events.sort((a, b) => new Date(a.Day) - new Date(b.Day));
+                setEvents(sortedEvents);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching events:', error);
+                setLoading(false);
+            }
         } catch (err) {
-            console.log(err);
+            console.error("Error in notification/event fetching logic:", err);
             setLoading(false);
         }
     };
@@ -100,7 +109,7 @@ const index = () => {
             const updatedEvents = events.filter(event => event.id !== id);
             setEvents(updatedEvents);
         } catch (err) {
-            console.log(err);
+            console.error("Error deleting event:", err.response ? err.response.data : err.message);
         }
         fetchEvents();
     };
@@ -131,7 +140,7 @@ const index = () => {
                     contentInsetAdjustmentBehavior='automatic'
                     showsVerticalScrollIndicator={false}
                 >   
-                <KTPWrappedCard onPress={() => console.log("Card Pressed")} />
+                {/* <KTPWrappedCard onPress={() => console.log("Card Pressed")} /> */}
                     <View style={styles.scrollcontainer}>
 
                         

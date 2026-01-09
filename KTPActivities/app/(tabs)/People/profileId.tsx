@@ -58,10 +58,10 @@ const profileId = () => {
             const updateduser = {Position: response.data.Position, Clout: (response.data.Clout + 1)};
             axios.put(`${BACKEND_URL}/users/${userID}`,
                 updateduser
-            );
+            ).catch(err => console.error("Error updating user clout:", err.response ? err.response.data : err.message));
         })
         .catch((error) => {
-            console.log(error);
+            console.error("Error fetching user profile:", error.response ? error.response.data : error.message);
         });
     }, [userID, BACKEND_URL]);
 
@@ -126,7 +126,7 @@ const profileId = () => {
                 updateduser
             );
         } catch (err) {
-            console.log(err);
+            console.error("Error changing user position:", err.response ? err.response.data : err.message);
         }
     }
 
@@ -195,14 +195,14 @@ const profileId = () => {
 
         {
             userInfo.Position === 3 || userInfo.Position === 5 ? 
-                <View style={[styles.signOutCard, eventTheme]}>
-                    <TouchableOpacity onPress={() => changePosition(position)}>
-                        {position === 0 ? 
-                        <Text style={[styles.darkmodeButtonText, textTheme]}>Promote to Closed Rush</Text> :
-                        <Text style={[styles.darkmodeButtonText, textTheme]}>Remove from Closed Rush</Text>
-                        }
-                    </TouchableOpacity>
-                </View> 
+            <View style={[styles.signOutCard, eventTheme]}>
+                <TouchableOpacity onPress={() => changePosition(position)}>
+                {position === 0 ? 
+                <Text style={[styles.darkmodeButtonText, textTheme]}>Promote to Closed Rush</Text> :
+                <Text style={[styles.darkmodeButtonText, textTheme]}>Remove from Closed Rush</Text>
+                }
+                </TouchableOpacity>
+            </View> 
              : ""
         }
         {

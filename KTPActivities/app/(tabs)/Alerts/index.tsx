@@ -57,7 +57,7 @@ const index = () => {
       setAlerts(response.data.data);
       setLoading(false);
     } catch (err) {
-      console.log(err.message);
+      console.error("Error fetching alerts:", err.response ? err.response.data : err.message);
     }
   }
 
@@ -130,7 +130,7 @@ const index = () => {
       setEditModalVisible(false);
       fetchAlerts();
     } catch (err) {
-      console.log(err.message);
+      console.error("Error updating alert:", err.response ? err.response.data : err.message);
     }
   }
 
@@ -153,7 +153,7 @@ const index = () => {
       const updatedAlerts = alerts.filter(alert => alert.id != id);
       setAlerts(updatedAlerts);
     } catch (err) {
-      console.log(err.message);
+      console.error("Error deleting alert:", err.response ? err.response.data : err.message);
     }
   }
 

@@ -13,7 +13,7 @@ export async function CheckNotificationStatus(userID) {
         return token;
 
     } catch (err) {
-        console.log(err);
+        console.error("Error checking notification status:", err.response ? err.response.data : err.message);
     }
 }
 

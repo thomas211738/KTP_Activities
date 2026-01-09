@@ -34,7 +34,13 @@ const indivisualNotification = () => {
 
 
     const handletest = async () => {
-        const usertocken = await axios.get(`${BACKEND_URL}/notifications/token/${userInfo.id}`);
+        let usertocken;
+        try {
+            usertocken = await axios.get(`${BACKEND_URL}/notifications/token/${userInfo.id}`);
+        } catch (err) {
+            console.error("Error fetching sender's notification token:", err.response ? err.response.data : err.message);
+            return;
+        }
         const token = usertocken.data.token;
         if (!token) {
             console.log('No token found for sender');
@@ -73,7 +79,24 @@ const indivisualNotification = () => {
       }
 
     const handleSubmit = async () => {
-        const user2token = await axios.get(`${BACKEND_URL}/notifications/token/${userID}`);
+        let user2token;
+        try {
+            user2token = await axios.get(`${BACKEND_URL}/notifications/token/${userID}`);
+        } catch (err) {
+            console.error("Error fetching receiver's notification token:", err.response ? err.response.data : err.message);
+            Toast.show('Could not fetch user notification token', {
+                duration: Toast.durations.SHORT,
+                position: Toast.positions.BOTTOM,
+                shadow: true,
+                animation: true,
+                hideOnPress: true,
+                delay: 0,
+                backgroundColor: 'red',
+                textColor: 'white',
+                opacity: 1,
+            });
+            return;
+        }
 
         const token = user2token.data.token;
         if (token === 0){

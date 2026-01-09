@@ -8,7 +8,7 @@ export async function GetImage(picid) {
         return response.data.data;
 
     } catch (err) {
-        console.log(err);
+        console.error("Error getting image:", err.response ? err.response.data : err.message);
     }
 }
 
