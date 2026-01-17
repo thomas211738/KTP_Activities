@@ -164,7 +164,7 @@ const index = () => {
                                                             }}
                                                         />
                                                     ):""}
-                                                    {userInfo.Position === 3 || userInfo.Position === 5 ? (
+                                                    {userInfo.Position.toString() === "3" || userInfo.Position.toString() === "5" ? (
                                                         <MaterialIcons
                                                             name="delete"
                                                             size={25}

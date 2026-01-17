@@ -61,7 +61,7 @@ export default function Layout() {
         >
         </Stack.Screen>
       </Stack>
-      {userInfo.Position === 3 || userInfo.Position === 5 ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
+      {userInfo.Position.toString() === '3' || userInfo.Position.toString() === '5' ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
     </>
   );
 }

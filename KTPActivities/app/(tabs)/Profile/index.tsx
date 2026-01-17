@@ -27,12 +27,12 @@ import EditInterestModal from '../../components/editInterestModal';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
 import * as ImagePicker from 'expo-image-picker';
-import * as ImageManipulator from 'expo-image-manipulator';
 import CircleLoader from '../../components/loaders/circleLoader';
 import { GetImage } from '../../components/pictures';
 import AddigModal from '../../components/igModal';
 import AddLinkedinModal from '../../components/linkedinModal';
 import ProfileLoader from '../../components/loaders/profileLoader';
+import { add, set } from 'date-fns';
 
 const Index = () => {
     const userInfo = getUserInfo();
@@ -53,6 +53,8 @@ const Index = () => {
     const [loading, setLoading] = useState(true);
     const [profileID, setProfileID] = useState(null);
 
+    const [imageURI, setImageURI] = useState(null);  
+
     
     const fetchProfile = async () => {
         try {
@@ -71,10 +73,8 @@ const Index = () => {
             }
             if (response.data.Instagram) setInstagram(response.data.Instagram);
             if (response.data.LinkedIn) setLinkedIn(response.data.LinkedIn);
-            if (response.data.ProfilePhoto) {
-                const image = await GetImage(response.data.ProfilePhoto);
-                setProfileID(response.data.ProfilePhoto)
-                setImage(image);
+            if (response.data.AppPhotoURL) {
+                setImageURI(response.data.AppPhotoURL);
             }
             setImageLoading(false);
 
@@ -98,11 +98,15 @@ const Index = () => {
     }
     const college = getLabelByValue(userInfo.Colleges[0]);
 
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth(); // 0-11 for Jan-Dec
+    const academicYearOffset = currentMonth < 5 ? 0 : 1; // Before June: 0, June or later: 1
+    const seniorGradYear = currentYear + academicYearOffset;
     const grade = {
-        2025: "Senior",
-        2026: "Junior",
-        2027: "Sophomore",
-        2028: "Freshman"
+        [seniorGradYear]: "Senior",
+        [seniorGradYear + 1]: "Junior",
+        [seniorGradYear + 2]: "Sophomore",
+        [seniorGradYear + 3]: "Freshman"
     }[userInfo.GradYear] || "Alumni";
 
     const postInterest = async (interest) => {
@@ -148,32 +152,6 @@ const Index = () => {
         }
     }
 
-    const pickImage = async () => {
-        
-        // Open image picker
-        let result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [4, 3],
-          quality: 1,
-        });
-
-        if (!result.canceled) {
-            setImageLoading(true);
-            const compressedImage = await compressImage(result.assets[0].uri);
-            postimage(compressedImage);
-        }
-    };
-
-    const compressImage = async (uri) => {
-        const manipResult = await ImageManipulator.manipulateAsync(
-            uri,
-            [{ resize: { width: 800 } }], // Resize to a width of 800px, adjust as needed
-            { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG } // Adjust compression and format as needed
-        );
-        return manipResult;
-    };
-
     const postIg = async (instagram) => {
         try {
             const updateduser = {Position: userInfo.Position.toString(), Instagram: instagram};
@@ -199,47 +177,105 @@ const Index = () => {
         }
     }
 
-    async function getBase64FromUri(uri) {
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        const base64 = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const base64data = reader.result.split(',')[1];
-            resolve(base64data);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
+      const pickImage = async () => { 
+        // Open image picker
+        let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'], // Updated: use array of MediaType strings
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
         });
-        return base64;
-      }
-      
-    const postimage = async (file) => {
-        try {
-            const base64String = await getBase64FromUri(file.uri);
-            const dbimage = {data: base64String};
-            
-            let imageID
-            if(profileID) {
-                imageID = await axios.put(`${BACKEND_URL}/photo/photo/${profileID}`, dbimage)
 
-            } else{
-                imageID = await axios.post(`${BACKEND_URL}/photo/photo`, dbimage)
+        if (!result.canceled) {
+            setImageLoading(true);
+            deleteImage(getFileNameFromUrl(userInfo.AppPhotoURL), 'App Photos');
+            console.log('Deleted old image:', userInfo.AppPhotoURL);
+
+            const downloadURL = await postimage(result.assets[0], userInfo.id);
+            setImageURI(downloadURL);
+            console.log('Downloaded URL:', downloadURL);
+
+            addFileIDToUser(downloadURL);
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            setImageLoading(false);
+
+
+        }
+    };
+
+      
+    const postimage = async (imageAsset, userId) => {
+        try {
+            // 1. Create a FormData object
+            const formData = new FormData();
+
+            // 2. Create the file object
+            const fileToUpload = {
+            uri: imageAsset.uri,             
+            name: imageAsset.fileName || 'image.jpg', 
+            type: imageAsset.type || 'image/jpeg',  
+            };
+
+            formData.append('image', fileToUpload as any);
+            formData.append('folder', 'App Photos'); 
+            formData.append('userId', userId);
+        
+        const response = await fetch(`${BACKEND_URL}/photo2`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            return data.downloadURL;
+        } else {
+            console.error('Upload failed:', data);
+            return null;
+        }
+
+        } catch (error) {
+            console.error('Network error:', error);
+            return null;
+        } 
+    };
+
+    const getFileNameFromUrl = (url) => {
+        try {
+
+            const cleanUrl = url.split('?')[0];
+            const decodedUrl = decodeURIComponent(cleanUrl);
+            let storagePath = '';
+
+            if (decodedUrl.includes('/o/')) {
+                storagePath = decodedUrl.split('/o/')[1];
+            
+            } else if (decodedUrl.includes('storage.googleapis.com')) {
+                const pathAfterDomain = decodedUrl.split('storage.googleapis.com/')[1];
+                const firstSlashIndex = pathAfterDomain.indexOf('/');
+            if (firstSlashIndex !== -1) {
+                storagePath = pathAfterDomain.substring(firstSlashIndex + 1);
+            } else {
+                storagePath = pathAfterDomain;
+            }
+            } else {
+                storagePath = decodedUrl;
             }
 
-            const image = await GetImage(imageID.data.fileID);
-            setImage(image);
-            setImageLoading(false);
-            addFileIDToUser(imageID.data.fileID);
-        } catch (err) {
-            console.error("Error posting image:", err.response ? err.response.data : err.message);
-        }
-    }
+            // 3. Return everything after the last slash
+            const lastSlashIndex = storagePath.lastIndexOf('/');
+            return lastSlashIndex !== -1 ? storagePath.substring(lastSlashIndex + 1) : storagePath;
 
-    const addFileIDToUser = async (file_ID) => {
+        } catch (error) {
+            console.error('Error parsing filename:', error);
+            return null;
+        }   
+    };
+
+    const addFileIDToUser = async (Photo_url) => {
         try {
-
-            const updateduser = {Position: userInfo.Position.toString(), ProfilePhoto: file_ID};
+            const updateduser = {Position: userInfo.Position, AppPhotoURL: Photo_url};
             await axios.put(`${BACKEND_URL}/users/${userInfo.id}`,
                 updateduser
             );
@@ -247,6 +283,36 @@ const Index = () => {
             console.error("Error adding file ID to user:", err.response ? err.response.data : err.message);
         }
     }
+
+    const deleteImage = async (filename, folder = 'profile-pics') => {
+        try {
+            if (!filename) {
+                console.log('No filename provided to delete');
+                return;
+            }
+
+            const url = `${BACKEND_URL}/photo2/${encodeURIComponent(filename)}?folder=${encodeURIComponent(folder)}`;
+
+            const response = await fetch(url, {
+            method: 'DELETE',
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+            console.log('Image deleted successfully');
+            return true;
+            } else {
+            console.error('Failed to delete image:', result.message);
+            return false;
+            }
+
+        } catch (error) {
+            console.error('Network error deleting image:', error);
+            return false;
+        }
+    };
+
 
     const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark;
     const textTheme = colorScheme === 'light' ? styles.lightText : styles.darkText;
@@ -274,8 +340,8 @@ const Index = () => {
 
                 {/* IMAGE COMPONENT */}
                 {imageLoading ? <CircleLoader/> : 
-                    image ? (
-                        <Image source={{ uri: `data:image/jpeg;base64,${image}` }} style={styles.profileimage} />
+                    imageURI ? (
+                        <Image source={{ uri: imageURI }} style={styles.profileimage} />
                     ) : (
                         <Octicons name="feed-person" size={175} color={colorScheme === 'light' ? "#242424" : "white"} style={styles.profilepic} />
                     )}
@@ -339,7 +405,7 @@ const Index = () => {
                     />
                 </View>
 
-                {userInfo.Position === 3 || userInfo.Position === 5 && (
+                {userInfo.Position.toString() === '3' || userInfo.Position.toString() === '5' && (
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
                             // Add your functionality for the resources button here

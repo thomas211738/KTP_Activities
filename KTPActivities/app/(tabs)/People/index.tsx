@@ -31,7 +31,7 @@ const Person = (props) => {
                         {props.user.FirstName + " " + props.user.LastName}
                     </Text>
                     <Text style={styles.personMajors}>
-                        {props.user.Position == 3 ?
+                        {props.user.Position.toString() === '3' ?
                             props.user.Eboard_Position :
                             `${props.user.Major.join(" and ")} Major${props.user.Minor && props.user.Minor.length !== 0 && props.user.Minor[0] !== "" ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
                         }
@@ -45,18 +45,15 @@ const Person = (props) => {
 
 const index = () => {
     const users = getAllUsersInfo();
+
     const user = getUserInfo();
+    user.Position = Number(user.Position);
     const [pos, setPos] = React.useState(0);
     const [search, setSearch] = React.useState('');
-    const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => user.Position === pos));
+    const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => Number(user.Position) === pos));
     const [loading, setLoading] = React.useState(false);
-    const [photos, setPhotos] = React.useState({});
     const navigation = useNavigation();
     const colorScheme = useColorScheme();
-
-    useEffect(() => {
-        fetchAllPhotos();
-    }, []);
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
@@ -68,19 +65,6 @@ const index = () => {
             },
         });
     }, [colorScheme]);
-
-    const fetchAllPhotos = async () => {
-        try {
-            const response = await axios.get(`${BACKEND_URL}/photo/photos`);
-            const photosData = {};
-            response.data.data.forEach(photo => {
-                photosData[photo._id] = `data:image/png;base64,${photo.data}`;   
-            });
-            setPhotos(photosData);
-        } catch (err) {
-            console.error("Error fetching photos:", err.response ? err.response.data : err.message);
-        }
-    }
 
     const searchUsers = (text) => {
         setSearch(text);
@@ -100,11 +84,11 @@ const index = () => {
             setSearch('');
             setPos(position);
             if (position === 2) {
-                setFilteredUsers(users.filter(user => user.Position === 2 || user.Position === 5));
+                setFilteredUsers(users.filter(user => Number(user.Position) === 2 || Number(user.Position) === 5));
             } else if (position === 0){
-                setFilteredUsers(users.filter(user => user.Position === 0 || user.Position === 0.5));
+                setFilteredUsers(users.filter(user => Number(user.Position) === 0 || Number(user.Position) === 0.5));
             } else {
-                setFilteredUsers(users.filter(user => user.Position === position));
+                setFilteredUsers(users.filter(user => Number(user.Position) === position));
             }
             setLoading(false);
         }
@@ -168,7 +152,7 @@ const index = () => {
                     <Person
                     key={user.id}
                     user={user}
-                    image={photos[user.ProfilePhoto]}
+                    image={user.AppPhotoURL}
                     />
                 )) : (
                     <View style={styles.noMembersContainer}>

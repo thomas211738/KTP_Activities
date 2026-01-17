@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 import usersRoute from './routes/userRoutes.js';
 import eventsRoute from './routes/eventsRoutes.js';
 import taskRoute from './routes/taskRoutes.js';
@@ -14,6 +15,7 @@ import notificationRoute from './routes/notificationsRoutes.js';
 import websitePicsRoute from './routes/websitePicsRoutes.js';
 // import emailRoute from './routes/emailRoute.js'; Not working?
 import { onRequest } from 'firebase-functions/v2/https';
+import appphotosRoute from './routes/appphotosRoute.js';
 
 
 // Firebase configuration (replace with your own config from Firebase Console)
@@ -30,6 +32,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
+const storage = getStorage(appFirebase);
 
 const app = express();
 app.use(express.json());
@@ -53,6 +56,7 @@ app.use('/completed-tasks', completedTaskRoute(db));
 app.use('/photo', userphotosRoute(db));
 app.use('/notifications', notificationRoute(db));
 app.use('/websitePics', websitePicsRoute(db));
+app.use('/photo2', appphotosRoute(storage));
 // app.use('/api/email', emailRoute); // No db needed
 
 app.get('/', (request, response) => {

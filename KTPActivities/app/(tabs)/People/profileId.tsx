@@ -33,23 +33,24 @@ const profileId = () => {
 
     React.useEffect(() => {
         axios.get(`${BACKEND_URL}/users/${userID}`)
-        .then((response) => {
+        .then(async (response) => {
 
             setuserFirstName(response.data.FirstName);
             setuserLastName(response.data.LastName);
             setUserGradYear(response.data.GradYear);
             setUserColleges(response.data.Colleges);
             setUserMajor(response.data.Major.join(' and '));
-            if (response.data.Minor.length > 0) setUserMinor(response.data.Minor.join(' and '));
+            if (response.data.Minor && response.data.Minor.length > 0) setUserMinor(response.data.Minor.join(' and '));
             setPosition(response.data.Position);
             setEboardPosition(response.data.Eboard_Position);
-            setUserInterests(response.data.Interests);
+            setUserInterests(response.data.Interests || []);
             if (response.data.Instagram) setInstagram(response.data.Instagram);
             if (response.data.LinkedIn) setLinkedin(response.data.LinkedIn);
             if (response.data.Class) setUserClass(`(${response.data.Class})`);
             setLoading(false);
-            if (response.data.ProfilePhoto) {
-                setImage(userImage);
+            if (response.data.AppPhotoURL) {  
+                setImage(response.data.AppPhotoURL);
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 setImageLoading(false);
             }else{
                 setImageLoading(false);
@@ -73,11 +74,15 @@ const profileId = () => {
     }
     const college = getLabelByValue(userColleges);
 
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth(); // 0-11 for Jan-Dec
+    const academicYearOffset = currentMonth < 5 ? 0 : 1; // Before June: 0, June or later: 1
+    const seniorGradYear = currentYear + academicYearOffset;
     const grade = {
-        2025: "Senior",
-        2026: "Junior",
-        2027: "Sophomore",
-        2028: "Freshman"
+        [seniorGradYear]: "Senior",
+        [seniorGradYear + 1]: "Junior",
+        [seniorGradYear + 2]: "Sophomore",
+        [seniorGradYear + 3]: "Freshman"
     }[userGradYear] || "Alumni";
 
     const openInstagramProfile = async (username) => {
@@ -116,19 +121,19 @@ const profileId = () => {
           }
       };
 
-      const changePosition = async (position) => {
-        try {
-            let newPosition = 0;
-            if (position == 0) newPosition = 0.5;
+    //   const changePosition = async (position) => {
+    //     try {
+    //         let newPosition = 0;
+    //         if (position == 0) newPosition = 0.5;
 
-            const updateduser = {Position: newPosition.toString()};
-            await axios.put(`${BACKEND_URL}/users/${userID}`,
-                updateduser
-            );
-        } catch (err) {
-            console.error("Error changing user position:", err.response ? err.response.data : err.message);
-        }
-    }
+    //         const updateduser = {Position: newPosition.toString()};
+    //         await axios.put(`${BACKEND_URL}/users/${userID}`,
+    //             updateduser
+    //         );
+    //     } catch (err) {
+    //         console.error("Error changing user position:", err.response ? err.response.data : err.message);
+    //     }
+    // }
 
     const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark;
     const textTheme = colorScheme === 'light' ? styles.lightText : styles.darkText;
@@ -193,7 +198,7 @@ const profileId = () => {
             </View>
         </View>
 
-        {
+        {/* {
             userInfo.Position === 3 || userInfo.Position === 5 ? 
             <View style={[styles.signOutCard, eventTheme]}>
                 <TouchableOpacity onPress={() => changePosition(position)}>
@@ -204,7 +209,7 @@ const profileId = () => {
                 </TouchableOpacity>
             </View> 
              : ""
-        }
+        } */}
         {
             userInfo.Position === 5 ? 
                 <View style={[styles.signOutCard, eventTheme]}>
