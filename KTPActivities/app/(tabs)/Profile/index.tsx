@@ -409,13 +409,14 @@ const Index = () => {
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
                             // Add your functionality for the resources button here
-                            router.push({pathname: "(tabs)/Profile/notifications",  params: { userID: userInfo.id }} );
+                            router.push({pathname: "(tabs)/Profile/functions/",  params: { userID: userInfo.id }} );
                         }}>
-                            <Text style={styles.resourcesButtonText}>Send new notification</Text>
+                            <Text style={styles.resourcesButtonText}>Functions</Text>
                         </TouchableOpacity>
-                        <Ionicons name="notifications" size={20} color={colorScheme === 'light' ? "white" : "black"} />
+                        <Ionicons name="settings" size={20} color={colorScheme === 'light' ? "white" : "black"} />
                     </View>
                 )}
+
 
                 {/* {userInfo.Position === 5 && (
                     <View style={[styles.resourcesCard, eventTheme]}>
@@ -430,17 +431,18 @@ const Index = () => {
                 )} */}
 
                 {/* SIGNOUT CARD */}
-                <View style={[styles.signOutCard, eventTheme]}>
-                    <TouchableOpacity onPress={async () => {
+                <TouchableOpacity 
+                    style={[styles.signOutCard, eventTheme]}
+                    onPress={async () => {
                         await signOut(auth);
                         await AsyncStorage.removeItem("@user");
                         await GoogleSignin.signOut()
                         router.replace("/");
-                    }}>
-                        <Text style={styles.signOutButtonText}>Sign Out</Text>
-                    </TouchableOpacity>
+                    }}
+                >
+                    <Text style={styles.signOutButtonText}>Sign Out</Text>
                     <Entypo name="log-out" size={20} color={colorScheme === 'light' ? "white" : "black"} />
-                </View>
+                </TouchableOpacity>
 
                 </>) : (<ProfileLoader/>)}
 

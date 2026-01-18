@@ -43,37 +43,17 @@ export default function Layout() {
           }}
         />
         <Stack.Screen
-          name="notifications"
+          name="functions"
           options={{
-            headerTitleStyle: {
-              color: colorScheme === 'light' ? "#1a1a1a" : "white",
-            },
+            headerShown: false,
+            // headerTitleStyle: {
+            //   color: colorScheme === 'light' ? "#1a1a1a" : "white",
+            // },
   
-            headerStyle: {
-              backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
-            },
-            headerTitle: "Notifications",
-            headerBlurEffect: "regular",
-            ...(Platform.OS === "ios" && { headerTransparent: true }),
-            headerLargeTitle: true,
-            headerLargeTitleShadowVisible: false,
-          }}
-        />
-        <Stack.Screen
-          name="leaderboard"
-          options={{
-            headerTitleStyle: {
-              color: colorScheme === 'light' ? "#1a1a1a" : "white",
-            },
-  
-            headerStyle: {
-              backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
-            },
-            headerTitle: "Clout Leaderboard",
-            headerBlurEffect: "regular",
-            ...(Platform.OS === "ios" && { headerTransparent: true }),
-            headerLargeTitle: true,
-            headerLargeTitleShadowVisible: false,
+            // headerStyle: {
+            //   backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
+            // },
+            // headerTitle: "Functions",
           }}
         />
     </Stack>

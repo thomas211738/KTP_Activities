@@ -9,7 +9,7 @@ import {
   } from "react-native";
 import React, { useState } from "react";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { getAllUsersInfo } from '../../components/allUsersManager';
+import { getAllUsersInfo } from '../../../components/allUsersManager';
 import axios from "axios";
 import * as Notifications from 'expo-notifications';
 import { BACKEND_URL } from "@env";
