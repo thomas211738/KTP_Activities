@@ -7,8 +7,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "./firebaseConfig";
 import { signOut } from "firebase/auth";
 import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme } from 'react-native';
 
 export default function Layout() {
+  const colorScheme =  useColorScheme();
+  
    
   return (
       <Stack>
@@ -52,6 +55,21 @@ export default function Layout() {
           name="testing"
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+            name="profileId"
+            options={{
+              headerTitleStyle: {
+                color: colorScheme === 'light' ? "#1a1a1a" : "white",
+              },
+    
+              headerStyle: {
+                backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
+              },
+              headerTitle: "",
+            }}
+  
+          />
+
     </Stack>
     
    

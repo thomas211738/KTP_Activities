@@ -409,11 +409,11 @@ const Index = () => {
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
                             // Add your functionality for the resources button here
-                            router.push({pathname: "(tabs)/Profile/functions/",  params: { userID: userInfo.id }} );
+                            router.push({pathname: "(tabs)/Profile/more/",  params: { userID: userInfo.id }} );
                         }}>
-                            <Text style={styles.resourcesButtonText}>Functions</Text>
+                            <Text style={styles.resourcesButtonText}>More</Text>
                         </TouchableOpacity>
-                        <Ionicons name="settings" size={20} color={colorScheme === 'light' ? "white" : "black"} />
+                        <Ionicons name="chevron-forward-outline" size={20} color={colorScheme === 'light' ? "white" : "black"} />
                     </View>
                 )}
 

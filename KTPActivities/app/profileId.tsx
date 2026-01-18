@@ -1,15 +1,14 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Linking, useColorScheme} from 'react-native'
 import React, {useState} from 'react'
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, Stack } from 'expo-router';
 import {BACKEND_URL} from '@env';
 import axios from 'axios';
 import { AntDesign } from '@expo/vector-icons';
-import colleges from '../../components/buinfo';
+import colleges from './components/buinfo';
 import { Octicons } from '@expo/vector-icons';
-import CircleLoader from '../../components/loaders/circleLoader';
-import ViewProfileLoader from '../../components/loaders/viewProfileLoader';
-import { getUserInfo } from '../../components/userInfoManager';
-import { set } from 'date-fns';
+import CircleLoader from './components/loaders/circleLoader';
+import ViewProfileLoader from './components/loaders/viewProfileLoader';
+import { getUserInfo } from './components/userInfoManager';
 
 const profileId = () => {
     const { userID, userImage } = useLocalSearchParams();
@@ -148,6 +147,11 @@ const profileId = () => {
   return (
 
     <View style={[styles.pageView, containerTheme]}>
+        <Stack.Screen 
+                options={{ 
+                    headerBackTitle: 'Back', 
+                }} 
+            />
         <ScrollView showsVerticalScrollIndicator={false}>
         <View style={[styles.container, containerTheme]}>
             {imageLoading ? <CircleLoader/> : 

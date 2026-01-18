@@ -26,20 +26,7 @@ export default function Layout() {
             headerLargeTitleShadowVisible: false,
           }}
         />
-        <Stack.Screen
-          name="profileId"
-          options={{
-            headerTitleStyle: {
-              color: colorScheme === 'light' ? "#1a1a1a" : "white",
-            },
-  
-            headerStyle: {
-              backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
-            },
-            headerTitle: "",
-          }}
-
-        />
+        
         <Stack.Screen
           name="indivisualNotification"
           options={{

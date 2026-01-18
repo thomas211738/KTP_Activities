@@ -17,7 +17,7 @@ export default function FunctionsLayout() {
             headerStyle: {
               backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
             },
-            headerTitle: "Functions",
+            headerTitle: "More",
             headerBlurEffect: "regular",
             ...(Platform.OS === "ios" && { headerTransparent: true }),
             headerLargeTitle: true,
@@ -85,7 +85,7 @@ export default function FunctionsLayout() {
             headerStyle: {
               backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
             },
-            headerTitle: "Leaderboard",
+            headerTitle: "Clout Leaderboard",
             headerBlurEffect: "regular",
             ...(Platform.OS === "ios" && { headerTransparent: true }),
             headerLargeTitle: true,

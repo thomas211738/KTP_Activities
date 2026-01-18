@@ -3,8 +3,9 @@ import { View, StyleSheet, TouchableOpacity, Text, useColorScheme, ScrollView } 
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
+import React from 'react';
 
-const FunctionsScreen = () => {
+const MoreScreen = () => {
     const colorScheme = useColorScheme();
     const containerTheme = colorScheme === 'light' ? styles.containerLight : styles.containerDark;
     const eventTheme = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
@@ -13,7 +14,7 @@ const FunctionsScreen = () => {
         <ScrollView contentInsetAdjustmentBehavior='automatic' showsHorizontalScrollIndicator={false} style={[styles.container, containerTheme]}>
             <View style={[styles.resourcesCard, eventTheme]}>
                 <TouchableOpacity onPress={() => {
-                    router.push({pathname: "(tabs)/Profile/functions/notifications" });
+                    router.push({pathname: "(tabs)/Profile/more/notifications" });
                 }}>
                     <Text style={styles.resourcesButtonText}>Send new notification</Text>
                 </TouchableOpacity>
@@ -21,7 +22,7 @@ const FunctionsScreen = () => {
             </View>
             <View style={[styles.resourcesCard, eventTheme]}>
                 <TouchableOpacity onPress={() => {
-                    router.push({pathname: "(tabs)/Profile/functions/pledgeToBrother" });
+                    router.push({pathname: "(tabs)/Profile/more/pledgeToBrother" });
                 }}>
                     <Text style={styles.resourcesButtonText}>Pledge to Brother</Text>
                 </TouchableOpacity>
@@ -29,7 +30,7 @@ const FunctionsScreen = () => {
             </View>
             <View style={[styles.resourcesCard, eventTheme]}>
                 <TouchableOpacity onPress={() => {
-                    router.push({pathname: "(tabs)/Profile/functions/deleteRushees" });
+                    router.push({pathname: "(tabs)/Profile/more/deleteRushees" });
                 }}>
                     <Text style={styles.resourcesButtonText}>Delete Rushees</Text>
                 </TouchableOpacity>
@@ -37,7 +38,7 @@ const FunctionsScreen = () => {
             </View>
             <View style={[styles.resourcesCard, eventTheme]}>
                 <TouchableOpacity onPress={() => {
-                    router.push({pathname: "(tabs)/Profile/functions/leaderboard" });
+                    router.push({pathname: "(tabs)/Profile/more/leaderboard" });
                 }}>
                     <Text style={styles.resourcesButtonText}>Leaderboard</Text>
                 </TouchableOpacity>
@@ -79,4 +80,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default FunctionsScreen;
+export default MoreScreen;

@@ -43,7 +43,7 @@ export default function Layout() {
           }}
         />
         <Stack.Screen
-          name="functions"
+          name="more"
           options={{
             headerShown: false,
             // headerTitleStyle: {
