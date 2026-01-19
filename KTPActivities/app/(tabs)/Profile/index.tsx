@@ -405,7 +405,7 @@ const Index = () => {
                     />
                 </View>
 
-                {userInfo.Position.toString() === '3' || userInfo.Position.toString() === '5' && (
+                {userInfo.Position.toString() === '5' && (
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
                             // Add your functionality for the resources button here

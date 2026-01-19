@@ -3,8 +3,8 @@
     "owner": "boston-ktp",
     "name": "KTPActivities",
     "slug": "KTPActivities",
-    "version": "1.0.1",
-    "runtimeVersion": "1.0.1",
+    "version": "1.0.2",
+    "runtimeVersion": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -34,7 +34,7 @@
         ],
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "7"
+      "buildNumber": "8"
     },
     "android": {
       "adaptiveIcon": {
