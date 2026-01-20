@@ -38,7 +38,7 @@ const app = express();
 app.use(express.json());
 
 const corsOptions = {
-  origin: 'https://www.ktpbostonu.com', // Replace with your frontend domain
+  origin: ['https://www.ktpbostonu.com', 'https://website-swart-ten-95.vercel.app'], // Replace with your frontend domain
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
