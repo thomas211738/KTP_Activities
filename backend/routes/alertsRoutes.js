@@ -46,9 +46,13 @@ export default function alertsRoute(db) {
                 });
             }
             const alertsCollection = collection(db, 'alerts');
-            const newAlert = { AlertName, Description };
-            await addDoc(alertsCollection, newAlert);
-            return response.status(200).send({ message: "alert added successfully" });
+            const newAlert = { 
+                AlertName, 
+                Description,
+                updatedAt: new Date().toISOString()
+            };
+            const docRef = await addDoc(alertsCollection, newAlert);
+            return response.status(201).send({ id: docRef.id, ...newAlert });
         } catch (error) {
             console.log(error.message);
             response.status(500).send({ message: error.message });
