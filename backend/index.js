@@ -20,12 +20,12 @@ import appphotosRoute from './routes/appphotosRoute.js';
 
 // Firebase configuration (replace with your own config from Firebase Console)
 const firebaseConfig = {
-  apiKey: process.env.GOOGLE_FIREBASE_API_KEY,
-  authDomain: process.env.GOOGLE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.GOOGLE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.GOOGLE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.GOOGLE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.GOOGLE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyD4i-P_we79TljSDxvuDguqEQOgYZ_HCX0",
+  authDomain: "kappa-theta.firebaseapp.com",
+  projectId: "kappa-theta",
+  storageBucket: "kappa-theta.appspot.com",
+  messagingSenderId: "771690908503",
+  appId: "1:771690908503:web:a4fdca1dfe351931568c12",
 };
 
 
@@ -71,6 +71,7 @@ export const api = onRequest(
   {
     cors: ['https://www.ktpbostonu.com'],
     region: ['us-central1'], // Specify region for consistency
+    memory: "512MiB",
   },
   app
 );
