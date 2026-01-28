@@ -38,7 +38,7 @@ const app = express();
 app.use(express.json());
 
 const corsOptions = {
-  origin: ['https://www.ktpbostonu.com', 'https://website-swart-ten-95.vercel.app', 'https://ktp-bostonu.com' ],
+  origin: ['https://www.ktpbostonu.com', 'https://website-swart-ten-95.vercel.app', 'https://www.ktp-bostonu.com' ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
