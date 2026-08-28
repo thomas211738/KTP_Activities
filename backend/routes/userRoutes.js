@@ -1,5 +1,4 @@
 import express from 'express';
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
 
 const router = express.Router();
 
@@ -7,11 +6,11 @@ export default function usersRoute(db) {
   // Get all Users
   router.get('/', async (request, response) => {
     try {
-      const usersCollection = collection(db, 'users');
-      const q = query(usersCollection, orderBy('FirstName', 'asc')); // Sort and limit to 10
-      const userSnapshot = await getDocs(q);
-      const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  
+      const usersCollection = db.collection('users');
+      const q = usersCollection.orderBy('FirstName', 'asc');
+      const userSnapshot = await q.get();
+      const userList = userSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
       return response.status(200).json({
         count: userList.length,
         data: userList,
@@ -21,13 +20,14 @@ export default function usersRoute(db) {
       response.status(500).send({ message: error.message });
     }
   });
+
   // Get all Users ordered by Clout
   router.get('/ordered-by-clout', async (request, response) => {
     try {
-      const usersCollection = collection(db, 'users');
-      const q = query(usersCollection, orderBy('Clout', 'desc')); // Sort by Clout in descending order
-      const userSnapshot = await getDocs(q);
-      const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const usersCollection = db.collection('users');
+      const q = usersCollection.orderBy('Clout', 'desc');
+      const userSnapshot = await q.get();
+      const userList = userSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
       return response.status(200).json({
         count: userList.length,
@@ -43,9 +43,9 @@ export default function usersRoute(db) {
   router.get('/:id', async (request, response) => {
     try {
       const { id } = request.params;
-      const userDoc = doc(db, 'users', id);
-      const userSnapshot = await getDoc(userDoc);
-      if (userSnapshot.exists()) {
+      const userDoc = db.collection('users').doc(id);
+      const userSnapshot = await userDoc.get();
+      if (userSnapshot.exists) {
         return response.status(200).json({ id: userSnapshot.id, ...userSnapshot.data() });
       } else {
         return response.status(404).json({ message: 'User not found' });
@@ -60,10 +60,10 @@ export default function usersRoute(db) {
   router.get('/email/:email', async (request, response) => {
     try {
       const { email } = request.params;
-      const usersCollection = collection(db, 'users');
-      const q = query(usersCollection, where('BUEmail', '==', email));
-      const querySnapshot = await getDocs(q);
-      const userList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const usersCollection = db.collection('users');
+      const q = usersCollection.where('BUEmail', '==', email);
+      const querySnapshot = await q.get();
+      const userList = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       return response.status(200).json(userList);
     } catch (error) {
       console.log(error.message);
@@ -94,7 +94,7 @@ export default function usersRoute(db) {
         });
       }
 
-      const usersCollection = collection(db, 'users');
+      const usersCollection = db.collection('users');
       const newUser = {
         BUEmail,
         FirstName,
@@ -103,9 +103,8 @@ export default function usersRoute(db) {
         Colleges,
         Major,
         Position,
-        // Add other optional fields from your original schema if provided
       };
-      await addDoc(usersCollection, newUser);
+      await usersCollection.add(newUser);
       return response.status(200).send({ message: 'User added successfully' });
     } catch (error) {
       console.log(error.message);
@@ -117,12 +116,12 @@ export default function usersRoute(db) {
   router.put('/:id', async (request, response) => {
     try {
       const { id } = request.params;
-      const userDoc = doc(db, 'users', id);
-      const userSnapshot = await getDoc(userDoc);
-      if (!userSnapshot.exists()) {
+      const userDoc = db.collection('users').doc(id);
+      const userSnapshot = await userDoc.get();
+      if (!userSnapshot.exists) {
         return response.status(404).json({ message: 'User not found' });
       }
-      await updateDoc(userDoc, request.body);
+      await userDoc.update(request.body);
       return response.status(200).send({ message: 'User updated successfully' });
     } catch (error) {
       console.log(error.message);
@@ -134,8 +133,8 @@ export default function usersRoute(db) {
   router.delete('/:id', async (request, response) => {
     try {
       const { id } = request.params;
-      const userDoc = doc(db, 'users', id);
-      await deleteDoc(userDoc);
+      const userDoc = db.collection('users').doc(id);
+      await userDoc.delete();
       return response.status(200).send({ message: 'User deleted successfully' });
     } catch (error) {
       console.log(error.message);

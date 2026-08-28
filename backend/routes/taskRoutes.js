@@ -1,5 +1,4 @@
 import express from "express";
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -7,9 +6,9 @@ export default function taskRoute(db) {
     // Get all tasks
     router.get("/", async (request, response) => {
         try {
-            const tasksCollection = collection(db, 'tasks');
-            const tasksSnapshot = await getDocs(tasksCollection);
-            const tasksList = tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const tasksCollection = db.collection('tasks');
+            const tasksSnapshot = await tasksCollection.get();
+            const tasksList = tasksSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             return response.status(200).json({
                 count: tasksList.length,
                 data: tasksList,
@@ -24,9 +23,9 @@ export default function taskRoute(db) {
     router.get("/:id", async (request, response) => {
         try {
             const { id } = request.params;
-            const taskDoc = doc(db, 'tasks', id);
-            const taskSnapshot = await getDoc(taskDoc);
-            if (taskSnapshot.exists()) {
+            const taskDoc = db.collection('tasks').doc(id);
+            const taskSnapshot = await taskDoc.get();
+            if (taskSnapshot.exists) {
                 return response.status(200).json({ id: taskSnapshot.id, ...taskSnapshot.data() });
             }
             return response.status(404).json({ message: 'Task not found' });
@@ -45,9 +44,9 @@ export default function taskRoute(db) {
                     message: "Send all required fields: TaskName, Completed, Mandatory, ParticipantsNeeded, Description, PointsWorth",
                 });
             }
-            const tasksCollection = collection(db, 'tasks');
+            const tasksCollection = db.collection('tasks');
             const newTask = { TaskName, Completed, Mandatory, ParticipantsNeeded, Description, PointsWorth };
-            await addDoc(tasksCollection, newTask);
+            await tasksCollection.add(newTask);
             return response.status(200).send({ message: "task added successfully" });
         } catch (error) {
             console.log(error.message);
@@ -65,8 +64,8 @@ export default function taskRoute(db) {
                 });
             }
             const { id } = request.params;
-            const taskDoc = doc(db, 'tasks', id);
-            await updateDoc(taskDoc, { TaskName, Completed, Mandatory, ParticipantsNeeded, Description, PointsWorth });
+            const taskDoc = db.collection('tasks').doc(id);
+            await taskDoc.update({ TaskName, Completed, Mandatory, ParticipantsNeeded, Description, PointsWorth });
             return response.status(200).send({ message: "task updated successfully" });
         } catch (error) {
             console.log(error.message);
@@ -78,8 +77,8 @@ export default function taskRoute(db) {
     router.delete("/:id", async (request, response) => {
         try {
             const { id } = request.params;
-            const taskDoc = doc(db, 'tasks', id);
-            await deleteDoc(taskDoc);
+            const taskDoc = db.collection('tasks').doc(id);
+            await taskDoc.delete();
             return response.status(200).send({ message: "task deleted successfully" });
         } catch (error) {
             console.log(error.message);

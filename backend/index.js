@@ -2,9 +2,10 @@ import { config } from 'dotenv';
 config();
 import express from 'express';
 import cors from 'cors';
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import admin from 'firebase-admin';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import usersRoute from './routes/userRoutes.js';
 import eventsRoute from './routes/eventsRoutes.js';
 import taskRoute from './routes/taskRoutes.js';
@@ -17,28 +18,102 @@ import websitePicsRoute from './routes/websitePicsRoutes.js';
 import { onRequest } from 'firebase-functions/v2/https';
 import appphotosRoute from './routes/appphotosRoute.js';
 
+// Calendar webhook (for Google Calendar push notifications → Firestore)
+// The calendarWebhook file is CommonJS (exports.calendarWebhook).
+// We use createRequire so it works from this ESM file.
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const calendarWebhookMod = require('./cloudFunctions/calendarWebhook/main.js');
+const calendarWebhookHandler = calendarWebhookMod.calendarWebhook;
 
-// Firebase configuration (replace with your own config from Firebase Console)
-const firebaseConfig = {
-  apiKey: process.env.GOOGLE_FIREBASE_API_KEY,
-  authDomain: process.env.GOOGLE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.GOOGLE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.GOOGLE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.GOOGLE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.GOOGLE_FIREBASE_APP_ID,
-};
+// Resolve __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+// Initialize Firebase Admin (server SDK) for Node/Express.
+// Priority:
+// 1) Explicit service account JSON file at backend/serviceAccountKey.json (local dev)
+// 2) GOOGLE_APPLICATION_CREDENTIALS env var (or gcloud ADC)
+// 3) Fall back with explicit projectId/storageBucket (may still require a credential source)
+let credential;
+let effectiveProjectId = process.env.GOOGLE_FIREBASE_PROJECT_ID;
 
-// Initialize Firebase
-const appFirebase = initializeApp(firebaseConfig);
-const db = getFirestore(appFirebase);
-const storage = getStorage(appFirebase);
+const keyPath = path.join(__dirname, 'serviceAccountKey.json');
+if (fs.existsSync(keyPath)) {
+  const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+  credential = admin.credential.cert(serviceAccount);
+
+  // Prefer the project_id embedded in the service account key file.
+  // This is the most reliable way to avoid "Unable to detect a Project Id" errors.
+  if (serviceAccount.project_id) {
+    effectiveProjectId = serviceAccount.project_id;
+  }
+} else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  credential = admin.credential.applicationDefault();
+} else {
+  // Last resort: try ADC (may fail until user sets it up)
+  credential = admin.credential.applicationDefault();
+}
+
+// Derive storageBucket defensively.
+let storageBucket = process.env.GOOGLE_FIREBASE_STORAGE_BUCKET;
+if (!storageBucket && effectiveProjectId) {
+  storageBucket = `${effectiveProjectId}.appspot.com`;
+}
+
+if (!admin.apps.length) {
+  const initConfig = {
+    credential,
+    projectId: effectiveProjectId,
+  };
+  if (storageBucket) {
+    initConfig.storageBucket = storageBucket;
+  }
+  admin.initializeApp(initConfig);
+}
+
+if (effectiveProjectId) {
+  console.log(`[backend] Firebase Project ID: ${effectiveProjectId}`);
+}
+if (storageBucket) {
+  console.log(`[backend] Firebase Storage bucket: ${storageBucket}`);
+} else {
+  console.warn('[backend] No storageBucket configured. Photo upload routes (/photo2) will be disabled.');
+}
+
+const db = admin.firestore();
+const storage = admin.storage();
 
 const app = express();
+
+// Mount photo upload routes defensively.
+// We only mount /photo2 if we actually have a storage bucket.
+// This completely prevents the "Bucket name not specified" crash at startup.
+if (storageBucket) {
+  try {
+    app.use('/photo2', appphotosRoute(storage));
+  } catch (err) {
+    console.warn('[backend] /photo2 (image uploads) disabled:', err.message);
+  }
+} else {
+  console.log('[backend] Skipping /photo2 (image uploads) — no storage bucket configured.');
+}
+
 app.use(express.json());
 
 const corsOptions = {
-  origin: ['https://www.ktpbostonu.com', 'https://website-swart-ten-95.vercel.app', 'https://www.ktp-bostonu.com' ],
+  // Production origins + local development (simulator / LAN)
+  origin: [
+    'https://www.ktpbostonu.com',
+    'https://website-swart-ten-95.vercel.app',
+    'https://www.ktp-bostonu.com',
+    'http://localhost',
+    'http://127.0.0.1',
+    // Allow common LAN ranges (covers 10.0.0.155, 192.168.x.x, etc.)
+    /^http:\/\/10\./,
+    /^http:\/\/192\.168\./,
+    /^http:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./,
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
@@ -56,7 +131,6 @@ app.use('/completed-tasks', completedTaskRoute(db));
 app.use('/photo', userphotosRoute(db));
 app.use('/notifications', notificationRoute(db));
 app.use('/websitePics', websitePicsRoute(db));
-app.use('/photo2', appphotosRoute(storage));
 // app.use('/api/email', emailRoute); // No db needed
 
 app.get('/', (request, response) => {
@@ -70,8 +144,31 @@ app.listen(PORT, () => {
 export const api = onRequest(
   {
     cors: ['https://www.ktpbostonu.com'],
-    region: ['us-central1'], // Specify region for consistency
+    region: ['us-central1'],
     memory: "512MiB",
   },
   app
 );
+
+// Google Calendar push notification webhook (receives events.watch calls from Google)
+export const calendarWebhook = onRequest(
+  {
+    region: 'us-central1',
+    memory: '256MiB',
+    timeoutSeconds: 60,
+    // No CORS needed — Google calls this directly
+  },
+  calendarWebhookHandler
+);
+
+// Also mount the same handler on the local Express app so you can run the webhook
+// receiver locally (useful as a temporary workaround when you cannot deploy the
+// Cloud Function due to IAM restrictions).
+// Example usage with ngrok:
+//   1. npx ngrok http 5000
+//   2. Use the https ngrok URL + /calendar-webhook when registering watches
+//   3. node registerCalendarWatch.js personal   (after setting CALENDAR_WEBHOOK_URL env var or editing config)
+app.post('/calendar-webhook', (req, res) => {
+  // The handler is designed for functions-framework style (req, res)
+  calendarWebhookHandler(req, res);
+});

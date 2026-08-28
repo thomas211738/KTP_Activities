@@ -113,7 +113,7 @@ const Position = () => {
         Current Position: {positionMap[currentPosition] || 'Loading...'}
       </Text>
 
-      {currentPosition === 3 && (
+      {Number(currentPosition) === 3 && (
         <Text style={[styles.label, textTheme]}>
           Current Eboard Position: {currentEboardPosition || 'None'}
         </Text>
@@ -124,6 +124,7 @@ const Position = () => {
       <View style={[styles.card, cardTheme]}>
         {Object.keys(positionMap).map((key) => {
           const numericKey = parseFloat(key); // convert the string key to number
+          const isSelected = numericKey === (typeof newPosition === 'number' ? newPosition : parseFloat(String(newPosition)));
           return (
             <TouchableOpacity
               key={key}

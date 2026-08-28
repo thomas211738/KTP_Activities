@@ -15,6 +15,8 @@ web-build/
 *.p12
 *.key
 *.mobileprovision
+*.keystore
+credentials.json
 
 # Metro
 .metro-health-check*
@@ -28,8 +30,31 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# Local environment files and secrets
+# Keep actual values on this machine or in EAS Environment Variables.
+.env
+.env.*
+!.env.example
+
+# Firebase / Google service account keys (never commit private keys)
+serviceAccountKey.json
+serviceAccountKey*.json
+*firebase-adminsdk*.json
+GoogleService-Info.plist.local
+google-services.local.json
+
+# Generated or team-private native configs
+app.config.js
+app.config.local.js
+app.config.*.js
 
 # typescript
 *.tsbuildinfo
+
+# Local device-only configuration overrides (for personal Apple team builds, different bundle ID, no push entitlement)
+# These must never be committed.
+app.config.js
+app.config.local.js
+app.config.*.js
+app.config.local.*
+ios/.xcode.env.local

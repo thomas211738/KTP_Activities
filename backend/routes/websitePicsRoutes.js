@@ -1,5 +1,4 @@
 import express from "express";
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -11,9 +10,8 @@ export default function websitePicsRoute(db) {
             if (!data) {
                 return res.status(400).send({ message: "Send data" });
             }
-            const websitePicsCollection = collection(db, 'web_pics');
-            const newWebsitePic = { data };
-            const docRef = await addDoc(websitePicsCollection, newWebsitePic);
+            const websitePicsCollection = db.collection('web_pics');
+            const docRef = await websitePicsCollection.add({ data });
             const fileId = { fileID: docRef.id };
             res.status(200).send(fileId);
         } catch (err) {
@@ -26,9 +24,9 @@ export default function websitePicsRoute(db) {
     router.get('/:id', async (request, response) => {
         try {
             const { id } = request.params;
-            const websitePicDoc = doc(db, 'web_pics', id);
-            const web_picsnapshot = await getDoc(websitePicDoc);
-            if (web_picsnapshot.exists()) {
+            const websitePicDoc = db.collection('web_pics').doc(id);
+            const web_picsnapshot = await websitePicDoc.get();
+            if (web_picsnapshot.exists) {
                 return response.status(200).json({ id: web_picsnapshot.id, ...web_picsnapshot.data() });
             }
             return response.status(404).json({ message: 'Website pic not found' });
@@ -41,9 +39,9 @@ export default function websitePicsRoute(db) {
     // Get all photos
     router.get('/', async (request, response) => {
         try {
-            const web_picsCollection = collection(db, 'web_pics');
-            const web_picsSnapshot = await getDocs(web_picsCollection);
-            const web_picsList = web_picsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const web_picsCollection = db.collection('web_pics');
+            const web_picsSnapshot = await web_picsCollection.get();
+            const web_picsList = web_picsSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             return response.status(200).json({
                 count: web_picsList.length,
                 data: web_picsList,
@@ -62,8 +60,8 @@ export default function websitePicsRoute(db) {
                 return response.status(400).send({ message: "Send data" });
             }
             const { id } = request.params;
-            const websitePicDoc = doc(db, 'web_pics', id);
-            await updateDoc(websitePicDoc, { data });
+            const websitePicDoc = db.collection('web_pics').doc(id);
+            await websitePicDoc.update({ data });
             const fileId = { fileID: id };
             return response.status(200).json(fileId);
         } catch (error) {
@@ -76,8 +74,8 @@ export default function websitePicsRoute(db) {
     router.delete("/:id", async (request, response) => {
         try {
             const { id } = request.params;
-            const websitePicDoc = doc(db, 'web_pics', id);
-            await deleteDoc(websitePicDoc);
+            const websitePicDoc = db.collection('web_pics').doc(id);
+            await websitePicDoc.delete();
             return response.status(200).send({ message: "Website Pic deleted successfully" });
         } catch (error) {
             console.log(error.message);

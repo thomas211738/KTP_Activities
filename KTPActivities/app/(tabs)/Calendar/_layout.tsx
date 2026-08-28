@@ -6,7 +6,8 @@ import { router } from 'expo-router';
 import { getUserInfo } from '../../components/userInfoManager';
 
 export default function Layout() {
-  const userInfo = getUserInfo();
+  const raw = getUserInfo() || {};
+  const pos = Number(raw.Position ?? 0);
 
   const colorScheme =  useColorScheme();
 
@@ -27,7 +28,7 @@ export default function Layout() {
           headerLargeTitle: true,
           ...(Platform.OS === "ios" && colorScheme === 'light' && { headerTransparent: true }),
           headerLargeTitleShadowVisible: false,
-          headerRight: userInfo.Position.toString() === "3" || userInfo.Position.toString() === "5" ? () => (
+          headerRight: (pos === 3 || pos === 5) ? () => (
             <Pressable
               onPress={async () => {
                 router.push("(tabs)/Calendar/createEvent");

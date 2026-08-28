@@ -1,5 +1,4 @@
 import express from "express";
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -7,9 +6,9 @@ export default function alertsRoute(db) {
     // Get all alerts
     router.get("/", async (request, response) => {
         try {
-            const alertsCollection = collection(db, 'alerts');
-            const alertsSnapshot = await getDocs(alertsCollection);
-            const alertsList = alertsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const alertsCollection = db.collection('alerts');
+            const alertsSnapshot = await alertsCollection.get();
+            const alertsList = alertsSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             return response.status(200).json({
                 count: alertsList.length,
                 data: alertsList,
@@ -24,9 +23,9 @@ export default function alertsRoute(db) {
     router.get("/:id", async (request, response) => {
         try {
             const { id } = request.params;
-            const alertDoc = doc(db, 'alerts', id);
-            const alertSnapshot = await getDoc(alertDoc);
-            if (alertSnapshot.exists()) {
+            const alertDoc = db.collection('alerts').doc(id);
+            const alertSnapshot = await alertDoc.get();
+            if (alertSnapshot.exists) {
                 return response.status(200).json({ id: alertSnapshot.id, ...alertSnapshot.data() });
             }
             return response.status(404).json({ message: "Alert not found" });
@@ -45,13 +44,13 @@ export default function alertsRoute(db) {
                     message: "Send all required fields: AlertName, Description",
                 });
             }
-            const alertsCollection = collection(db, 'alerts');
+            const alertsCollection = db.collection('alerts');
             const newAlert = { 
                 AlertName, 
                 Description,
                 updatedAt: new Date().toISOString()
             };
-            const docRef = await addDoc(alertsCollection, newAlert);
+            const docRef = await alertsCollection.add(newAlert);
             return response.status(201).send({ id: docRef.id, ...newAlert });
         } catch (error) {
             console.log(error.message);
@@ -69,8 +68,8 @@ export default function alertsRoute(db) {
                 });
             }
             const { id } = request.params;
-            const alertDoc = doc(db, 'alerts', id);
-            await updateDoc(alertDoc, { AlertName, Description });
+            const alertDoc = db.collection('alerts').doc(id);
+            await alertDoc.update({ AlertName, Description });
             return response.status(200).send({ message: "alert updated successfully" });
         } catch (error) {
             console.log(error.message);
@@ -82,8 +81,8 @@ export default function alertsRoute(db) {
     router.delete("/:id", async (request, response) => {
         try {
             const { id } = request.params;
-            const alertDoc = doc(db, 'alerts', id);
-            await deleteDoc(alertDoc);
+            const alertDoc = db.collection('alerts').doc(id);
+            await alertDoc.delete();
             return response.status(200).send({ message: "alert deleted successfully" });
         } catch (error) {
             console.log(error.message);

@@ -7,12 +7,12 @@ import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { BACKEND_URL } from '@env';
 import AddAlertModal from '../../components/addAlertModal';
 import EditAlertModal from '../../components/editAlertModal';
-import { useNavigation } from '@react-navigation/native'
 import { getUserInfo } from '../../components/userInfoManager';
 import AlertsLoader from '../../components/loaders/alertsLoader';
 
 const AlertComponent = (props) => {
-  const userInfo = getUserInfo();
+  const raw = getUserInfo() || {};
+  const userInfo = { ...raw, Position: Number(raw.Position ?? 0) };
   const colorScheme = useColorScheme();
 
   const themeTextStyle = colorScheme === 'light' ? styles.darkText :  styles.lightText ;
@@ -47,8 +47,8 @@ const index = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [alertID, setAlertID] = useState('');
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
-  const userInfo = getUserInfo();
+  const rawUser = getUserInfo() || {};
+  const userInfo = { ...rawUser, Position: Number(rawUser.Position ?? 0) };
   const colorScheme = useColorScheme();
 
   const fetchAlerts = async () => {
@@ -83,7 +83,7 @@ const index = () => {
 */
   useEffect(() => {
     fetchAlerts();
-  },[]);
+  }, []);
 
   const formatTime = (dateString) => {
     const date = parseISO(dateString);
@@ -109,7 +109,7 @@ const index = () => {
     const sortedDates = Object.keys(alertGroups).sort((a, b) => {
       const dateA = alerts.find(alert => formatDate(alert.updatedAt) === a).updatedAt;
       const dateB = alerts.find(alert => formatDate(alert.updatedAt) === b).updatedAt;
-      return new Date(dateB) - new Date(dateA);
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
   
     // New object with sorted dates

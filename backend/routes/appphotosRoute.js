@@ -1,126 +1,151 @@
-
 import express from 'express';
-import Busboy from 'busboy'; // Import busboy
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import Busboy from 'busboy';
 
 const router = express.Router();
 
-export default function imagesRoute(storage) {
+/**
+ * Resolve the Storage bucket safely.
+ * This function is deliberately defensive:
+ * - Never throws.
+ * - Only called inside request handlers (lazy).
+ * - Returns null when no bucket name can be determined.
+ */
+function getBucket(adminStorage) {
+  try {
+    const envBucket = process.env.GOOGLE_FIREBASE_STORAGE_BUCKET;
+    const projectId = process.env.GOOGLE_FIREBASE_PROJECT_ID;
+    const bucketName = envBucket || (projectId ? `${projectId}.appspot.com` : null);
 
-  // POST: Upload Image
-  router.post('/', async (request, response) => {
+    if (!bucketName) {
+      return null;
+    }
+    return adminStorage.bucket(bucketName);
+  } catch (e) {
+    console.warn('[appphotosRoute] Could not resolve storage bucket:', e.message);
+    return null;
+  }
+}
+
+export default function imagesRoute(adminStorage) {
+  // This factory MUST be safe to call at startup.
+  // We never call adminStorage.bucket() at the top level.
+
+  // POST: upload image
+  router.post('/', async (req, res) => {
+    const bucket = getBucket(adminStorage);
+
+    if (!bucket) {
+      return res.status(503).json({
+        message: 'Image uploads are temporarily unavailable (storage bucket not configured on this server).'
+      });
+    }
+
     try {
-      // 1. Initialize Busboy with request headers
-      const busboy = Busboy({ headers: request.headers });
-      
-      const fields = {}; // To store text fields (folder, userId)
+      const busboy = Busboy({ headers: req.headers });
+
+      const fields = {};
       let fileBuffer = null;
       let fileMimeType = null;
       let originalName = null;
 
-      // 2. Handle Text Fields
-      busboy.on('field', (fieldname, val) => {
-        fields[fieldname] = val;
-      });
+      busboy.on('field', (name, val) => { fields[name] = val; });
 
-      // 3. Handle File Upload
       busboy.on('file', (fieldname, file, { filename, mimeType }) => {
         if (fieldname !== 'image') {
-          file.resume(); // Skip non-image files
+          file.resume();
           return;
         }
-
         originalName = filename;
         fileMimeType = mimeType;
 
-        // Collect the file data into a buffer
         const chunks = [];
-        file.on('data', (data) => chunks.push(data));
-        file.on('end', () => {
-          fileBuffer = Buffer.concat(chunks);
-        });
+        file.on('data', (d) => chunks.push(d));
+        file.on('end', () => { fileBuffer = Buffer.concat(chunks); });
       });
 
-      // 4. On Finish: Process the upload to Firebase
       busboy.on('finish', async () => {
         if (!fileBuffer) {
-          return response.status(400).send({ message: 'No image file provided.' });
+          return res.status(400).send({ message: 'No image file provided.' });
         }
 
         const folder = fields.folder || 'misc';
         const userId = fields.userId;
 
-        // --- Naming Logic (Same as your original code) ---
         let fileName;
-        const fileExtension = originalName.split('.').pop(); 
-        
+        const ext = (originalName || 'file').split('.').pop();
         if (userId) {
-          fileName = `${userId}.${fileExtension}`;
+          fileName = `${userId}.${ext}`;
         } else {
-          const timestamp = Date.now();
-          const name = originalName.split(".")[0];
-          fileName = `${name}_${timestamp}.${fileExtension}`;
+          fileName = `${(originalName || 'upload').split('.')[0]}_${Date.now()}.${ext}`;
         }
-        // -----------------------------------------------
 
-        // Upload to Firebase Storage
-        const storageRef = ref(storage, `${folder}/${fileName}`);
-        const metadata = { contentType: fileMimeType };
+        const dest = `${folder}/${fileName}`;
+        const fileRef = bucket.file(dest);
 
         try {
-          const snapshot = await uploadBytes(storageRef, fileBuffer, metadata);
-          const downloadURL = await getDownloadURL(snapshot.ref);
+          await fileRef.save(fileBuffer, {
+            contentType: fileMimeType || 'application/octet-stream',
+            resumable: false,
+          });
 
-          return response.status(200).json({
+          const [downloadURL] = await fileRef.getSignedUrl({
+            action: 'read',
+            expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 10,
+          });
+
+          return res.status(200).json({
             message: 'Image uploaded successfully',
-            folder: folder,
+            folder,
             name: fileName,
             type: fileMimeType,
-            downloadURL: downloadURL,
+            downloadURL,
           });
         } catch (err) {
-          console.error('Error uploading to storage:', err);
-          return response.status(500).send({ message: err.message });
+          console.error('[appphotosRoute] upload error:', err);
+          return res.status(500).send({ message: err.message });
         }
       });
 
-      // 5. CRITICAL: Feed the raw body buffer into Busboy
-      // Firebase Functions provides the raw buffer in request.rawBody
-      if (request.rawBody) {
-        // Firebase Functions: The body is already buffered
-        busboy.end(request.rawBody);
+      if (req.rawBody) {
+        busboy.end(req.rawBody);
       } else {
-        // Localhost: Stream the request directly to busboy
-        request.pipe(busboy);
+        req.pipe(busboy);
       }
-      
     } catch (error) {
       console.error('Error processing upload:', error);
-      response.status(500).send({ message: error.message });
+      res.status(500).send({ message: error.message });
     }
   });
 
-  // DELETE: Delete an Image (Your original delete code remains unchanged)
-  router.delete('/:filename', async (request, response) => {
-    try {
-      const { filename } = request.params;
-      const folder = request.query.folder || 'misc';
+  // DELETE /photo2/:filename
+  router.delete('/:filename', async (req, res) => {
+    const bucket = getBucket(adminStorage);
 
-      if (!filename) {
-        return response.status(400).send({ message: 'Filename is required' });
+    if (!bucket) {
+      return res.status(503).send({ message: 'Image deletion is not configured on this server.' });
+    }
+
+    try {
+      const { filename } = req.params;
+      const folder = req.query.folder || 'misc';
+
+      if (!filename) return res.status(400).send({ message: 'Filename is required' });
+
+      const fileRef = bucket.file(`${folder}/${filename}`);
+
+      try {
+        await fileRef.delete();
+      } catch (e) {
+        if (e.code === 404 || (e.errors && e.errors[0] && e.errors[0].reason === 'notFound')) {
+          return res.status(404).send({ message: 'Image not found' });
+        }
+        throw e;
       }
 
-      const deleteRef = ref(storage, `${folder}/${filename}`);
-      await deleteObject(deleteRef);
-
-      return response.status(200).send({ message: 'Image deleted successfully' });
-
+      return res.status(200).send({ message: 'Image deleted successfully' });
     } catch (error) {
       console.error('Error deleting image:', error);
-      if (error.code === 'storage/object-not-found') {
-        return response.status(404).send({ message: 'Image not found' });
-      }
-      response.status(500).send({ message: error.message });
+      res.status(500).send({ message: error.message });
     }
   });
 

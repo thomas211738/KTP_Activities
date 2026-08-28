@@ -1,5 +1,4 @@
 import express from "express";
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, limit } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -11,9 +10,8 @@ export default function notificationRoute(db) {
             if (!userID || !token) {
                 return res.status(400).send({ message: "Please provide both userID and token" });
             }
-            const notificationsCollection = collection(db, 'notifications');
-            const newNotification = { userID, token };
-            const docRef = await addDoc(notificationsCollection, newNotification);
+            const notificationsCollection = db.collection('notifications');
+            const docRef = await notificationsCollection.add({ userID, token });
             res.status(201).send({ message: "Notification created successfully", notificationID: docRef.id });
         } catch (err) {
             console.error("Error creating notification:", err);
@@ -25,9 +23,9 @@ export default function notificationRoute(db) {
     router.get("/:id", async (req, res) => {
         try {
             const { id } = req.params;
-            const notificationDoc = doc(db, 'notifications', id);
-            const notificationSnapshot = await getDoc(notificationDoc);
-            if (notificationSnapshot.exists()) {
+            const notificationDoc = db.collection('notifications').doc(id);
+            const notificationSnapshot = await notificationDoc.get();
+            if (notificationSnapshot.exists) {
                 return res.status(200).json({ id: notificationSnapshot.id, ...notificationSnapshot.data() });
             }
             return res.status(404).send({ message: "Notification not found" });
@@ -40,9 +38,9 @@ export default function notificationRoute(db) {
     // Get all notifications
     router.get("/", async (req, res) => {
         try {
-            const notificationsCollection = collection(db, 'notifications');
-            const notificationsSnapshot = await getDocs(notificationsCollection);
-            const notificationsList = notificationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const notificationsCollection = db.collection('notifications');
+            const notificationsSnapshot = await notificationsCollection.get();
+            const notificationsList = notificationsSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             res.status(200).json({ count: notificationsList.length, data: notificationsList });
         } catch (err) {
             console.error("Error fetching notifications:", err);
@@ -58,12 +56,12 @@ export default function notificationRoute(db) {
                 return res.status(400).send({ message: "Please provide at least one field to update (userID or token)" });
             }
             const { id } = req.params;
-            const notificationDoc = doc(db, 'notifications', id);
+            const notificationDoc = db.collection('notifications').doc(id);
             const updateData = {};
             if (userID) updateData.userID = userID;
             if (token) updateData.token = token;
-            await updateDoc(notificationDoc, updateData);
-            const updatedNotification = await getDoc(notificationDoc);
+            await notificationDoc.update(updateData);
+            const updatedNotification = await notificationDoc.get();
             res.status(200).send({ message: "Notification updated successfully", notification: { id: updatedNotification.id, ...updatedNotification.data() } });
         } catch (err) {
             console.error("Error updating notification:", err);
@@ -75,8 +73,8 @@ export default function notificationRoute(db) {
     router.delete("/:id", async (req, res) => {
         try {
             const { id } = req.params;
-            const notificationDoc = doc(db, 'notifications', id);
-            await deleteDoc(notificationDoc);
+            const notificationDoc = db.collection('notifications').doc(id);
+            await notificationDoc.delete();
             res.status(200).send({ message: "Notification deleted successfully" });
         } catch (err) {
             console.error("Error deleting notification:", err);
@@ -91,9 +89,9 @@ export default function notificationRoute(db) {
             if (!userID) {
                 return res.status(400).send({ message: "Please provide a userID" });
             }
-            const notificationsCollection = collection(db, 'notifications');
-            const q = query(notificationsCollection, where('userID', '==', userID), limit(1));
-            const querySnapshot = await getDocs(q);
+            const notificationsCollection = db.collection('notifications');
+            const q = notificationsCollection.where('userID', '==', userID).limit(1);
+            const querySnapshot = await q.get();
             if (querySnapshot.empty) {
                 return res.status(200).send({ token: 0 });
             }
@@ -112,14 +110,14 @@ export default function notificationRoute(db) {
             if (!token) {
                 return res.status(400).send({ message: "Please provide a token" });
             }
-            const notificationsCollection = collection(db, 'notifications');
-            const q = query(notificationsCollection, where('token', '==', token), limit(1));
-            const querySnapshot = await getDocs(q);
+            const notificationsCollection = db.collection('notifications');
+            const q = notificationsCollection.where('token', '==', token).limit(1);
+            const querySnapshot = await q.get();
             if (querySnapshot.empty) {
                 return res.status(404).send({ message: "No notification found with the provided token" });
             }
             const docToDelete = querySnapshot.docs[0];
-            await deleteDoc(doc(db, 'notifications', docToDelete.id));
+            await db.collection('notifications').doc(docToDelete.id).delete();
             res.status(200).send({ message: "Notification deleted successfully", deletedNotification: { id: docToDelete.id, ...docToDelete.data() } });
         } catch (err) {
             console.error("Error deleting notification by token:", err);

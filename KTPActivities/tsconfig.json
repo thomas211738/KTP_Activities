@@ -1,6 +1,18 @@
 {
   "compilerOptions": {
-      "jsx": "react"
-},
-  "extends": "expo/tsconfig.base"
+    "jsx": "react",
+    "strict": false,
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@env": ["node_modules/react-native-dotenv"]
+    },
+    "typeRoots": ["./types", "./node_modules/@types"]
+  },
+  "extends": "expo/tsconfig.base",
+  "include": ["**/*.ts", "**/*.tsx", "types/**/*.d.ts"]
 }

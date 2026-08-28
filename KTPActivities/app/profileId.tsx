@@ -37,9 +37,11 @@ const profileId = () => {
             setuserFirstName(response.data.FirstName);
             setuserLastName(response.data.LastName);
             setUserGradYear(response.data.GradYear);
-            setUserColleges(response.data.Colleges);
-            setUserMajor(response.data.Major.join(' and '));
-            if (response.data.Minor && response.data.Minor.length > 0) setUserMinor(response.data.Minor.join(' and '));
+            const majors = Array.isArray(response.data.Major) ? response.data.Major : (response.data.Major ? [response.data.Major] : []);
+            const minors = Array.isArray(response.data.Minor) ? response.data.Minor : (response.data.Minor ? [response.data.Minor] : []);
+            setUserColleges(response.data.Colleges || []);
+            setUserMajor(majors.join(' and '));
+            if (minors.length > 0 && minors[0] !== "") setUserMinor(minors.join(' and '));
             setPosition(response.data.Position);
             setEboardPosition(response.data.Eboard_Position);
             setUserInterests(response.data.Interests || []);
@@ -215,7 +217,7 @@ const profileId = () => {
              : ""
         } */}
         {
-            userInfo.Position === 5 ? 
+            Number(userInfo?.Position ?? 0) === 5 ? 
                 <View style={[styles.signOutCard, eventTheme]}>
                     <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/indivisualNotification', params: { userID: userID } })}>
                         <Text style={[styles.darkmodeButtonText, textTheme]}>Send Notification</Text> 
@@ -224,7 +226,7 @@ const profileId = () => {
             : ""
         }
         {
-            userInfo.Position === 5 ? 
+            Number(userInfo?.Position ?? 0) === 5 ? 
                 <View style={[styles.signOutCard, eventTheme]}>
                     <TouchableOpacity onPress={() => router.push({ pathname: '(tabs)/People/position', params: { userID: userID } })}>
                         <Text style={[styles.darkmodeButtonText, textTheme]}>Change Position</Text> 

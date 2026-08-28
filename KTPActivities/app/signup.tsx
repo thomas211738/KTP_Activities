@@ -116,9 +116,9 @@ const SignupPage = () => {
             <Text style={styles.boxTitle}>Email</Text>
             <TextInput
               style={styles.boxEntry}
-              placeholder={email}
+              placeholder={Array.isArray(email) ? email[0] : (email as string) || ''}
               placeholderTextColor="gray"
-              readOnly={true}
+              editable={false}
             />
           </View>
           <View style={styles.box}>

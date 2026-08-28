@@ -5,12 +5,12 @@ import {
   } from '@react-native-google-signin/google-signin';
   import { setUserToken } from './userTokenManager';
   import {
+    auth,
     GoogleAuthProvider,
     onAuthStateChanged,
     signInWithCredential,
     signOut,
-  } from "firebase/auth";
-  import { auth } from "./../firebaseConfig";
+  } from "./../firebaseConfig";
   import AsyncStorage from "@react-native-async-storage/async-storage";
   import React from 'react';
   import { setUserInfo } from './userInfoManager';

@@ -1,9 +1,8 @@
 
 import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity, Platform, useColorScheme } from 'react-native'
-import { useNavigation, router } from 'expo-router'
+import { router, useNavigation } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { getAllUsersInfo } from '../../components/allUsersManager'
-// import { useNavigation } from '@react-navigation/native'
 import { getUserInfo } from '../../components/userInfoManager';
 import PeopleLoader from '../../components/loaders/poepleLoader';
 import axios from 'axios';
@@ -33,7 +32,7 @@ const Person = (props) => {
                     <Text style={styles.personMajors}>
                         {props.user.Position.toString() === '3' ?
                             props.user.Eboard_Position :
-                            `${props.user.Major.join(" and ")} Major${props.user.Minor && props.user.Minor.length !== 0 && props.user.Minor[0] !== "" ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
+                            `${(Array.isArray(props.user.Major) ? props.user.Major : []).join(" and ")} Major${(props.user.Minor && Array.isArray(props.user.Minor) && props.user.Minor.length !== 0 && props.user.Minor[0] !== "") ? `, ${props.user.Minor.join(" and ")} Minor` : ''}`
                         }
                     </Text>
                 </View>
@@ -46,8 +45,10 @@ const Person = (props) => {
 const index = () => {
     const users = getAllUsersInfo();
 
-    const user = getUserInfo();
-    user.Position = Number(user.Position);
+    // IMPORTANT: Never mutate the shared singleton returned by getUserInfo().
+    // In production this can corrupt state across tabs/screens because the object is shared module state.
+    const rawUser = getUserInfo() || {};
+    const user = { ...rawUser, Position: Number(rawUser.Position ?? 0) };
     const [pos, setPos] = React.useState(0);
     const [search, setSearch] = React.useState('');
     const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => Number(user.Position) === pos));

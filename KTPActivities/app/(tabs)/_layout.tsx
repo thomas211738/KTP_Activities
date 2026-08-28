@@ -4,13 +4,11 @@ import React from 'react';
 import { Entypo } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   return (
-    <NavigationContainer>
-      <Tabs screenOptions={{ tabBarActiveTintColor: colorScheme === 'light' ? 'royalblue' : '#86ebba' }}>
+    <Tabs screenOptions={{ tabBarActiveTintColor: colorScheme === 'light' ? 'royalblue' : '#86ebba' }}>
       <Tabs.Screen
         name="Calendar"
         options={{
@@ -57,10 +55,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
         }}
       />
-
     </Tabs>
-
-    </NavigationContainer>
-    
   );
 }

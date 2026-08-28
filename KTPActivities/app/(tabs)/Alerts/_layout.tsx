@@ -9,12 +9,13 @@ import axios from 'axios';
 import { BACKEND_URL } from '@env';
 
 export default function Layout() {
-  const userInfo = getUserInfo();
+  const raw = getUserInfo() || {};
+  const pos = Number(raw.Position ?? 0);
   const colorScheme = useColorScheme();
 
   const [addModalVisible, setAddModalVisible] = useState(false);
 
-  const postAlert = async (alertName, alertDescription) => {
+  const postAlert = async (alertName: string, alertDescription: string) => {
     try {
       await axios.post(`${BACKEND_URL}/alerts`, {
         "AlertName": alertName,
@@ -35,7 +36,7 @@ export default function Layout() {
             headerTitleStyle: {
               color: colorScheme === "light" ? "#1a1a1a" : "white",
             },
-            headerRight: userInfo.Position.toString() === "3" || userInfo.Position.toString() === "5" ? () => (
+            headerRight: (pos === 3 || pos === 5) ? () => (
               <Pressable
                 onPress={async () => 
                   setAddModalVisible(true)
@@ -61,7 +62,7 @@ export default function Layout() {
         >
         </Stack.Screen>
       </Stack>
-      {userInfo.Position.toString() === '3' || userInfo.Position.toString() === '5' ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
+      {(pos === 3 || pos === 5) ? <AddAlertModal visible={addModalVisible} onCancel={() => setAddModalVisible(false)} onPost={postAlert} /> : ''}
     </>
   );
 }

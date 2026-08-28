@@ -10,7 +10,9 @@
     "logs": "firebase functions:log",
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "deploy": "firebase deploy --only functions:api"
+    "deploy": "firebase deploy --only functions:api",
+    "deploy:calendar": "firebase deploy --only functions:calendarWebhook",
+    "logs:calendar": "firebase functions:log --only calendarWebhook"
   },
   "engines": {
     "node": "22"
@@ -26,7 +28,8 @@
     "express": "^4.19.2",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.4.0",
-    "firebase-functions": "^6.4.0",
+    "firebase-functions": "^7.3.2",
+    "googleapis": "^126.0.0",
     "gridfs-stream": "^1.1.1",
     "mongodb": "^6.8.0",
     "mongoose": "^8.4.0",

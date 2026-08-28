@@ -5,8 +5,7 @@ import React, { useState, useEffect } from 'react';
 
 // Sign Out Functionality
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "../../firebaseConfig";
-import { signOut } from "firebase/auth";
+import { auth, signOut } from "../../firebaseConfig";
 import { router } from 'expo-router';
 import { GoogleSignin} from '@react-native-google-signin/google-signin';
 
@@ -35,9 +34,19 @@ import ProfileLoader from '../../components/loaders/profileLoader';
 import { add, set } from 'date-fns';
 
 const Index = () => {
-    const userInfo = getUserInfo();
+    const rawUser = getUserInfo() || {};
+    // Defensive defaults for fields that may be missing/undefined from backend
+    const userInfo = {
+        ...rawUser,
+        Major: Array.isArray(rawUser.Major) ? rawUser.Major : [],
+        Minor: Array.isArray(rawUser.Minor) ? rawUser.Minor : [],
+        Interests: Array.isArray(rawUser.Interests) ? rawUser.Interests : [],
+        Colleges: Array.isArray(rawUser.Colleges) ? rawUser.Colleges : [],
+        Class: rawUser.Class || '',
+    };
+
     const [addModalVisible, setAddModalVisible] = useState(false);
-    const [userInterests, setUserInterests] = useState(userInfo.Interests);
+    const [userInterests, setUserInterests] = useState(Array.isArray(userInfo.Interests) ? userInfo.Interests : []);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [originalInterest, setOriginalInterest] = useState('');
     const [interestIndex, setInterestIndex] = useState(null);
@@ -68,7 +77,7 @@ const Index = () => {
             }
 
             
-            if (response.data.Interests){
+            if (Array.isArray(response.data.Interests)) {
                 setUserInterests(response.data.Interests);
             }
             if (response.data.Instagram) setInstagram(response.data.Instagram);
@@ -88,7 +97,8 @@ const Index = () => {
     }, []);
 
 
-    const posName = ["Rushee", "Pledge", "Brother", userInfo.Eboard_Position , "Alumni", "Super Administrator"][userInfo.Position] || "";
+    const p = Number(userInfo?.Position ?? 0);
+    const posName = ["Rushee", "Pledge", "Brother", userInfo.Eboard_Position , "Alumni", "Super Administrator"][p] || "";
 
     
 
@@ -96,7 +106,7 @@ const Index = () => {
         const college = colleges.find(college => college.value === value);
         return college ? college.label : 'Value not found';
     }
-    const college = getLabelByValue(userInfo.Colleges[0]);
+    const college = getLabelByValue((userInfo.Colleges && userInfo.Colleges[0]) || '');
 
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth(); // 0-11 for Jan-Dec
@@ -154,7 +164,7 @@ const Index = () => {
 
     const postIg = async (instagram) => {
         try {
-            const updateduser = {Position: userInfo.Position.toString(), Instagram: instagram};
+            const updateduser = {Position: String(p), Instagram: instagram};
             await axios.put(`${BACKEND_URL}/users/${userInfo.id}`,
                 updateduser
             );
@@ -405,7 +415,7 @@ const Index = () => {
                     />
                 </View>
 
-                {userInfo.Position.toString() === '5' && (
+                {(p === 5) && (
                     <View style={[styles.resourcesCard, eventTheme]}>
                         <TouchableOpacity onPress={() => {
                             // Add your functionality for the resources button here

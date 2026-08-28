@@ -1,5 +1,4 @@
 import express from "express";
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -7,9 +6,9 @@ export default function eventsRoute(db) {
     // Get all events
     router.get("/", async (request, response) => {
         try {
-            const eventsCollection = collection(db, 'events');
-            const eventsSnapshot = await getDocs(eventsCollection);
-            const eventsList = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const eventsCollection = db.collection('events');
+            const eventsSnapshot = await eventsCollection.get();
+            const eventsList = eventsSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             return response.status(200).json({
                 count: eventsList.length,
                 data: eventsList,
@@ -24,9 +23,9 @@ export default function eventsRoute(db) {
     router.get("/:id", async (request, response) => {
         try {
             const { id } = request.params;
-            const eventDoc = doc(db, 'events', id);
-            const eventSnapshot = await getDoc(eventDoc);
-            if (eventSnapshot.exists()) {
+            const eventDoc = db.collection('events').doc(id);
+            const eventSnapshot = await eventDoc.get();
+            if (eventSnapshot.exists) {
                 return response.status(200).json({ id: eventSnapshot.id, ...eventSnapshot.data() });
             }
             return response.status(404).json({ message: 'Event not found' });
@@ -45,9 +44,9 @@ export default function eventsRoute(db) {
                     message: "Send all required fields: Name, Day, Time, Location, Description, Position",
                 });
             }
-            const eventsCollection = collection(db, 'events');
+            const eventsCollection = db.collection('events');
             const newEvent = { Name, Day, Time, Location, Description, Position };
-            await addDoc(eventsCollection, newEvent);
+            await eventsCollection.add(newEvent);
             return response.status(200).send({ message: "event added successfully" });
         } catch (error) {
             console.log(error.message);
@@ -65,8 +64,8 @@ export default function eventsRoute(db) {
                 });
             }
             const { id } = request.params;
-            const eventDoc = doc(db, 'events', id);
-            await updateDoc(eventDoc, { Name, Day, Time, Location, Description, Position });
+            const eventDoc = db.collection('events').doc(id);
+            await eventDoc.update({ Name, Day, Time, Location, Description, Position });
             return response.status(200).send({ message: "event updated successfully" });
         } catch (error) {
             console.log(error.message);
@@ -78,8 +77,8 @@ export default function eventsRoute(db) {
     router.delete("/:id", async (request, response) => {
         try {
             const { id } = request.params;
-            const eventDoc = doc(db, 'events', id);
-            await deleteDoc(eventDoc);
+            const eventDoc = db.collection('events').doc(id);
+            await eventDoc.delete();
             return response.status(200).send({ message: "event deleted successfully" });
         } catch (error) {
             console.log(error.message);

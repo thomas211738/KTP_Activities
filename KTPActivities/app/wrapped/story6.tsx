@@ -41,8 +41,8 @@ const StarsBackground = () => {
           style={[
             styles.star,
             {
-              left: star.left,
-              top: star.top,
+              left: star.left as any,
+              top: star.top as any,
               width: star.size,
               height: star.size,
               borderRadius: star.size / 2,

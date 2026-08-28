@@ -7,29 +7,63 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "env": {
+        "APP_ENV": "development"
+      }
     },
     "development-simulator": {
       "extends": "development",
       "ios": {
-        "simulator": true,
-        "cocoapods": "1.15.2"
+        "simulator": true
       }
     },
     "preview": {
       "distribution": "internal",
-      "ios": {
-        "simulator": true,
-        "cocoapods": "1.15.2"
-      },
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "APP_ENV": "production"
+      }
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "APP_ENV": "production"
+      },
+      "ios": {
+        "image": "macos-sequoia-15.6-xcode-26.0"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6654894541"
+      }
+    }
   }
 }
+
+/*
+  APP_ENV is forced per profile so that:
+  - development / development-simulator → development mode (localhost OK, stubs OK)
+  - preview + production                → production mode (real BACKEND_URL + real Firebase required)
+
+  Remote repo production deployment model:
+  - Backend is deployed as Firebase Function "api":
+      firebase deploy --only functions:api
+  - The exported `api` wraps the entire Express app (see backend/index.js).
+  - Therefore the anticipated production BACKEND_URL is:
+      https://us-central1-kappa-theta.cloudfunctions.net/api
+  - Client code does `${BACKEND_URL}/users`, `/events`, `/alerts`, `/photo2`, etc.
+    → resolves to /api/users, /api/events, ...
+
+  Set the real BACKEND_URL (and Firebase web config) as Environment Variables
+  in the Expo project dashboard for the "production" (and "preview") profiles.
+  Dashboard values win over .env files.
+
+  Local testing of production mode (no EAS upload needed):
+    npx expo run:ios --configuration Release
+    APP_ENV=production npx expo run:ios --configuration Release
+*/

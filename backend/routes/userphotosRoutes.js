@@ -1,5 +1,4 @@
 import express from "express";
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const router = express.Router();
 
@@ -11,9 +10,8 @@ export default function userphotosRoute(db) {
             if (!data) {
                 return res.status(400).send({ message: "Send data" });
             }
-            const photosCollection = collection(db, 'photos');
-            const newUserPhoto = { data };
-            const docRef = await addDoc(photosCollection, newUserPhoto);
+            const photosCollection = db.collection('photos');
+            const docRef = await photosCollection.add({ data });
             const fileId = { fileID: docRef.id };
             res.status(200).send(fileId);
         } catch (err) {
@@ -26,9 +24,9 @@ export default function userphotosRoute(db) {
     router.get('/photo/:id', async (request, response) => {
         try {
             const { id } = request.params;
-            const userPhotoDoc = doc(db, 'photos', id);
-            const photosnapshot = await getDoc(userPhotoDoc);
-            if (photosnapshot.exists()) {
+            const userPhotoDoc = db.collection('photos').doc(id);
+            const photosnapshot = await userPhotoDoc.get();
+            if (photosnapshot.exists) {
                 return response.status(200).json({ id: photosnapshot.id, ...photosnapshot.data() });
             }
             return response.status(404).json({ message: 'User photo not found' });
@@ -41,9 +39,9 @@ export default function userphotosRoute(db) {
     // Get all photos
     router.get('/photos', async (request, response) => {
         try {
-            const photosCollection = collection(db, 'photos');
-            const photosSnapshot = await getDocs(photosCollection);
-            const photosList = photosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const photosCollection = db.collection('photos');
+            const photosSnapshot = await photosCollection.get();
+            const photosList = photosSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             return response.status(200).json({
                 count: photosList.length,
                 data: photosList,
@@ -62,8 +60,8 @@ export default function userphotosRoute(db) {
                 return response.status(400).send({ message: "Send data" });
             }
             const { id } = request.params;
-            const userPhotoDoc = doc(db, 'photos', id);
-            await updateDoc(userPhotoDoc, { data });
+            const userPhotoDoc = db.collection('photos').doc(id);
+            await userPhotoDoc.update({ data });
             const fileId = { fileID: id };
             return response.status(200).json(fileId);
         } catch (error) {
@@ -76,8 +74,8 @@ export default function userphotosRoute(db) {
     router.delete("/photo/:id", async (request, response) => {
         try {
             const { id } = request.params;
-            const userPhotoDoc = doc(db, 'photos', id);
-            await deleteDoc(userPhotoDoc);
+            const userPhotoDoc = db.collection('photos').doc(id);
+            await userPhotoDoc.delete();
             return response.status(200).send({ message: "User Photo deleted successfully" });
         } catch (error) {
             console.log(error.message);

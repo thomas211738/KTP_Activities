@@ -23,7 +23,12 @@ function handleRegistrationError(errorMessage: string) {
     console.log(errorMessage);
 }
 
-export async function registerForPushNotificationsAsync() {
+export type PushNotificationRegistrationResult =
+    | { status: 'registered'; token: string }
+    | { status: 'permission-denied'; token: null }
+    | { status: 'unavailable'; token: null };
+
+export async function registerForPushNotificationsAsync(): Promise<PushNotificationRegistrationResult> {
     if (Platform.OS === 'android') {
         Notifications.setNotificationChannelAsync('default', {
         name: 'default',
@@ -42,7 +47,7 @@ export async function registerForPushNotificationsAsync() {
         }
         if (finalStatus !== 'granted') {
             handleRegistrationError('Permission not granted to get push token for push notification!');
-            return null;
+            return { status: 'permission-denied', token: null };
         }
         const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
 
@@ -54,11 +59,13 @@ export async function registerForPushNotificationsAsync() {
             // const token = await Notifications.getExpoPushTokenAsync();
             const pushTokenString = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
 
-            return pushTokenString;
+            return { status: 'registered', token: pushTokenString };
         } catch (e: unknown) {
             handleRegistrationError(`${e}`);
+            return { status: 'unavailable', token: null };
         }
     } else {
         handleRegistrationError('Must use physical device for push notifications');
+        return { status: 'unavailable', token: null };
     }
 }
