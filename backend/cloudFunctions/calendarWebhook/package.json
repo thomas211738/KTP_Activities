@@ -1,0 +1,13 @@
+{
+  "name": "ktp-calendar-webhook",
+  "version": "1.0.0",
+  "description": "Cloud Function that receives Google Calendar push notifications and syncs events into Firestore using the KTP app's exact schema.",
+  "main": "main.js",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.1.0",
+    "googleapis": "^126.0.0"
+  }
+}

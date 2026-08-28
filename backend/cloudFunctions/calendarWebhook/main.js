@@ -1,0 +1,551 @@
+/**
+ * Google Calendar Webhook Cloud Function
+ *
+ * Purpose:
+ *   - Receives push notifications from the Google Calendar API (events.watch).
+ *   - Supports **multiple calendars** via channel token or calendar ID (personal test calendar ↔ Eboard/president calendar, etc.).
+ *   - Syncs events into the Firestore `events` collection using the existing schema.
+ *
+ * Schema compatibility (matches backend/routes/eventsRoutes.js and the mobile app):
+ *   Core fields we always write:
+ *     - Name: string
+ *     - Day: string (YYYY-MM-DD)
+ *     - Time: string (human readable)
+ *     - Location: string
+ *     - Description: string
+ *
+ *   Position (visibility):
+ *     - NOT a strict/required typed value from the Google Calendar side.
+ *     - Reason: Only Eboard will be editing the source calendar(s).
+ *     - We attempt best-effort extraction (see extractPosition).
+ *     - Per-calendar defaultPosition is supported.
+ *     - Final hard fallback = 3 (E-board level).
+ *
+ * Multi-calendar support:
+ *   - Identify the source calendar using the `x-goog-channel-token` you set when registering the watch.
+ *   - Primary config source: Firestore document `calendarTokens/main` (stores the full map as an object or under a `config` / `configJson` field).
+ *   - Fallback: CALENDAR_CONFIGS (JSON) or GOOGLE_CALENDAR_ID + DEFAULT_POSITION environment variables (useful for local dev).
+ *   - Register separate watches for different calendars (different tokens or IDs).
+ *   - Switch from your personal Gmail calendar (testing) to an official Eboard/president calendar later by registering a new watch — no code change required. Just edit the Firestore doc.
+ *
+ * Additional sync metadata written (safe for the app to ignore):
+ *   - source: "google"
+ *   - googleEventId
+ *   - lastSyncedAt
+ *   - (optional) calendarId
+ *
+ * Deployment:
+ *   - HTTP-triggered Cloud Function (Firebase Functions v2 recommended).
+ *   - The service account must have Calendar read access on every calendar you watch (share each calendar with the service account email, "See all event details").
+ *
+ * The public webhook URL is defined as a static default in:
+ *   backend/config.js → CALENDAR_WEBHOOK_URL
+ *
+ * This URL is STATIC. It does not change when you switch calendars
+ * (personal → eboard → etc.). You only change it if you move the function
+ * to a different region/project or rename it.
+ */
+
+const { google } = require('googleapis');
+const admin = require('firebase-admin');
+const fs = require('fs');
+const path = require('path');
+
+// Robust Firebase Admin initialization for the Cloud Function module.
+// This file can be required by index.js (local dev) or deployed as a v2 function.
+// We replicate the same defensive logic used in backend/index.js so that
+// a bare require() never creates an Admin app without a detectable projectId.
+let effectiveProjectId = process.env.GOOGLE_FIREBASE_PROJECT_ID;
+let storageBucket = process.env.GOOGLE_FIREBASE_STORAGE_BUCKET;
+
+const keyPath = path.join(__dirname, '..', '..', 'serviceAccountKey.json');
+let credential;
+if (fs.existsSync(keyPath)) {
+  const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+  credential = admin.credential.cert(serviceAccount);
+  if (serviceAccount.project_id) {
+    effectiveProjectId = serviceAccount.project_id;
+  }
+} else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  credential = admin.credential.applicationDefault();
+} else {
+  credential = admin.credential.applicationDefault();
+}
+
+if (!storageBucket && effectiveProjectId) {
+  storageBucket = `${effectiveProjectId}.appspot.com`;
+}
+
+if (!admin.apps.length) {
+  const initConfig = {
+    credential,
+    projectId: effectiveProjectId,
+  };
+  if (storageBucket) {
+    initConfig.storageBucket = storageBucket;
+  }
+  admin.initializeApp(initConfig);
+}
+
+if (effectiveProjectId) {
+  console.log('[calendarWebhook] Firebase Project ID:', effectiveProjectId);
+}
+
+const db = admin.firestore();
+
+/**
+ * Build calendar configuration map from environment variables (fallback only).
+ *
+ * Preferred/primary source is Firestore at: calendarTokens/main
+ *
+ * These env vars are only used if the Firestore document is missing or empty.
+ * Once calendarTokens/main exists with your config, you do NOT need to keep
+ * CALENDAR_CONFIGS (or GOOGLE_CALENDAR_ID / DEFAULT_POSITION) in any .env file.
+ */
+function getCalendarConfigsFromEnv() {
+  if (process.env.CALENDAR_CONFIGS) {
+    try {
+      const parsed = JSON.parse(process.env.CALENDAR_CONFIGS);
+      if (parsed && typeof parsed === 'object') {
+        return parsed;
+      }
+    } catch (e) {
+      console.warn('[calendarWebhook] Invalid CALENDAR_CONFIGS JSON in env');
+    }
+  }
+
+  const singleId = process.env.GOOGLE_CALENDAR_ID || 'primary';
+  const singlePos = Number.isFinite(Number(process.env.DEFAULT_POSITION)) ? Number(process.env.DEFAULT_POSITION) : 3;
+
+  return {
+    default: {
+      calendarId: singleId,
+      defaultPosition: singlePos,
+    },
+  };
+}
+
+/**
+ * Load calendar configuration (multi-calendar map) from Firestore.
+ * Primary location:  calendarTokens / main
+ *
+ * You said you want to store this "as a string or json variable".
+ * We therefore accept several common shapes:
+ *
+ *   1. Direct map (best):
+ *        { "personal": { calendarId: "...", defaultPosition: 3 }, "eboard": { ... } }
+ *
+ *   2. Wrapped:
+ *        { config: { ...map... } }
+ *        { data:   { ...map... } }
+ *        { value:  { ...map... } }
+ *
+ *   3. As a JSON string in one of these fields:
+ *        { configJson: "{ ... }" }
+ *        { config:     "{ ... }" }     // string inside config
+ *        { json:       "{ ... }" }
+ *        { value:      "{ ... }" }
+ *
+ *   4. The entire document data is a string (rare, but supported).
+ *
+ * Falls back to environment variables when the document is missing/empty/invalid.
+ */
+async function loadCalendarConfig() {
+  try {
+    const docRef = db.collection('calendarTokens').doc('main');
+    const snap = await docRef.get();
+
+    if (snap.exists) {
+      let data = snap.data();
+
+      // If the document itself is literally a string (uncommon in Firestore but possible via set with string)
+      if (typeof data === 'string') {
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed && typeof parsed === 'object') {
+            console.log('[calendarWebhook] Loaded calendar config from Firestore calendarTokens/main (root string)');
+            return parsed;
+          }
+        } catch (_) {}
+      }
+
+      if (!data || typeof data !== 'object') {
+        data = {};
+      }
+
+      // 1. Direct map on the document (most common case you will use)
+      // Heuristic: looks like our calendar map if first value has calendarId or defaultPosition
+      const keys = Object.keys(data);
+      if (keys.length > 0 && !data.config && !data.configJson && !data.data && !data.value && !data.json) {
+        const firstVal = data[keys[0]];
+        if (firstVal && typeof firstVal === 'object' && (firstVal.calendarId || firstVal.defaultPosition !== undefined)) {
+          console.log('[calendarWebhook] Loaded calendar config from Firestore calendarTokens/main (direct map)');
+          return data;
+        }
+      }
+
+      // 2. Common wrapper fields that contain an object map
+      const wrapperKeys = ['config', 'data', 'value'];
+      for (const k of wrapperKeys) {
+        if (data[k] && typeof data[k] === 'object' && !Array.isArray(data[k])) {
+          // If it's already a map of calendars, use it
+          const innerKeys = Object.keys(data[k]);
+          if (innerKeys.length > 0) {
+            const firstInner = data[k][innerKeys[0]];
+            if (firstInner && typeof firstInner === 'object' && (firstInner.calendarId || firstInner.defaultPosition !== undefined)) {
+              console.log(`[calendarWebhook] Loaded calendar config from Firestore calendarTokens/main (${k} field)`);
+              return data[k];
+            }
+          }
+        }
+      }
+
+      // 3. JSON string stored under common field names
+      const stringCandidates = [
+        data.configJson,
+        data.config,     // sometimes people put a string under "config"
+        data.json,
+        data.value,
+        data.data,
+      ].filter(v => typeof v === 'string' && v.trim().length > 0);
+
+      for (const str of stringCandidates) {
+        try {
+          const parsed = JSON.parse(str);
+          if (parsed && typeof parsed === 'object') {
+            console.log('[calendarWebhook] Loaded calendar config from Firestore calendarTokens/main (JSON string field)');
+            return parsed;
+          }
+        } catch (_) {
+          // try next candidate
+        }
+      }
+
+      // 4. Last resort: scan for any string field that parses as our map
+      for (const k of Object.keys(data)) {
+        if (typeof data[k] === 'string') {
+          try {
+            const parsed = JSON.parse(data[k]);
+            if (parsed && typeof parsed === 'object') {
+              const pkeys = Object.keys(parsed);
+              if (pkeys.length > 0) {
+                const fv = parsed[pkeys[0]];
+                if (fv && typeof fv === 'object' && (fv.calendarId || fv.defaultPosition !== undefined)) {
+                  console.log('[calendarWebhook] Loaded calendar config from Firestore calendarTokens/main (parsed string field)');
+                  return parsed;
+                }
+              }
+            }
+          } catch (_) {}
+        }
+      }
+
+      // If we got here, the document existed but didn't contain usable calendar data
+      console.warn('[calendarWebhook] calendarTokens/main exists but did not contain a recognizable calendar map. Using env fallback.');
+    }
+  } catch (err) {
+    console.warn('[calendarWebhook] Failed to read calendarTokens/main from Firestore, will use env fallback:', err.message);
+  }
+
+  // Fallback to env
+  console.log('[calendarWebhook] Using calendar config from environment variables (fallback)');
+  return getCalendarConfigsFromEnv();
+}
+
+/**
+ * Resolve which calendar + defaultPosition to use for this notification.
+ * Priority inside the resolved map:
+ *   1. Exact match on x-goog-channel-token against config keys (recommended when registering watches).
+ *   2. If the token itself looks like a calendar ID, use it directly.
+ *   3. Fall back to the first (or "default") config entry.
+ */
+function resolveConfig(token, configs) {
+  const keys = Object.keys(configs || {});
+
+  if (token && configs[token]) {
+    return { key: token, ...configs[token] };
+  }
+
+  // Allow stuffing the calendarId (or "primary") directly into the channel token
+  if (token && (token.includes('@') || token === 'primary' || token.length > 3)) {
+    const safeKey = token.replace(/[^a-zA-Z0-9_-]/g, '_');
+    return {
+      key: safeKey,
+      calendarId: token,
+      defaultPosition: 3,
+    };
+  }
+
+  // Final fallback
+  const firstKey = keys[0] || 'default';
+  const entry = configs[firstKey] || { calendarId: 'primary', defaultPosition: 3 };
+  return { key: firstKey, ...entry };
+}
+
+/**
+ * Strict schema enforcement.
+ * Takes a Google Calendar event + a Position and returns a document that
+ * exactly matches what the existing Express routes and mobile app expect.
+ */
+function toKtpEventSchema(googleEvent, position) {
+  // Day: prefer date (all-day) or extract date from dateTime
+  let day = '';
+  if (googleEvent.start?.date) {
+    day = googleEvent.start.date; // already YYYY-MM-DD
+  } else if (googleEvent.start?.dateTime) {
+    day = googleEvent.start.dateTime.split('T')[0];
+  }
+
+  // Time: best effort human-readable string.
+  // If you want more structure later, you can expand the schema,
+  // but for now we keep compatibility with the existing Time field.
+  let time = '';
+  const start = googleEvent.start?.dateTime || googleEvent.start?.date;
+  const end = googleEvent.end?.dateTime || googleEvent.end?.date;
+
+  if (start && end) {
+    // Simple formatting — you can improve this mapping as needed.
+    const startStr = start.includes('T') ? start.split('T')[1]?.substring(0, 5) : 'All day';
+    const endStr = end.includes('T') ? end.split('T')[1]?.substring(0, 5) : '';
+    time = endStr ? `${startStr} - ${endStr}` : startStr;
+  }
+
+  const name = googleEvent.summary || 'Untitled Event';
+  const location = googleEvent.location || '';
+  const description = googleEvent.description || '';
+
+  // ============================================================
+  // FIRESTORE SCHEMA (follows the existing one used by the app)
+  //
+  // Core fields we always try to provide (matching backend/routes/eventsRoutes.js):
+  //   Name, Day, Time, Location, Description
+  //
+  // Position (visibility):
+  //   - No longer a strict/required value from the Google Calendar side.
+  //   - Reason: Only Eboard will be editing the source calendar(s).
+  //   - We attempt to extract it (see extractPosition).
+  //   - If we cannot determine it, we use the per-calendar defaultPosition.
+  //   - Final fallback = 3 (E-board level).
+  // ============================================================
+  const ktpEvent = {
+    Name: name,
+    Day: day,
+    Time: time,
+    Location: location,
+    Description: description,
+    Position: Number.isFinite(Number(position)) ? Number(position) : 3,
+  };
+
+  // Internal sync metadata
+  ktpEvent.source = 'google';
+  ktpEvent.googleEventId = googleEvent.id || '';
+  ktpEvent.lastSyncedAt = admin.firestore.FieldValue.serverTimestamp();
+
+  return ktpEvent;
+}
+
+/**
+ * Derive Position (visibility) — BEST EFFORT ONLY.
+ *
+ * We no longer treat Position as a strict requirement from the Google Calendar.
+ * Reason: Only Eboard will be editing the source calendar(s).
+ *
+ * Resolution order:
+ *   1. extendedProperties.private.position (e.g. set to "3")
+ *   2. Description contains POSITION:3 or POS: 3 etc.
+ *   3. The defaultPosition configured for this specific calendar (see calendarConfigs)
+ *   4. Hard fallback = 3 (E-board visible)
+ */
+function extractPosition(googleEvent, defaultPosition = 3) {
+  // 1. Private extended property (cleanest)
+  const ext = googleEvent.extendedProperties?.private?.position;
+  if (ext !== undefined && ext !== null && ext !== '') {
+    const n = parseFloat(ext);
+    if (!isNaN(n)) return n;
+  }
+
+  // 2. Description tag fallback
+  const desc = googleEvent.description || '';
+  const match = desc.match(/(?:POSITION|POS)[:=\s]*([0-9.]+)/i);
+  if (match) {
+    const n = parseFloat(match[1]);
+    if (!isNaN(n)) return n;
+  }
+
+  // 3. Per-calendar default
+  return defaultPosition;
+}
+
+/**
+ * Main HTTP handler for Google Calendar push notifications.
+ *
+ * Deploy this as a Cloud Function (recommended: Firebase Functions v2).
+ *
+ * Example wrapper (create or update functions/index.js):
+ *
+ *   const { onRequest } = require('firebase-functions/v2/https');
+ *   const calendarWebhookMod = require('./calendarWebhook/main');
+ *
+ *   exports.calendarWebhook = onRequest(
+ *     {
+ *       region: 'us-central1',
+ *       memory: '256MiB',
+ *       timeoutSeconds: 60,
+ *     },
+ *     calendarWebhookMod.calendarWebhook
+ *   );
+ *
+ * Then register a Google Calendar watch pointing at the deployed HTTPS URL.
+ */
+exports.calendarWebhook = async (req, res) => {
+  try {
+    const headers = req.headers || {};
+    const channelId = headers['x-goog-channel-id'];
+    const resourceState = headers['x-goog-resource-state']; // 'sync', 'exists', 'not_exists'
+    const resourceId = headers['x-goog-resource-id'];
+    const token = headers['x-goog-channel-token']; // optional verification token you set when creating the watch
+
+    console.log('[calendarWebhook] Notification received', {
+      channelId,
+      resourceState,
+      resourceId,
+    });
+
+    // Always respond quickly to Google
+    if (resourceState === 'sync') {
+      console.log('[calendarWebhook] Initial sync notification');
+      return res.status(200).send('OK');
+    }
+
+    // Optional: verify token if you set one when creating the watch
+    // if (token && token !== process.env.CALENDAR_WEBHOOK_TOKEN) {
+    //   return res.status(403).send('Forbidden');
+    // }
+
+    // Load calendar configuration from Firestore (calendarTokens/main) with env fallback.
+    // This is the single source of truth for which Google Calendar(s) to pull from and their Position defaults.
+    const calendarConfigMap = await loadCalendarConfig();
+
+    // Resolve the specific calendar for this notification using the channel token.
+    // Different watches (personal vs Eboard/president) use different tokens so the same function can handle many calendars.
+    const cfg = resolveConfig(token, calendarConfigMap);
+    const calendarId = cfg.calendarId || 'primary';
+    const defaultPositionForThisCal = Number.isFinite(Number(cfg.defaultPosition)) ? Number(cfg.defaultPosition) : 3;
+
+    console.log('[calendarWebhook] Using calendar config', {
+      key: cfg.key,
+      calendarId,
+      defaultPosition: defaultPositionForThisCal,
+    });
+
+    // Auth for Calendar API using Application Default Credentials (works in Cloud Functions)
+    const auth = new google.auth.GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/calendar.readonly'],
+    });
+    const calendar = google.calendar({ version: 'v3', auth });
+
+    // Per-calendar sync token document (sanitized key so it works for "primary" and email-style IDs)
+    const syncDocId = (cfg.key || calendarId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const syncDocRef = db.collection('calendarSync').doc(syncDocId);
+    const syncDoc = await syncDocRef.get();
+    let syncToken = syncDoc.exists ? syncDoc.data().syncToken : null;
+
+    let eventsToProcess = [];
+
+    if (resourceState === 'exists' || resourceState === 'not_exists') {
+      try {
+        const listParams = {
+          calendarId,
+          singleEvents: true, // expand recurring events into instances (simpler for now)
+          maxResults: 250,
+        };
+
+        if (syncToken) {
+          listParams.syncToken = syncToken;
+        } else {
+          // First time after watch creation — get recent events
+          const now = new Date();
+          const past = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); // ~90 days
+          listParams.timeMin = past.toISOString();
+        }
+
+        const listRes = await calendar.events.list(listParams);
+
+        eventsToProcess = listRes.data.items || [];
+
+        // Save the new sync token for next time (per calendar)
+        if (listRes.data.nextSyncToken) {
+          await syncDocRef.set(
+            {
+              syncToken: listRes.data.nextSyncToken,
+              lastSyncedAt: admin.firestore.FieldValue.serverTimestamp(),
+              calendarId,
+            },
+            { merge: true }
+          );
+        }
+      } catch (err) {
+        // If the sync token is invalid/expired, Google returns 410
+        if (err.code === 410 || (err.response && err.response.status === 410)) {
+          console.warn('[calendarWebhook] Sync token expired for calendar', calendarId, '. Clearing and doing full sync next time.');
+          await syncDocRef.delete().catch(() => {});
+          // Re-trigger a full sync by responding OK; on next change we will do a full pull.
+          return res.status(200).send('Sync token expired - will full sync on next change');
+        }
+        throw err;
+      }
+    }
+
+    // Process each changed event
+    for (const ev of eventsToProcess) {
+      // Pass the per-calendar default so Position remains non-strict
+      const position = extractPosition(ev, defaultPositionForThisCal);
+
+      if (ev.status === 'cancelled') {
+        // Event was deleted or cancelled — remove from Firestore if we have the id
+        if (ev.id) {
+          const existing = await db.collection('events')
+            .where('googleEventId', '==', ev.id)
+            .limit(1)
+            .get();
+
+          for (const doc of existing.docs) {
+            await doc.ref.delete();
+            console.log(`[calendarWebhook] Deleted event ${ev.id}`);
+          }
+        }
+        continue;
+      }
+
+      // Normal create / update — toKtpEventSchema will coerce final fallback to 3 if needed
+      const ktpDoc = toKtpEventSchema(ev, position);
+
+      // Also record which calendar this came from for debugging / future filtering
+      ktpDoc.calendarId = calendarId;
+
+      // Upsert by googleEventId so we don't create duplicates
+      const existingSnap = await db.collection('events')
+        .where('googleEventId', '==', ev.id)
+        .limit(1)
+        .get();
+
+      if (!existingSnap.empty) {
+        const docRef = existingSnap.docs[0].ref;
+        await docRef.set(ktpDoc, { merge: true });
+        console.log(`[calendarWebhook] Updated event ${ev.id} (Name: ${ktpDoc.Name})`);
+      } else {
+        await db.collection('events').add(ktpDoc);
+        console.log(`[calendarWebhook] Created event ${ev.id} (Name: ${ktpDoc.Name})`);
+      }
+    }
+
+    return res.status(200).send('OK');
+  } catch (error) {
+    console.error('[calendarWebhook] Error handling notification:', error);
+    // Always return 200 to Google so it doesn't keep retrying forever on our bugs.
+    // Log the error so we can investigate.
+    return res.status(200).send('Error logged');
+  }
+};
+
+

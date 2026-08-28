@@ -1,3 +1,15 @@
 .env
 users.json
-node_modules
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# macOS
+.DS_Store
+
+# Large reproducible build artifacts (do not commit)
+KTPActivities/ios/build/
+KTPActivities/ios/Pods/
+KTPActivities/android/.gradle/
+KTPActivities/android/build/

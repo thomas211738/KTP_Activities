@@ -48,6 +48,12 @@ app.config.js
 app.config.local.js
 app.config.*.js
 
+# Large reproducible build directories (these are regenerated)
+ios/build/
+ios/Pods/
+android/.gradle/
+android/build/
+
 # typescript
 *.tsbuildinfo
 
