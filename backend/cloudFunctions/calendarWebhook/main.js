@@ -598,4 +598,106 @@ exports.calendarWebhook = async (req, res) => {
   }
 };
 
+/**
+ * renewCalendarWatches — Scheduled Cloud Function
+ *
+ * Runs every 5 days (Google watches last ~7 days max).
+ * Checks every doc in `calendarWatches`, and for any watch expiring within
+ * the next 2 days it:
+ *   1. Registers a fresh watch via the Google Calendar API.
+ *   2. Writes the new watch doc to `calendarWatches`.
+ *   3. Deletes the old (soon-to-expire) watch doc.
+ *
+ * This creates an infinite self-renewing cycle — no manual intervention needed.
+ *
+ * Schedule: every 5 days  →  "0 9 */5 * *"  (09:00 UTC on days 1, 6, 11, 16, 21, 26, 31)
+ */
+const renewCalendarWatchesHandler = async (context) => {
+  console.log('[renewCalendarWatches] Starting scheduled watch renewal check...');
+
+  const WEBHOOK_URL = `https://us-central1-${effectiveProjectId}.cloudfunctions.net/calendarWebhook`;
+  const RENEW_BEFORE_MS = 2 * 24 * 60 * 60 * 1000; // renew if expiring within 2 days
+  const now = Date.now();
+
+  // Build Google Calendar auth from the service account
+  let auth;
+  if (fs.existsSync(keyPath)) {
+    auth = new google.auth.GoogleAuth({
+      credentials: JSON.parse(fs.readFileSync(keyPath, 'utf8')),
+      scopes: ['https://www.googleapis.com/auth/calendar.readonly'],
+    });
+  } else {
+    auth = new google.auth.GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/calendar.readonly'],
+    });
+  }
+  const calendar = google.calendar({ version: 'v3', auth });
+  const crypto = require('crypto');
+
+  const watchesSnap = await db.collection('calendarWatches').get();
+
+  if (watchesSnap.empty) {
+    console.log('[renewCalendarWatches] No watches found in calendarWatches. Nothing to renew.');
+    return null;
+  }
+
+  let renewed = 0;
+  let skipped = 0;
+
+  for (const doc of watchesSnap.docs) {
+    const watch = doc.data();
+    const expiration = Number(watch.expiration);
+    const daysLeft = Math.floor((expiration - now) / 86400000);
+
+    if (expiration - now > RENEW_BEFORE_MS) {
+      console.log(`[renewCalendarWatches] Watch "${watch.key}" (${doc.id}) is fine — ${daysLeft} day(s) left. Skipping.`);
+      skipped++;
+      continue;
+    }
+
+    console.log(`[renewCalendarWatches] Watch "${watch.key}" (${doc.id}) expires in ${daysLeft} day(s). Renewing...`);
+
+    try {
+      const channelId = `ktp-${watch.key}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+
+      const res = await calendar.events.watch({
+        calendarId: watch.calendarId,
+        requestBody: {
+          id: channelId,
+          type: 'web_hook',
+          address: WEBHOOK_URL,
+          token: watch.key,
+        },
+      });
+
+      const newWatchInfo = {
+        key: watch.key,
+        calendarId: watch.calendarId,
+        channelId,
+        resourceId: res.data.resourceId,
+        expiration: res.data.expiration, // ms timestamp string from Google
+        webhookUrl: WEBHOOK_URL,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      // Write new watch doc
+      await db.collection('calendarWatches').doc(channelId).set(newWatchInfo);
+
+      // Delete the old expiring doc
+      await doc.ref.delete();
+
+      console.log(`[renewCalendarWatches] ✅ Renewed watch "${watch.key}". New channel: ${channelId}. Expires: ${new Date(Number(res.data.expiration)).toISOString()}`);
+      renewed++;
+    } catch (err) {
+      // Log but don't throw — a single failure shouldn't block other renewals
+      console.error(`[renewCalendarWatches] ❌ Failed to renew watch "${watch.key}" (${doc.id}):`, err.message || err);
+    }
+  }
+
+  console.log(`[renewCalendarWatches] Done. Renewed: ${renewed}, Skipped (still valid): ${skipped}`);
+  return null;
+};
+
+module.exports.calendarWebhook = exports.calendarWebhook;
+module.exports.renewCalendarWatchesHandler = renewCalendarWatchesHandler;
 

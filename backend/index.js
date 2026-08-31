@@ -16,15 +16,15 @@ import notificationRoute from './routes/notificationsRoutes.js';
 import websitePicsRoute from './routes/websitePicsRoutes.js';
 // import emailRoute from './routes/emailRoute.js'; Not working?
 import { onRequest } from 'firebase-functions/v2/https';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 import appphotosRoute from './routes/appphotosRoute.js';
 
-// Calendar webhook (for Google Calendar push notifications → Firestore)
-// The calendarWebhook file is CommonJS (exports.calendarWebhook).
-// We use createRequire so it works from this ESM file.
+// Calendar webhook and watch renewal imports
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const calendarWebhookMod = require('./cloudFunctions/calendarWebhook/main.js');
 const calendarWebhookHandler = calendarWebhookMod.calendarWebhook;
+const renewCalendarWatchesHandler = calendarWebhookMod.renewCalendarWatchesHandler;
 
 // Resolve __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -176,3 +176,27 @@ app.post('/calendar-webhook', (req, res) => {
   // The handler is designed for functions-framework style (req, res)
   calendarWebhookHandler(req, res);
 });
+
+/**
+ * renewCalendarWatches — Scheduled Cloud Function
+ *
+ * Runs every 5 days at 09:00 UTC.
+ * Google watch TTL is ~7 days max. Running every 5 days with a 2-day
+ * early-renewal window gives a comfortable buffer and creates an infinite
+ * self-renewing cycle with no manual intervention.
+ *
+ * Timeline example:
+ *   Sep 01 — watch registered (expires Sep 08)
+ *   Sep 06 — scheduler fires, watch has 2 days left → renewed (expires Sep 13)
+ *   Sep 11 — scheduler fires, watch has 2 days left → renewed (expires Sep 18)
+ *   ... and so on forever.
+ */
+export const renewCalendarWatches = onSchedule(
+  {
+    schedule: '0 9 */5 * *',   // every 5 days at 09:00 UTC
+    region: 'us-central1',
+    timeoutSeconds: 60,
+    memory: '256MiB',
+  },
+  renewCalendarWatchesHandler
+);
