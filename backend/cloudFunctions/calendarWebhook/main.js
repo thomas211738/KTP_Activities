@@ -51,6 +51,54 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Send notification to FCM topic "EventNotification"
+ * This allows all subscribed clients to receive instant push when a calendar event changes.
+ */
+async function notifyEventChange(eventData, action = 'created') {
+  try {
+    const message = {
+      topic: 'EventNotification',
+      notification: {
+        title: action === 'created' ? '🗓 New Event Added' : '🗓 Event Updated',
+        body: `${eventData.Name || 'Calendar Event'} • ${eventData.Day || ''} ${eventData.Time || ''}`,
+      },
+      data: {
+        type: 'calendar_event',
+        action: action,
+        eventId: eventData.googleEventId || '',
+        name: eventData.Name || '',
+        day: eventData.Day || '',
+        time: eventData.Time || '',
+        location: eventData.Location || '',
+      },
+      android: {
+        priority: 'high',
+        notification: {
+          channelId: 'calendar_events',
+        },
+      },
+      apns: {
+        headers: {
+          'apns-priority': '10',
+        },
+        payload: {
+          aps: {
+            sound: 'default',
+            badge: 1,
+          },
+        },
+      },
+    };
+
+    await admin.messaging().send(message);
+    console.log(`[calendarWebhook] ✅ Sent FCM notification to EventNotification topic: ${eventData.Name}`);
+  } catch (error) {
+    console.error('[calendarWebhook] Failed to send FCM notification:', error.message || error);
+    // Do not fail the webhook if notification fails - calendar sync is more important
+  }
+}
+
 // Robust Firebase Admin initialization for the Cloud Function module.
 // This file can be required by index.js (local dev) or deployed as a v2 function.
 // We replicate the same defensive logic used in backend/index.js so that
@@ -533,9 +581,11 @@ exports.calendarWebhook = async (req, res) => {
         const docRef = existingSnap.docs[0].ref;
         await docRef.set(ktpDoc, { merge: true });
         console.log(`[calendarWebhook] Updated event ${ev.id} (Name: ${ktpDoc.Name})`);
+        await notifyEventChange(ktpDoc, 'updated');
       } else {
-        await db.collection('events').add(ktpDoc);
+        const newDocRef = await db.collection('events').add(ktpDoc);
         console.log(`[calendarWebhook] Created event ${ev.id} (Name: ${ktpDoc.Name})`);
+        await notifyEventChange(ktpDoc, 'created');
       }
     }
 

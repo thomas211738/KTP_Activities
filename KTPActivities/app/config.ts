@@ -16,6 +16,7 @@
 
 import { BACKEND_URL as ENV_BACKEND_URL } from '@env';
 import Constants from 'expo-constants';
+import { TEST_MODE_ENABLED, ALLOWED_TEST_EMAILS } from './testConfig';
 
 const extra = Constants?.expoConfig?.extra || {};
 
@@ -40,6 +41,10 @@ export const firebaseConfig = extra.firebase || {
   appId: process.env.FIREBASE_APP_ID,
   measurementId: process.env.FIREBASE_MEASUREMENT_ID,
 };
+
+// Test mode for Apple TestFlight review (controlled by Firebase Remote Config)
+// This is TEMPORARY and must be turned off after review is complete.
+export { TEST_MODE_ENABLED, ALLOWED_TEST_EMAILS } from './testConfig';
 
 // Production safety check — only enforced for actual production builds
 if (isProduction) {

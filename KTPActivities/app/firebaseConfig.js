@@ -95,8 +95,7 @@ function assertProdBackendUrl() {
 }
 
 // Client-side Firebase services.
-// db is provided when real Firebase keys exist so the app can read lightweight
-// public config (e.g. calendarTokens/main) for direct Google Calendar fetches.
+// db is used for reading calendarTokens/main (used by legacy client-side Google Calendar fetch).
 let auth;
 let GoogleAuthProvider;
 let onAuthStateChanged;
@@ -132,9 +131,7 @@ if (hasValidFirebaseKey) {
     persistence: getReactNativePersistence(AsyncStorage),
   });
 
-  // Initialize client Firestore so we can read lightweight public config
-  // (e.g. calendarTokens/main for the Google Calendar ID + defaultPosition).
-  // This read is cheap and happens at most once per cold launch.
+  // Initialize client Firestore so legacy calendar code can read calendarTokens/main config.
   const { getFirestore } = require('firebase/firestore');
   db = getFirestore(app);
 

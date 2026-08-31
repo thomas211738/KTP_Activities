@@ -150,13 +150,17 @@ export const api = onRequest(
   app
 );
 
-// Google Calendar push notification webhook (receives events.watch calls from Google)
+/**
+ * Google Calendar push notification webhook (receives events.watch calls from Google)
+ * Now enabled — syncs public calendar (via calendarTokens/main config) to Firestore `events` collection.
+ * The mobile app now reads from /events endpoint (populated by this function).
+ */
+
 export const calendarWebhook = onRequest(
   {
     region: 'us-central1',
     memory: '256MiB',
     timeoutSeconds: 60,
-    // No CORS needed — Google calls this directly
   },
   calendarWebhookHandler
 );

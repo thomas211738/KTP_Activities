@@ -3,7 +3,7 @@
     "owner": "boston-ktp",
     "name": "KTPActivities",
     "slug": "KTPActivities",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -28,7 +28,7 @@
         ],
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "8"
+      "buildNumber": "34"
     },
     "android": {
       "adaptiveIcon": {
@@ -50,13 +50,3 @@
     ]
   }
 }
-
-/*
-  NOTE:
-  This static app.json is kept for compatibility.
-  The real configuration (including APP_ENV / production logic, owner, entitlements,
-  extra values, updates, etc.) lives in app.config.ts.
-
-  When both exist, app.config.ts (or the result of `expo config`) takes precedence
-  for most dynamic fields.
-*/

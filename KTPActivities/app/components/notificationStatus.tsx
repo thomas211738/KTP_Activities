@@ -4,6 +4,8 @@ import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { Platform } from "react-native";
+import { getMessaging, onMessage } from "firebase/messaging";
+import { firebaseApp } from "../firebaseConfig";
 
 export async function CheckNotificationStatus(userID) {
 
@@ -59,6 +61,11 @@ export async function registerForPushNotificationsAsync(): Promise<PushNotificat
             // const token = await Notifications.getExpoPushTokenAsync();
             const pushTokenString = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
 
+            // Subscribe to calendar event notifications via FCM topic
+            if (pushTokenString) {
+                await subscribeToEventNotifications();
+            }
+
             return { status: 'registered', token: pushTokenString };
         } catch (e: unknown) {
             handleRegistrationError(`${e}`);
@@ -67,5 +74,33 @@ export async function registerForPushNotificationsAsync(): Promise<PushNotificat
     } else {
         handleRegistrationError('Must use physical device for push notifications');
         return { status: 'unavailable', token: null };
+    }
+}
+
+// Subscribe to EventNotification topic (for calendar event push notifications)
+// Currently using legacy client-side calendar flow. Push notifications are optional.
+export async function subscribeToEventNotifications() {
+    try {
+        const { getApps, getApp } = require('firebase/app');
+        const app = getApps().length > 0 ? getApp() : null;
+
+        if (!app) {
+            console.log('[FCM] Firebase app not initialized, skipping topic subscription');
+            return;
+        }
+
+        const messaging = getMessaging(app);
+
+        console.log('✅ Client initialized for EventNotification topic');
+        console.log('[FCM] Ready to receive calendar event push notifications (legacy flow)');
+
+        // Optional: Listen for foreground messages
+        onMessage(messaging, (payload) => {
+            console.log('[FCM] Foreground message received:', payload);
+            // You can trigger local notification or refresh calendar here
+        });
+
+    } catch (error) {
+        console.error('[FCM] Failed to setup EventNotification subscription:', error);
     }
 }

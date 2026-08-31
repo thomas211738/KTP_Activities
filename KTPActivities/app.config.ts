@@ -194,7 +194,7 @@ const config = {
 
     name: 'KTPActivities',
     slug: 'KTPActivities',
-    version: '1.0.3',
+    version: '1.0.6',
     // runtimeVersion only matters if you enable OTA updates later.
     orientation: 'portrait',
     icon: './assets/icon.png',
@@ -221,7 +221,7 @@ const config = {
         LSApplicationQueriesSchemes: ['instagram', 'linkedin'],
         ITSAppUsesNonExemptEncryption: false,
       },
-      buildNumber: '8',
+      buildNumber: '33',
     },
     android: {
       adaptiveIcon: {
@@ -230,7 +230,7 @@ const config = {
       },
       package: 'com.KTPActivities',
       googleServicesFile: './google-services.json',
-      versionCode: 2,
+      versionCode: 4,
       permissions: ['android.permission.RECORD_AUDIO'],
     },
     web: {

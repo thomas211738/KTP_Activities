@@ -8,7 +8,14 @@ export default function eventsRoute(db) {
         try {
             const eventsCollection = db.collection('events');
             const eventsSnapshot = await eventsCollection.get();
-            const eventsList = eventsSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            const eventsList = eventsSnapshot.docs.map(d => {
+                const data = d.data();
+                // Coerce Position to Number — some legacy docs stored it as a string
+                if (data.Position !== undefined) {
+                    data.Position = Number(data.Position);
+                }
+                return { id: d.id, ...data };
+            });
             return response.status(200).json({
                 count: eventsList.length,
                 data: eventsList,

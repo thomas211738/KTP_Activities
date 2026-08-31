@@ -1,6 +1,7 @@
 import axios from "axios"
 import { BACKEND_URL } from "@env"
 import Constants from 'expo-constants';
+import { TEST_MODE_ENABLED, isTestEmail } from '../testConfig';
 
 const extra = Constants?.expoConfig?.extra || {};
 const isProduction = extra.isProduction === true || process.env.APP_ENV === 'production' || !__DEV__;
@@ -58,7 +59,13 @@ export async function ValidateUser(userEmail) {
 
         const user = users.find(u => u.BUEmail && u.BUEmail.toLowerCase() === userEmail.toLowerCase());
 
-        if (userEmail.toLowerCase() === "testktpapp@gmail.com") {
+        // === TEST MODE FOR APPLE TESTFLIGHT REVIEW ===
+        // This allows bostonktp.review@gmail.com (and other test emails) to bypass
+        // the .edu restriction during App Review.
+        // Controlled by Firebase Remote Config `TEST_MODE_ENABLED`.
+        // THIS IS TEMPORARY — MUST BE TURNED OFF AFTER REVIEW IS APPROVED.
+        if (TEST_MODE_ENABLED && isTestEmail(userEmail)) {
+            console.log(`[TEST MODE] Allowing test email: ${userEmail}`);
             return { status: 1, user: user || null, allUsers: users };
         }
 

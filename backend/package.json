@@ -7,11 +7,12 @@
   "scripts": {
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
-    "logs": "firebase functions:log",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "deploy": "firebase deploy --only functions:api",
     "deploy:calendar": "firebase deploy --only functions:calendarWebhook",
+    "deploy:all": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
     "logs:calendar": "firebase functions:log --only calendarWebhook"
   },
   "engines": {
