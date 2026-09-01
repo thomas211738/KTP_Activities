@@ -10,18 +10,34 @@ import { useColorScheme } from 'react-native';
 import { ErrorBoundary } from 'react-error-boundary';
 import { setupGlobalErrorHandlers } from './utils/globalErrorHandlers';
 import ErrorFallback from './utils/ErrorFallback';
+import * as Notifications from 'expo-notifications';
+
+// Show notifications while the app is in the foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 export default function Layout() {
   const colorScheme = useColorScheme();
 
   useEffect(() => {
-    // Set up universal JS error catching as early as possible:
-    // - ErrorUtils for sync errors (many onPress / button click cases)
-    // - Hermes promise rejection tracker for async API calls, async onPress, unhandled promises
     setupGlobalErrorHandlers((error, isFatal, context) => {
       // Hook point for future crash reporting (Sentry, etc.)
-      // console.error is already done inside the handler for visibility.
     });
+
+    // When user taps a calendar event notification, navigate to the Calendar tab
+    const sub = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+      if (data?.type === 'calendar_event') {
+        router.push('/(tabs)/Calendar');
+      }
+    });
+
+    return () => sub.remove();
   }, []);
 
   return (

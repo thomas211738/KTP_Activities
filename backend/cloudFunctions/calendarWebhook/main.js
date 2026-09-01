@@ -51,51 +51,94 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
-/**
- * Send notification to FCM topic "EventNotification"
- * This allows all subscribed clients to receive instant push when a calendar event changes.
- */
+// ---------------------------------------------------------------------------
+// Send push notifications via the Expo Push API.
+// Reads all Expo push tokens from the Firestore `notifications` collection
+// and fans out in batches of 100 (Expo's limit per request).
+// This works with the existing token-registration flow already in the app.
+// ---------------------------------------------------------------------------
 async function notifyEventChange(eventData, action = 'created') {
   try {
-    const message = {
-      topic: 'EventNotification',
-      notification: {
-        title: action === 'created' ? '🗓 New Event Added' : '🗓 Event Updated',
-        body: `${eventData.Name || 'Calendar Event'} • ${eventData.Day || ''} ${eventData.Time || ''}`,
-      },
+    // 1. Load all Expo push tokens from Firestore
+    const snap = await db.collection('notifications').get();
+    if (snap.empty) {
+      console.log('[calendarWebhook] No push tokens found, skipping notifications.');
+      return;
+    }
+
+    const allTokens = snap.docs
+      .map(d => d.data().token)
+      .filter(t => typeof t === 'string' && t.startsWith('ExponentPushToken'));
+
+    if (allTokens.length === 0) {
+      console.log('[calendarWebhook] No valid Expo push tokens found.');
+      return;
+    }
+
+    const title = action === 'created' ? '🗓 New Event Added' : '🗓 Event Updated';
+    const body = [
+      eventData.Name || 'Calendar Event',
+      eventData.Day  || '',
+      eventData.Time || '',
+    ].filter(Boolean).join(' • ');
+
+    // 2. Build Expo push messages
+    const messages = allTokens.map(token => ({
+      to: token,
+      sound: 'default',
+      title,
+      body,
       data: {
         type: 'calendar_event',
-        action: action,
-        eventId: eventData.googleEventId || '',
-        name: eventData.Name || '',
-        day: eventData.Day || '',
-        time: eventData.Time || '',
-        location: eventData.Location || '',
+        action,
+        eventId:  eventData.googleEventId || '',
+        name:     eventData.Name          || '',
+        day:      eventData.Day           || '',
+        time:     eventData.Time          || '',
+        location: eventData.Location      || '',
       },
-      android: {
-        priority: 'high',
-        notification: {
-          channelId: 'calendar_events',
-        },
-      },
-      apns: {
-        headers: {
-          'apns-priority': '10',
-        },
-        payload: {
-          aps: {
-            sound: 'default',
-            badge: 1,
-          },
-        },
-      },
-    };
+      badge: 1,
+    }));
 
-    await admin.messaging().send(message);
-    console.log(`[calendarWebhook] ✅ Sent FCM notification to EventNotification topic: ${eventData.Name}`);
+    // 3. Fan out in batches of 100 (Expo's per-request limit)
+    const BATCH_SIZE = 100;
+    const https = require('https');
+
+    for (let i = 0; i < messages.length; i += BATCH_SIZE) {
+      const batch = messages.slice(i, i + BATCH_SIZE);
+      const payload = JSON.stringify(batch);
+
+      await new Promise((resolve, reject) => {
+        const options = {
+          hostname: 'exp.host',
+          path:     '/--/api/v2/push/send',
+          method:   'POST',
+          headers:  {
+            'Content-Type':   'application/json',
+            'Accept':         'application/json',
+            'Accept-Encoding': 'gzip, deflate',
+          },
+        };
+
+        const req = https.request(options, (res) => {
+          let data = '';
+          res.on('data', chunk => { data += chunk; });
+          res.on('end', () => {
+            console.log(`[calendarWebhook] Expo push batch ${Math.floor(i / BATCH_SIZE) + 1}: HTTP ${res.statusCode}`);
+            resolve();
+          });
+        });
+
+        req.on('error', reject);
+        req.write(payload);
+        req.end();
+      });
+    }
+
+    console.log(`[calendarWebhook] ✅ Sent push notifications to ${allTokens.length} device(s): "${title}"`);
   } catch (error) {
-    console.error('[calendarWebhook] Failed to send FCM notification:', error.message || error);
-    // Do not fail the webhook if notification fails - calendar sync is more important
+    console.error('[calendarWebhook] Failed to send push notifications:', error.message || error);
+    // Do not fail the webhook if notifications fail — calendar sync is more important
   }
 }
 
