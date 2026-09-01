@@ -213,3 +213,36 @@ export const renewCalendarWatches = onSchedule(
   },
   renewCalendarWatchesHandler
 );
+
+/**
+ * pollCalendarEvents — Scheduled Cloud Function (safety net)
+ *
+ * Google Calendar push notifications are NOT guaranteed to be immediate.
+ * They can be delayed by up to 15 minutes or occasionally missed entirely.
+ *
+ * This scheduled function runs every 5 minutes and pulls any changes from
+ * Google Calendar directly, ensuring Firestore (and therefore the app) is
+ * always up to date even if a push notification was delayed or dropped.
+ *
+ * It reuses the exact same poll logic as pollGoogleCalendars.js and the
+ * calendarSync incremental token, so it only fetches changes since the
+ * last sync — not the full calendar every time.
+ */
+export const pollCalendarEvents = onSchedule(
+  {
+    schedule: 'every 5 minutes',
+    region: 'us-central1',
+    timeoutSeconds: 120,
+    memory: '256MiB',
+  },
+  async (context) => {
+    console.log('[pollCalendarEvents] Starting scheduled poll...');
+    try {
+      const { pollAllCalendars } = require('./cloudFunctions/calendarWebhook/main.js');
+      await pollAllCalendars();
+      console.log('[pollCalendarEvents] Done.');
+    } catch (err) {
+      console.error('[pollCalendarEvents] Error:', err.message || err);
+    }
+  }
+);

@@ -755,3 +755,104 @@ const renewCalendarWatchesHandler = async (context) => {
 module.exports.calendarWebhook = exports.calendarWebhook;
 module.exports.renewCalendarWatchesHandler = renewCalendarWatchesHandler;
 
+// ---------------------------------------------------------------------------
+// pollAllCalendars — callable from the scheduled pollCalendarEvents function.
+// Reads every calendar in calendarTokens/main and incrementally syncs
+// any changes since the last calendarSync token into Firestore `events`.
+// Uses the same idempotent doc ID strategy as the webhook handler.
+// ---------------------------------------------------------------------------
+module.exports.pollAllCalendars = async function pollAllCalendars() {
+  const configMap = await loadCalendarConfig();
+  const keys = Object.keys(configMap);
+
+  if (keys.length === 0) {
+    console.log('[pollAllCalendars] No calendars configured.');
+    return;
+  }
+
+  const auth = new google.auth.GoogleAuth({
+    scopes: ['https://www.googleapis.com/auth/calendar.readonly'],
+  });
+  const calendar = google.calendar({ version: 'v3', auth });
+
+  for (const key of keys) {
+    const entry = configMap[key];
+    if (!entry || !entry.calendarId) continue;
+
+    const calendarId = entry.calendarId;
+    const defaultPosition = Number.isFinite(Number(entry.defaultPosition)) ? Number(entry.defaultPosition) : 3;
+    const syncDocId = key.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const syncDocRef = db.collection('calendarSync').doc(syncDocId);
+    const syncDoc = await syncDocRef.get();
+    let syncToken = syncDoc.exists ? syncDoc.data().syncToken : null;
+
+    let items = [];
+    try {
+      const params = { calendarId, singleEvents: true, maxResults: 250 };
+      if (syncToken) {
+        params.syncToken = syncToken;
+      } else {
+        const past = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+        params.timeMin = past.toISOString();
+      }
+
+      const res = await calendar.events.list(params);
+      items = res.data.items || [];
+
+      if (res.data.nextSyncToken) {
+        await syncDocRef.set({
+          syncToken: res.data.nextSyncToken,
+          lastSyncedAt: admin.firestore.FieldValue.serverTimestamp(),
+          calendarId,
+        }, { merge: true });
+      }
+    } catch (err) {
+      if (err.code === 410 || (err.response && err.response.status === 410)) {
+        console.warn(`[pollAllCalendars] Sync token expired for "${key}". Clearing — will full sync next run.`);
+        await syncDocRef.delete().catch(() => {});
+        continue;
+      }
+      console.error(`[pollAllCalendars] Error polling "${key}":`, err.message || err);
+      continue;
+    }
+
+    if (items.length === 0) {
+      console.log(`[pollAllCalendars] "${key}" — no changes since last sync.`);
+      continue;
+    }
+
+    console.log(`[pollAllCalendars] "${key}" — ${items.length} change(s) to process.`);
+
+    for (const ev of items) {
+      if (ev.status === 'cancelled') {
+        if (ev.id) {
+          const docRef = db.collection('events').doc(ev.id);
+          const snap = await docRef.get();
+          if (snap.exists) {
+            await docRef.delete();
+            console.log(`[pollAllCalendars] Deleted event ${ev.id}`);
+          }
+        }
+        continue;
+      }
+
+      const position = extractPosition(ev, defaultPosition);
+      const ktpDoc = toKtpEventSchema(ev, position);
+      ktpDoc.calendarId = calendarId;
+
+      const docRef = db.collection('events').doc(ev.id);
+      const existingSnap = await docRef.get();
+      const isNew = !existingSnap.exists;
+      await docRef.set(ktpDoc, { merge: true });
+
+      console.log(`[pollAllCalendars] ${isNew ? 'Created' : 'Updated'} event ${ev.id} (${ktpDoc.Name})`);
+
+      // Only notify on new events from the poller to avoid spamming users
+      // every 5 minutes with "updated" notifications for unchanged events
+      if (isNew) {
+        await notifyEventChange(ktpDoc, 'created');
+      }
+    }
+  }
+};
+
