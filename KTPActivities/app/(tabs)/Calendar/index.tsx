@@ -17,19 +17,19 @@ const index = () => {
     const colorScheme = useColorScheme();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const tokenRegistered = React.useRef(false);
 
     const freshUser = getUserInfo() || { Position: 0, id: null };
     const userPos = Number(freshUser.Position ?? 0);
-    const isEboard = userPos === 3 || userPos === 5 || freshUser.BUEmail === 'ander010@bu.edu'; // Eboard, SuperAdmin, or dev override
+    const isEboard = userPos === 3 || userPos === 5 || freshUser.BUEmail === 'ander010@bu.edu';
 
     const fetchEvents = async () => {
         try {
             const freshUser = getUserInfo() || { Position: 0, id: null };
 
-            // Only register push token if we have a real user ID.
-            // If ValidateUser hasn't resolved yet, id is null — skip here,
-            // subscribeToUserInfo will re-trigger fetchEvents with the real user.
-            if (freshUser.id) {
+            // Only register push token once per session and only when we have a real user ID.
+            if (freshUser.id && !tokenRegistered.current) {
+                tokenRegistered.current = true; // set immediately to prevent concurrent duplicate calls
                 const dbToken = await CheckNotificationStatus(freshUser.id);
                 if (dbToken === 0) {
                     const registration = await registerForPushNotificationsAsync();
@@ -42,6 +42,7 @@ const index = () => {
                             });
                         } catch (err) {
                             console.error("Error posting notification token:", err);
+                            tokenRegistered.current = false; // allow retry if POST failed
                         }
                     }
                 }
