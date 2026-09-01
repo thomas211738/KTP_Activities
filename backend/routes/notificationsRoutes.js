@@ -3,7 +3,7 @@ import express from "express";
 const router = express.Router();
 
 export default function notificationRoute(db) {
-    // Create a new notification
+    // Create a new notification token (upsert — no duplicates)
     router.post("/", async (req, res) => {
         try {
             const { userID, token } = req.body;
@@ -11,6 +11,37 @@ export default function notificationRoute(db) {
                 return res.status(400).send({ message: "Please provide both userID and token" });
             }
             const notificationsCollection = db.collection('notifications');
+
+            // Check if this exact token already exists for any user
+            const existingTokenSnap = await notificationsCollection.where('token', '==', token).get();
+
+            if (!existingTokenSnap.empty) {
+                // Token already registered — update the userID in case it changed, discard any extras
+                const first = existingTokenSnap.docs[0];
+                // Delete any extras beyond the first
+                for (const doc of existingTokenSnap.docs.slice(1)) {
+                    await doc.ref.delete();
+                }
+                // Update userID on the surviving doc if needed
+                if (first.data().userID !== userID) {
+                    await first.ref.update({ userID });
+                }
+                return res.status(200).send({ message: "Token already registered", notificationID: first.id });
+            }
+
+            // Check if this userID already has a different token — update it
+            const existingUserSnap = await notificationsCollection.where('userID', '==', userID).get();
+            if (!existingUserSnap.empty) {
+                const first = existingUserSnap.docs[0];
+                // Delete any extras
+                for (const doc of existingUserSnap.docs.slice(1)) {
+                    await doc.ref.delete();
+                }
+                await first.ref.update({ token });
+                return res.status(200).send({ message: "Token updated", notificationID: first.id });
+            }
+
+            // Brand new — create
             const docRef = await notificationsCollection.add({ userID, token });
             res.status(201).send({ message: "Notification created successfully", notificationID: docRef.id });
         } catch (err) {
