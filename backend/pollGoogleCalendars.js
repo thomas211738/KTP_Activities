@@ -201,31 +201,24 @@ async function pollOneCalendar(calendarId, defaultPosition, auth) {
   for (const ev of items) {
     if (ev.status === 'cancelled') {
       if (ev.id) {
-        const existing = await db.collection('events')
-          .where('googleEventId', '==', ev.id)
-          .limit(1)
-          .get();
-        for (const d of existing.docs) {
-          await d.ref.delete();
-        }
+        const docRef = db.collection('events').doc(ev.id);
+        const snap = await docRef.get();
+        if (snap.exists) await docRef.delete();
       }
       continue;
     }
 
-    const pos = extractPosition(ev, defaultPosition);
     const doc = toKtpEventSchema(ev, pos);
     doc.calendarId = calendarId;
 
-    const existingSnap = await db.collection('events')
-      .where('googleEventId', '==', ev.id)
-      .limit(1)
-      .get();
-
-    if (!existingSnap.empty) {
-      await existingSnap.docs[0].ref.set(doc, { merge: true });
+    // Use googleEventId as the Firestore doc ID — idempotent, no duplicates
+    const docRef = db.collection('events').doc(ev.id);
+    const existing = await docRef.get();
+    if (existing.exists) {
+      await docRef.set(doc, { merge: true });
       updated++;
     } else {
-      await db.collection('events').add(doc);
+      await docRef.set(doc);
       created++;
     }
   }

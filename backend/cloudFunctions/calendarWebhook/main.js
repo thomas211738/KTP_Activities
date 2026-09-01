@@ -607,47 +607,38 @@ exports.calendarWebhook = async (req, res) => {
 
     // Process each changed event
     for (const ev of eventsToProcess) {
-      // Pass the per-calendar default so Position remains non-strict
       const position = extractPosition(ev, defaultPositionForThisCal);
 
       if (ev.status === 'cancelled') {
-        // Event was deleted or cancelled — remove from Firestore if we have the id
+        // Event was deleted — remove from Firestore
         if (ev.id) {
-          const existing = await db.collection('events')
-            .where('googleEventId', '==', ev.id)
-            .limit(1)
-            .get();
-
-          for (const doc of existing.docs) {
-            await doc.ref.delete();
+          // Use the googleEventId as the doc ID (idempotent), so delete is a direct ref
+          const docRef = db.collection('events').doc(ev.id);
+          const snap = await docRef.get();
+          if (snap.exists) {
+            await docRef.delete();
             console.log(`[calendarWebhook] Deleted event ${ev.id}`);
           }
         }
         continue;
       }
 
-      // Normal create / update — toKtpEventSchema will coerce final fallback to 3 if needed
+      // Normal create / update
       const ktpDoc = toKtpEventSchema(ev, position);
-
-      // Also record which calendar this came from for debugging / future filtering
       ktpDoc.calendarId = calendarId;
 
-      // Upsert by googleEventId so we don't create duplicates
-      const existingSnap = await db.collection('events')
-        .where('googleEventId', '==', ev.id)
-        .limit(1)
-        .get();
+      // Use googleEventId as the Firestore doc ID.
+      // This makes all writes idempotent — concurrent webhook invocations
+      // always set() the same doc rather than racing to add() duplicates.
+      const docRef = db.collection('events').doc(ev.id);
+      await docRef.set(ktpDoc, { merge: true });
 
-      if (!existingSnap.empty) {
-        const docRef = existingSnap.docs[0].ref;
-        await docRef.set(ktpDoc, { merge: true });
-        console.log(`[calendarWebhook] Updated event ${ev.id} (Name: ${ktpDoc.Name})`);
-        await notifyEventChange(ktpDoc, 'updated');
-      } else {
-        const newDocRef = await db.collection('events').add(ktpDoc);
-        console.log(`[calendarWebhook] Created event ${ev.id} (Name: ${ktpDoc.Name})`);
-        await notifyEventChange(ktpDoc, 'created');
-      }
+      // Determine if this was a create or an update for the notification
+      const existingSnap = await db.collection('events').doc(ev.id).get();
+      const isNew = !existingSnap.exists || !existingSnap.data()?.lastSyncedAt;
+
+      console.log(`[calendarWebhook] Upserted event ${ev.id} (Name: ${ktpDoc.Name})`);
+      await notifyEventChange(ktpDoc, isNew ? 'created' : 'updated');
     }
 
     return res.status(200).send('OK');
