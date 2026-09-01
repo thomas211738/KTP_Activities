@@ -1,10 +1,11 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, useColorScheme } from 'react-native';
 import React from 'react';
 import axios from 'axios';
 import { router } from 'expo-router';
 import { BACKEND_URL } from '@env';
 
 const createEvent = () => {
+  const colorScheme = useColorScheme();
   const [eventName, setEventName] = React.useState('');
   const [eventDay, setEventDay] = React.useState('');
   const [eventTime, setEventTime] = React.useState('');
@@ -64,22 +65,22 @@ const createEvent = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#fff' }]}>
       <ScrollView contentInsetAdjustmentBehavior='automatic' automaticallyAdjustKeyboardInsets>
         <View style={styles.scrollContainer}>
           <View style={styles.top}>
-            <Text style={styles.boxTitle}>Name</Text>
-            <TextInput style={styles.boxEntry} onChangeText={setEventName} value={eventName} />
-            <Text style={styles.boxTitle}>Date (yyyy-mm-dd)</Text>
-            <TextInput style={styles.boxEntry} onChangeText={setEventDay} value={eventDay} />
-            <Text style={styles.boxTitle}>Time</Text>
-            <TextInput style={styles.boxEntry} onChangeText={setEventTime} value={eventTime} />
-            <Text style={styles.boxTitle}>Location</Text>
-            <TextInput style={styles.boxEntry} onChangeText={setEventLocation} value={eventLocation} />
-            <Text style={styles.boxTitle}>Position</Text>
-            <TextInput style={styles.boxEntry} onChangeText={setEventPosition} value={eventPosition} />
-            <Text style={styles.boxTitle}>Description</Text>
-            <TextInput style={[styles.boxEntry, { height: 55 }]} multiline onChangeText={setEventDescription} value={eventDescription} />
+            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Name</Text>
+            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventName} value={eventName} placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
+            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Date (yyyy-mm-dd)</Text>
+            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventDay} value={eventDay} placeholder="e.g. 2026-09-15" placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
+            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Time</Text>
+            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventTime} value={eventTime} placeholder="e.g. 7:00 - 9:00 PM" placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
+            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Location</Text>
+            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventLocation} value={eventLocation} placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
+            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Position</Text>
+            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventPosition} value={eventPosition} keyboardType="numeric" placeholder="e.g. 2" placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
+            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Description</Text>
+            <TextInput style={[styles.boxEntry, { height: 80, backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} multiline onChangeText={setEventDescription} value={eventDescription} placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.button} onPress={handleCreateEvent}>
                 <Text style={styles.buttonText}>Create Event</Text>
@@ -95,7 +96,6 @@ const createEvent = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#134b91',
   },
   scrollContainer: {
     paddingBottom: 20,
@@ -107,18 +107,15 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   boxTitle: {
-    color: 'white',
     fontWeight: 'bold',
-    marginTop: 10,
+    marginTop: 14,
     fontSize: 15,
   },
   boxEntry: {
-    backgroundColor: '#cccccc',
     height: 40,
     padding: 10,
-    borderRadius: 6,
+    borderRadius: 8,
     marginTop: 4,
-    color: 'black',
     width: '100%',
   },
   bottom: {
@@ -143,7 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'darkgray',
   },
   buttonText: {
-    color: 'black',
+    color: '#000',
     fontWeight: 'bold',
   },
 });
