@@ -639,7 +639,10 @@ exports.calendarWebhook = async (req, res) => {
       await docRef.set(ktpDoc, { merge: true });
 
       console.log(`[calendarWebhook] ${isNew ? 'Created' : 'Updated'} event ${ev.id} (Name: ${ktpDoc.Name})`);
-      await notifyEventChange(ktpDoc, isNew ? 'created' : 'updated');
+      // Only notify users when an event is newly created, not on every edit
+      if (isNew) {
+        await notifyEventChange(ktpDoc, 'created');
+      }
     }
 
     return res.status(200).send('OK');
