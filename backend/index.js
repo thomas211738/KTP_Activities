@@ -137,9 +137,22 @@ app.get('/', (request, response) => {
   return response.status(234).send('Welcome To the KTP App');
 });
 
-app.listen(PORT, () => {
-  console.log(`App is listening to port: ${PORT}`);
-});
+// Only bind the local Express server when running directly (node index.js).
+// Skip when Firebase CLI loads this file for function introspection/deploy —
+// detected by FUNCTION_TARGET, or gracefully ignored if port is already in use.
+if (!process.env.FUNCTION_TARGET) {
+  const server = app.listen(PORT, () => {
+    console.log(`App is listening to port: ${PORT}`);
+  });
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      // Port in use — likely Firebase CLI introspection running alongside the dev server. Safe to ignore.
+      console.warn(`[backend] Port ${PORT} already in use — skipping local server bind (Firebase deploy introspection?)`);
+    } else {
+      throw err;
+    }
+  });
+}
 
 export const api = onRequest(
   {
