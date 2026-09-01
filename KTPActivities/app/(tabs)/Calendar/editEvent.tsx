@@ -5,27 +5,32 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { BACKEND_URL } from '@env';
 
 const editEvent = () => {
-  const { eventID } = useLocalSearchParams();
-  const [eventName, setEventName] = React.useState('');
-  const [eventDay, setEventDay] = React.useState('');
-  const [eventTime, setEventTime] = React.useState('');
-  const [eventLocation, setEventLocation] = React.useState('');
-  const [eventDescription, setEventDescription] = React.useState('');
-  const [eventPosition, setEventPosition] = React.useState('');
+  const params = useLocalSearchParams();
+  const eventID = params.eventID as string;
 
+  const [eventName, setEventName] = useState((params.name as string) || '');
+  const [eventDay, setEventDay] = useState((params.day as string) || '');
+  const [eventTime, setEventTime] = useState((params.time as string) || '');
+  const [eventLocation, setEventLocation] = useState((params.location as string) || '');
+  const [eventDescription, setEventDescription] = useState((params.description as string) || '');
+  const [eventPosition, setEventPosition] = useState((params.position as string) || '');
+
+  // If not passed via params, fetch from backend
   React.useEffect(() => {
-    axios.get(`${BACKEND_URL}/events/${eventID}`)
-      .then((response) => {
-        setEventName(response.data.Name);
-        setEventDay(response.data.Day);
-        setEventTime(response.data.Time);
-        setEventLocation(response.data.Location);
-        setEventDescription(response.data.Description);
-        setEventPosition(response.data.Position.toString());
-      })
-      .catch((error) => {
-        console.error("Error fetching event data:", error.response ? error.response.data : error.message);
-      });
+    if (!params.name && eventID) {
+      axios.get(`${BACKEND_URL}/events/${eventID}`)
+        .then((response) => {
+          setEventName(response.data.Name || '');
+          setEventDay(response.data.Day || '');
+          setEventTime(response.data.Time || '');
+          setEventLocation(response.data.Location || '');
+          setEventDescription(response.data.Description || '');
+          setEventPosition(response.data.Position?.toString() || '');
+        })
+        .catch((error) => {
+          console.error("Error fetching event data:", error.response ? error.response.data : error.message);
+        });
+    }
   }, [eventID]);
 
   const validateDate = (date) => {

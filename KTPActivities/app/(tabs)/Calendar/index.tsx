@@ -12,13 +12,15 @@ import { getUserInfo, subscribeToUserInfo } from '../../components/userInfoManag
 import { CheckNotificationStatus, registerForPushNotificationsAsync } from '../../components/notificationStatus';
 import EventCard from '../../components/EventCard';
 import { isProduction } from '../../config';
-// Legacy client-side Google Calendar fetch (disabled per migration to Cloud Functions + Firestore `events` collection)
-// import { fetchCalendarEventsOncePerLaunch } from '../../utils/publicCalendar';
 
 const index = () => {
     const colorScheme = useColorScheme();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const freshUser = getUserInfo() || { Position: 0, id: null };
+    const userPos = Number(freshUser.Position ?? 0);
+    const isEboard = userPos === 3 || userPos === 5; // Eboard or SuperAdmin
 
     const fetchEvents = async () => {
         try {
@@ -127,15 +129,31 @@ const index = () => {
 
     const groupedEvents = groupEventsByDate(events);
 
-    // Delete functionality kept for now but not passed to EventCard (to match original UI)
-    const deleteEvent = async (id: string) => {
+    // Delete event
+    const deleteEvent = async (event: any) => {
         try {
-            await axios.delete(`${BACKEND_URL}/events/${id}`);
+            await axios.delete(`${BACKEND_URL}/events/${event.id}`);
             void fetchEvents();
         } catch (error) {
             console.error('Error deleting event:', error);
             Alert.alert('Error', 'Failed to delete event');
         }
+    };
+
+    // Edit event — navigate to editEvent screen, passing current values as params for instant pre-population
+    const editEvent = (event: any) => {
+        router.push({
+            pathname: '/(tabs)/Calendar/editEvent',
+            params: {
+                eventID:     event.id,
+                name:        event.Name        || '',
+                day:         event.Day         || '',
+                time:        event.Time        || '',
+                location:    event.Location    || '',
+                description: event.Description || '',
+                position:    String(event.Position ?? ''),
+            },
+        });
     };
 
     return (
@@ -148,13 +166,16 @@ const index = () => {
                         <Text style={styles.emptyText}>No upcoming events</Text>
                     </View>
                 ) : (
-                    Object.entries(groupedEvents).map(([date, dayEvents]) => (
+                    Object.entries(groupedEvents).map(([date, dayEvents]: [string, any[]]) => (
                         <View key={date} style={styles.dateGroup}>
                             <Text style={styles.dateHeader}>{date}</Text>
                             {dayEvents.map((event: any) => (
                                 <EventCard
                                     key={event.id}
                                     event={event}
+                                    isEboard={isEboard}
+                                    onEdit={editEvent}
+                                    onDelete={deleteEvent}
                                 />
                             ))}
                         </View>
