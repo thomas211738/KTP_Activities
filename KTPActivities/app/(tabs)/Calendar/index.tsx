@@ -20,7 +20,7 @@ const index = () => {
 
     const freshUser = getUserInfo() || { Position: 0, id: null };
     const userPos = Number(freshUser.Position ?? 0);
-    const isEboard = userPos === 3 || userPos === 5; // Eboard or SuperAdmin
+    const isEboard = userPos === 3 || userPos === 5 || freshUser.BUEmail === 'ander010@bu.edu'; // Eboard, SuperAdmin, or dev override
 
     const fetchEvents = async () => {
         try {

@@ -8,6 +8,7 @@ import { getUserInfo } from '../../components/userInfoManager';
 export default function Layout() {
   const raw = getUserInfo() || {};
   const pos = Number(raw.Position ?? 0);
+  const canManageEvents = pos === 3 || pos === 5 || raw.BUEmail === 'ander010@bu.edu';
 
   const colorScheme =  useColorScheme();
 
@@ -28,7 +29,7 @@ export default function Layout() {
           headerLargeTitle: true,
           ...(Platform.OS === "ios" && colorScheme === 'light' && { headerTransparent: true }),
           headerLargeTitleShadowVisible: false,
-          headerRight: (pos === 3 || pos === 5) ? () => (
+          headerRight: canManageEvents ? () => (
             <Pressable
               onPress={async () => {
                 router.push("(tabs)/Calendar/createEvent");
