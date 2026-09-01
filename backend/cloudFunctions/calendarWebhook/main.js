@@ -631,13 +631,14 @@ exports.calendarWebhook = async (req, res) => {
       // This makes all writes idempotent — concurrent webhook invocations
       // always set() the same doc rather than racing to add() duplicates.
       const docRef = db.collection('events').doc(ev.id);
+
+      // Check existence BEFORE writing to correctly determine create vs update
+      const existingSnap = await docRef.get();
+      const isNew = !existingSnap.exists;
+
       await docRef.set(ktpDoc, { merge: true });
 
-      // Determine if this was a create or an update for the notification
-      const existingSnap = await db.collection('events').doc(ev.id).get();
-      const isNew = !existingSnap.exists || !existingSnap.data()?.lastSyncedAt;
-
-      console.log(`[calendarWebhook] Upserted event ${ev.id} (Name: ${ktpDoc.Name})`);
+      console.log(`[calendarWebhook] ${isNew ? 'Created' : 'Updated'} event ${ev.id} (Name: ${ktpDoc.Name})`);
       await notifyEventChange(ktpDoc, isNew ? 'created' : 'updated');
     }
 
