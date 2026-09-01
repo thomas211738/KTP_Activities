@@ -53,27 +53,45 @@ const path = require('path');
 
 // ---------------------------------------------------------------------------
 // Send push notifications via the Expo Push API.
-// Reads all Expo push tokens from the Firestore `notifications` collection
-// and fans out in batches of 100 (Expo's limit per request).
-// This works with the existing token-registration flow already in the app.
+// Only sends to users whose Position >= the event's Position (same visibility
+// rule the Calendar tab uses: eventPos <= userPos).
+// Reads tokens + positions from Firestore, fans out in batches of 100.
 // ---------------------------------------------------------------------------
 async function notifyEventChange(eventData, action = 'created') {
   try {
-    // 1. Load all Expo push tokens from Firestore
-    const snap = await db.collection('notifications').get();
-    if (snap.empty) {
+    const eventPos = Number.isFinite(Number(eventData.Position)) ? Number(eventData.Position) : 0;
+
+    // 1. Load all users to get their Position
+    const usersSnap = await db.collection('users').get();
+    const userPositionMap = {};
+    usersSnap.docs.forEach(d => {
+      userPositionMap[d.id] = Number.isFinite(Number(d.data().Position)) ? Number(d.data().Position) : 0;
+    });
+
+    // 2. Load all push tokens
+    const tokensSnap = await db.collection('notifications').get();
+    if (tokensSnap.empty) {
       console.log('[calendarWebhook] No push tokens found, skipping notifications.');
       return;
     }
 
-    const allTokens = snap.docs
-      .map(d => d.data().token)
-      .filter(t => typeof t === 'string' && t.startsWith('ExponentPushToken'));
+    // 3. Filter tokens to users who can see this event (userPos >= eventPos)
+    const eligibleTokens = tokensSnap.docs
+      .filter(d => {
+        const { userID, token } = d.data();
+        if (typeof token !== 'string' || !token.startsWith('ExponentPushToken')) return false;
+        const userPos = userPositionMap[userID];
+        if (userPos === undefined) return false; // orphan token — no matching user
+        return userPos >= eventPos;
+      })
+      .map(d => d.data().token);
 
-    if (allTokens.length === 0) {
-      console.log('[calendarWebhook] No valid Expo push tokens found.');
+    if (eligibleTokens.length === 0) {
+      console.log(`[calendarWebhook] No eligible tokens for eventPos=${eventPos}. Skipping.`);
       return;
     }
+
+    console.log(`[calendarWebhook] Sending to ${eligibleTokens.length} device(s) with position >= ${eventPos}`);
 
     const title = action === 'created' ? '🗓 New Event Added' : '🗓 Event Updated';
     const body = [
@@ -82,8 +100,8 @@ async function notifyEventChange(eventData, action = 'created') {
       eventData.Time || '',
     ].filter(Boolean).join(' • ');
 
-    // 2. Build Expo push messages
-    const messages = allTokens.map(token => ({
+    // 4. Build Expo push messages
+    const messages = eligibleTokens.map(token => ({
       to: token,
       sound: 'default',
       title,
@@ -100,7 +118,7 @@ async function notifyEventChange(eventData, action = 'created') {
       badge: 1,
     }));
 
-    // 3. Fan out in batches of 100 (Expo's per-request limit)
+    // 5. Fan out in batches of 100 (Expo's per-request limit)
     const BATCH_SIZE = 100;
     const https = require('https');
 
@@ -114,8 +132,8 @@ async function notifyEventChange(eventData, action = 'created') {
           path:     '/--/api/v2/push/send',
           method:   'POST',
           headers:  {
-            'Content-Type':   'application/json',
-            'Accept':         'application/json',
+            'Content-Type':    'application/json',
+            'Accept':          'application/json',
             'Accept-Encoding': 'gzip, deflate',
           },
         };
@@ -135,7 +153,7 @@ async function notifyEventChange(eventData, action = 'created') {
       });
     }
 
-    console.log(`[calendarWebhook] ✅ Sent push notifications to ${allTokens.length} device(s): "${title}"`);
+    console.log(`[calendarWebhook] ✅ Sent push notifications to ${eligibleTokens.length} device(s): "${title}"`);
   } catch (error) {
     console.error('[calendarWebhook] Failed to send push notifications:', error.message || error);
     // Do not fail the webhook if notifications fail — calendar sync is more important
