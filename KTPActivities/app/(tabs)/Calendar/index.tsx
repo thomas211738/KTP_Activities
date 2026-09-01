@@ -58,8 +58,11 @@ const index = () => {
                 return eventPos <= userPos;
             });
 
-            // Filter to today + future only (YYYY-MM-DD string comparison works for ISO dates)
-            const todayStr = new Date().toISOString().split('T')[0];
+            // Filter to today + future only.
+            // Use local date parts (not toISOString which is UTC) so events
+            // on today's date always show regardless of the hour or timezone.
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             const upcomingEvents = filteredEvents.filter((event: any) => {
                 if (!event.Day) return true; // keep "TBA" events with no date
                 return String(event.Day) >= todayStr;
