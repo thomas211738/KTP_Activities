@@ -197,15 +197,16 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     dateGroup: {
-        marginBottom: 16,
+        marginBottom: 24,
     },
     dateHeader: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 15,
+        fontWeight: '700',
         paddingHorizontal: 16,
         paddingVertical: 8,
         backgroundColor: '#f0f0f0',
         color: '#333',
+        marginBottom: 4,
     },
     emptyContainer: {
         flex: 1,
