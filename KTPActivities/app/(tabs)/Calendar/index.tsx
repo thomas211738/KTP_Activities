@@ -22,22 +22,25 @@ const index = () => {
 
     const fetchEvents = async () => {
         try {
-            // Register for push notifications (kept from original)
             const freshUser = getUserInfo() || { Position: 0, id: null };
-            let dbToken = await CheckNotificationStatus(freshUser.id);
 
-            if (dbToken === 0) {
-                const registration = await registerForPushNotificationsAsync();
-                const token = registration.token;
-
-                if (registration.status === 'registered' && token?.startsWith('ExponentPushToken')) {
-                    try {
-                        await axios.post(`${BACKEND_URL}/notifications`, {
-                            userID: `${freshUser.id}`,
-                            token: `${token}`,
-                        });
-                    } catch (err) {
-                        console.error("Error posting notification token:", err);
+            // Only register push token if we have a real user ID.
+            // If ValidateUser hasn't resolved yet, id is null — skip here,
+            // subscribeToUserInfo will re-trigger fetchEvents with the real user.
+            if (freshUser.id) {
+                const dbToken = await CheckNotificationStatus(freshUser.id);
+                if (dbToken === 0) {
+                    const registration = await registerForPushNotificationsAsync();
+                    const token = registration.token;
+                    if (registration.status === 'registered' && token?.startsWith('ExponentPushToken')) {
+                        try {
+                            await axios.post(`${BACKEND_URL}/notifications`, {
+                                userID: freshUser.id,
+                                token,
+                            });
+                        } catch (err) {
+                            console.error("Error posting notification token:", err);
+                        }
                     }
                 }
             }
