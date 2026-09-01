@@ -12,6 +12,10 @@ node_modules/
 KTPActivities/ios/
 KTPActivities/android/
 
+# Firebase debug logs
+firebase-debug.log
+firebase-debug.*.log
+
 # Python bytecode
 __pycache__/
 **/__pycache__/
