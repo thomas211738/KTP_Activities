@@ -157,18 +157,21 @@ const index = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#fff' }]}>
             <ScrollView style={styles.scrollView}>
                 {loading ? (
                     <CalendarLoader />
                 ) : Object.keys(groupedEvents).length === 0 ? (
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>No upcoming events</Text>
+                        <Text style={[styles.emptyText, { color: colorScheme === 'dark' ? '#888' : '#666' }]}>No upcoming events</Text>
                     </View>
                 ) : (
                     Object.entries(groupedEvents).map(([date, dayEvents]: [string, any[]]) => (
                         <View key={date} style={styles.dateGroup}>
-                            <Text style={styles.dateHeader}>{date}</Text>
+                            <Text style={[styles.dateHeader, {
+                                backgroundColor: colorScheme === 'dark' ? '#252525' : '#f0f0f0',
+                                color:           colorScheme === 'dark' ? '#d0d0d0' : '#333',
+                            }]}>{date}</Text>
                             {dayEvents.map((event: any) => (
                                 <EventCard
                                     key={event.id}
@@ -189,7 +192,6 @@ const index = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
     },
     scrollView: {
         flex: 1,
