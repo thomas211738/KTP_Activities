@@ -54,7 +54,15 @@ const index = () => {
   const fetchAlerts = async () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/alerts`);
-      setAlerts(response.data.data);
+      const allAlerts = response.data.data || [];
+      // Filter by position: same rule as Calendar — alertPos <= userPos
+      const filtered = allAlerts.filter((alert: any) => {
+        const alertPos = Number(alert.Position ?? 0);
+        return alertPos <= userInfo.Position;
+      });
+      // Sort newest first
+      filtered.sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      setAlerts(filtered);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching alerts:", err.response ? err.response.data : err.message);

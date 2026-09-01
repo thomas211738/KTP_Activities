@@ -15,11 +15,12 @@ export default function Layout() {
 
   const [addModalVisible, setAddModalVisible] = useState(false);
 
-  const postAlert = async (alertName: string, alertDescription: string) => {
+  const postAlert = async (alertName: string, alertDescription: string, position: number = 0) => {
     try {
       await axios.post(`${BACKEND_URL}/alerts`, {
         "AlertName": alertName,
-        "Description": alertDescription
+        "Description": alertDescription,
+        "Position": position,
       });
       setAddModalVisible(false);
     } catch (err) {
