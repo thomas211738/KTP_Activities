@@ -206,6 +206,7 @@ const config = {
       'expo-router',
       'expo-image-picker',
       '@react-native-google-signin/google-signin',
+      '@react-native-community/datetimepicker',
     ],
     assetBundlePatterns: ['**/*'],
     ios: {

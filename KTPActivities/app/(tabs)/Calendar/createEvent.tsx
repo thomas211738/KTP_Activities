@@ -1,5 +1,6 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, useColorScheme } from 'react-native';
-import React from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, useColorScheme, Platform } from 'react-native';
+import React, { useState } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import { router } from 'expo-router';
 import { BACKEND_URL } from '@env';
@@ -14,12 +15,17 @@ const createEvent = () => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const [eventName, setEventName] = React.useState('');
-  const [eventDay, setEventDay] = React.useState('');
-  const [eventTime, setEventTime] = React.useState('');
-  const [eventLocation, setEventLocation] = React.useState('');
-  const [eventDescription, setEventDescription] = React.useState('');
-  const [eventPosition, setEventPosition] = React.useState('');
+  const [eventName, setEventName] = useState('');
+  const [eventDay, setEventDay] = useState<Date | null>(null);
+  const [eventStartTime, setEventStartTime] = useState<Date | null>(null);
+  const [eventEndTime, setEventEndTime] = useState<Date | null>(null);
+  const [eventLocation, setEventLocation] = useState('');
+  const [eventDescription, setEventDescription] = useState('');
+  const [eventPosition, setEventPosition] = useState('');
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const inputStyle = [styles.boxEntry, {
     backgroundColor: isDark ? INPUT_BG.dark   : INPUT_BG.light,
@@ -28,12 +34,21 @@ const createEvent = () => {
   const labelStyle = [styles.boxTitle, { color: isDark ? LABEL_TEXT.dark : LABEL_TEXT.light }];
   const ph = isDark ? PLACEHOLDER.dark : PLACEHOLDER.light;
 
-  const validateDate = (date) => {
-    const regex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!regex.test(date)) return false;
-    const [year, month, day] = date.split('-').map(Number);
-    const parsed = new Date(year, month - 1, day);
-    return parsed.getFullYear() === year && parsed.getMonth() + 1 === month && parsed.getDate() === day;
+  const formatDate = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  const formatTime12 = (d: Date) => {
+    let h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
+  };
+
+  const timeString = () => {
+    if (eventStartTime && eventEndTime) return `${formatTime12(eventStartTime)} - ${formatTime12(eventEndTime)}`;
+    if (eventStartTime) return formatTime12(eventStartTime);
+    return '';
   };
 
   const handleCreateEvent = () => {
@@ -41,14 +56,14 @@ const createEvent = () => {
       Alert.alert('Name Required', 'Please enter a name for the event.');
       return;
     }
-    if (eventDay && !validateDate(eventDay)) {
-      Alert.alert('Invalid Date', 'Please enter a valid date in the format YYYY-MM-DD.');
-      return;
-    }
     axios
       .post(`${BACKEND_URL}/events`, {
-        Name: eventName, Day: eventDay, Time: eventTime,
-        Location: eventLocation, Description: eventDescription, Position: eventPosition || '0',
+        Name: eventName,
+        Day: eventDay ? formatDate(eventDay) : '',
+        Time: timeString(),
+        Location: eventLocation,
+        Description: eventDescription,
+        Position: eventPosition || '0',
       })
       .then(() => router.back())
       .catch((error) => {
@@ -57,59 +72,89 @@ const createEvent = () => {
       });
   };
 
+  const pickerBtnStyle = [styles.pickerButton, { backgroundColor: isDark ? INPUT_BG.dark : INPUT_BG.light }];
+  const pickerTxtStyle = { color: isDark ? INPUT_TEXT.dark : INPUT_TEXT.light, fontSize: 15 as const };
+
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#1a1a1a' : '#fff' }]}>
       <ScrollView contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled">
         <View style={styles.form}>
 
           <View style={styles.field}>
-            <Text style={labelStyle} accessibilityRole="text">Name</Text>
+            <Text style={labelStyle}>Name</Text>
             <TextInput style={inputStyle} value={eventName} onChangeText={setEventName}
               placeholder="e.g. Rush Night" placeholderTextColor={ph}
-              returnKeyType="next" accessibilityLabel="Event name" accessibilityHint="Enter the name of the event" />
+              returnKeyType="next" accessibilityLabel="Event name" />
           </View>
 
           <View style={styles.field}>
-            <Text style={labelStyle} accessibilityRole="text">Date</Text>
-            <TextInput style={inputStyle} value={eventDay} onChangeText={setEventDay}
-              placeholder="YYYY-MM-DD  e.g. 2026-09-15" placeholderTextColor={ph}
-              keyboardType="numbers-and-punctuation" returnKeyType="next"
-              accessibilityLabel="Event date" accessibilityHint="Enter the date in YYYY-MM-DD format" />
+            <Text style={labelStyle}>Date</Text>
+            <TouchableOpacity style={pickerBtnStyle} onPress={() => { setShowStartPicker(false); setShowEndPicker(false); setShowDatePicker(true); }}>
+              <Text style={[pickerTxtStyle, !eventDay && { color: ph }]}>
+                {eventDay ? formatDate(eventDay) : 'Select date…'}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker value={eventDay || new Date()} mode="date"
+                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                minimumDate={new Date()} themeVariant={isDark ? 'dark' : 'light'}
+                onChange={(_, d) => { if (Platform.OS === 'android') setShowDatePicker(false); if (d) setEventDay(d); }} />
+            )}
           </View>
 
           <View style={styles.field}>
-            <Text style={labelStyle} accessibilityRole="text">Time</Text>
-            <TextInput style={inputStyle} value={eventTime} onChangeText={setEventTime}
-              placeholder="e.g. 7:00 - 9:00 PM" placeholderTextColor={ph}
-              returnKeyType="next" accessibilityLabel="Event time" accessibilityHint="Enter the start and end time" />
+            <Text style={labelStyle}>Start Time</Text>
+            <TouchableOpacity style={pickerBtnStyle} onPress={() => { setShowDatePicker(false); setShowEndPicker(false); setShowStartPicker(true); }}>
+              <Text style={[pickerTxtStyle, !eventStartTime && { color: ph }]}>
+                {eventStartTime ? formatTime12(eventStartTime) : 'Select start time…'}
+              </Text>
+            </TouchableOpacity>
+            {showStartPicker && (
+              <DateTimePicker value={eventStartTime || new Date()} mode="time"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                themeVariant={isDark ? 'dark' : 'light'}
+                onChange={(_, d) => { if (Platform.OS === 'android') setShowStartPicker(false); if (d) setEventStartTime(d); }} />
+            )}
           </View>
 
           <View style={styles.field}>
-            <Text style={labelStyle} accessibilityRole="text">Location</Text>
+            <Text style={labelStyle}>End Time</Text>
+            <TouchableOpacity style={pickerBtnStyle} onPress={() => { setShowDatePicker(false); setShowStartPicker(false); setShowEndPicker(true); }}>
+              <Text style={[pickerTxtStyle, !eventEndTime && { color: ph }]}>
+                {eventEndTime ? formatTime12(eventEndTime) : 'Select end time…'}
+              </Text>
+            </TouchableOpacity>
+            {showEndPicker && (
+              <DateTimePicker value={eventEndTime || eventStartTime || new Date()} mode="time"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                themeVariant={isDark ? 'dark' : 'light'}
+                onChange={(_, d) => { if (Platform.OS === 'android') setShowEndPicker(false); if (d) setEventEndTime(d); }} />
+            )}
+          </View>
+
+          <View style={styles.field}>
+            <Text style={labelStyle}>Location</Text>
             <TextInput style={inputStyle} value={eventLocation} onChangeText={setEventLocation}
               placeholder="e.g. Photonics Center 206" placeholderTextColor={ph}
-              returnKeyType="next" accessibilityLabel="Event location" accessibilityHint="Enter the location or room" />
+              returnKeyType="next" accessibilityLabel="Event location" />
           </View>
 
           <View style={styles.field}>
-            <Text style={labelStyle} accessibilityRole="text">Position (visibility)</Text>
+            <Text style={labelStyle}>Position (visibility)</Text>
             <TextInput style={inputStyle} value={eventPosition} onChangeText={setEventPosition}
               placeholder="0=Rushees  2=Brothers  3=Eboard" placeholderTextColor={ph}
-              keyboardType="numeric" returnKeyType="next"
-              accessibilityLabel="Position visibility level" accessibilityHint="0 shows to rushees, 2 to brothers, 3 to Eboard" />
+              keyboardType="numeric" returnKeyType="next" />
           </View>
 
           <View style={styles.field}>
-            <Text style={labelStyle} accessibilityRole="text">Description</Text>
+            <Text style={labelStyle}>Description</Text>
             <TextInput style={[inputStyle, styles.multiline]} value={eventDescription} onChangeText={setEventDescription}
               placeholder="What should attendees know about this event?" placeholderTextColor={ph}
-              multiline returnKeyType="done"
-              accessibilityLabel="Event description" accessibilityHint="Enter a short description of the event" />
+              multiline returnKeyType="done" />
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={handleCreateEvent}
-              accessibilityRole="button" accessibilityLabel="Create event" accessibilityHint="Saves and publishes this event">
+            <TouchableOpacity style={styles.button} onPress={handleCreateEvent} accessibilityRole="button">
               <Text style={styles.buttonText}>Create Event</Text>
             </TouchableOpacity>
           </View>
@@ -122,50 +167,15 @@ const createEvent = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  form: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 48,
-  },
-  field: {
-    marginBottom: 20,
-  },
-  boxTitle: {
-    fontWeight: '600',
-    fontSize: 14,
-    marginBottom: 6,
-    letterSpacing: 0.2,
-  },
-  boxEntry: {
-    height: 46,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
-    fontSize: 15,
-    width: '100%',
-  },
-  multiline: {
-    height: 96,
-    paddingTop: 12,
-    textAlignVertical: 'top',
-  },
-  buttonContainer: {
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  button: {
-    borderRadius: 10,
-    backgroundColor: '#86ebba',
-    width: '100%',
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#000',
-    fontWeight: '700',
-    fontSize: 16,
-  },
+  form: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 48 },
+  field: { marginBottom: 20 },
+  boxTitle: { fontWeight: '600', fontSize: 14, marginBottom: 6, letterSpacing: 0.2 },
+  boxEntry: { height: 46, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, fontSize: 15, width: '100%' },
+  pickerButton: { height: 46, paddingHorizontal: 14, borderRadius: 10, justifyContent: 'center', width: '100%' },
+  multiline: { height: 96, paddingTop: 12, textAlignVertical: 'top' },
+  buttonContainer: { alignItems: 'center', marginTop: 8 },
+  button: { borderRadius: 10, backgroundColor: '#86ebba', width: '100%', height: 48, alignItems: 'center', justifyContent: 'center' },
+  buttonText: { color: '#000', fontWeight: '700', fontSize: 16 },
 });
 
 export default createEvent;
