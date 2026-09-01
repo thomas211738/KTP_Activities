@@ -1,16 +1,22 @@
 import { Stack } from 'expo-router/stack';
-import { Pressable, Platform, useColorScheme, Appearance } from 'react-native';
-import React from 'react';
+import { Pressable, Platform, useColorScheme } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { getUserInfo } from '../../components/userInfoManager';
+import { getUserInfo, subscribeToUserInfo } from '../../components/userInfoManager';
 
 export default function Layout() {
-  const raw = getUserInfo() || {};
-  const pos = Number(raw.Position ?? 0);
-  const canManageEvents = pos === 3 || pos === 5 || raw.BUEmail === 'ander010@bu.edu';
+  const [userInfo, setUserInfo] = useState(getUserInfo() || {});
+  const colorScheme = useColorScheme();
 
-  const colorScheme =  useColorScheme();
+  useEffect(() => {
+    // Re-render when ValidateUser resolves and sets the real user info
+    const unsub = subscribeToUserInfo((info) => setUserInfo(info || {}));
+    return unsub;
+  }, []);
+
+  const pos = Number((userInfo as any).Position ?? 0);
+  const canManageEvents = pos === 3 || pos === 5 || (userInfo as any).BUEmail === 'ander010@bu.edu';
 
   return (
     <Stack>
@@ -20,7 +26,6 @@ export default function Layout() {
           headerTitleStyle: {
             color: colorScheme === 'light' ? "black" : "white",
           },
-
           headerStyle: {
             backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
           },
@@ -31,9 +36,7 @@ export default function Layout() {
           headerLargeTitleShadowVisible: false,
           headerRight: canManageEvents ? () => (
             <Pressable
-              onPress={async () => {
-                router.push("(tabs)/Calendar/createEvent");
-              }}
+              onPress={() => router.push("(tabs)/Calendar/createEvent")}
               style={({ pressed }) => ({
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -52,11 +55,9 @@ export default function Layout() {
           headerTitleStyle: {
             color: colorScheme === 'light' ? "#1a1a1a" : "white",
           },
-
           headerStyle: {
             backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
           },
-
         }}
       />
       <Stack.Screen
@@ -66,7 +67,6 @@ export default function Layout() {
           headerTitleStyle: {
             color: colorScheme === 'light' ? "#1a1a1a" : "white",
           },
-
           headerStyle: {
             backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
           },
@@ -75,3 +75,4 @@ export default function Layout() {
     </Stack>
   );
 }
+
