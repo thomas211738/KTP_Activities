@@ -598,20 +598,21 @@ exports.calendarWebhook = async (req, res) => {
   }
 };
 
-/**
- * renewCalendarWatches — Scheduled Cloud Function
- *
- * Runs every 5 days (Google watches last ~7 days max).
- * Checks every doc in `calendarWatches`, and for any watch expiring within
- * the next 2 days it:
- *   1. Registers a fresh watch via the Google Calendar API.
- *   2. Writes the new watch doc to `calendarWatches`.
- *   3. Deletes the old (soon-to-expire) watch doc.
- *
- * This creates an infinite self-renewing cycle — no manual intervention needed.
- *
- * Schedule: every 5 days  →  "0 9 */5 * *"  (09:00 UTC on days 1, 6, 11, 16, 21, 26, 31)
- */
+
+// ---------------------------------------------------------
+// renewCalendarWatches — Scheduled Cloud Function
+//
+// Runs every 5 days (Google watches last ~7 days max).
+// Checks every doc in `calendarWatches`, and for any watch expiring within
+// the next 2 days it:
+//   1. Registers a fresh watch via the Google Calendar API.
+//   2. Writes the new watch doc to `calendarWatches`.
+//   3. Deletes the old (soon-to-expire) watch doc.
+//
+// This creates an infinite self-renewing cycle with no manual intervention.
+//
+// Schedule: every 5 days at 09:00 UTC  (cron: "0 9 */5 * *")
+// ---------------------------------------------------------
 const renewCalendarWatchesHandler = async (context) => {
   console.log('[renewCalendarWatches] Starting scheduled watch renewal check...');
 
