@@ -58,6 +58,7 @@ export default function Layout() {
           headerStyle: {
             backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
           },
+          headerTintColor: colorScheme === 'light' ? "#134b91" : "#86ebba",
         }}
       />
       <Stack.Screen
@@ -70,6 +71,7 @@ export default function Layout() {
           headerStyle: {
             backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
           },
+          headerTintColor: colorScheme === 'light' ? "#134b91" : "#86ebba",
         }}
       />
     </Stack>
