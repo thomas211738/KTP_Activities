@@ -230,7 +230,7 @@ export const renewCalendarWatches = onSchedule(
  */
 export const pollCalendarEvents = onSchedule(
   {
-    schedule: 'every 5 minutes',
+    schedule: 'every 1 minutes',
     region: 'us-central1',
     timeoutSeconds: 120,
     memory: '256MiB',
