@@ -9,7 +9,10 @@ node_modules/
 .DS_Store
 
 # Large reproducible build artifacts (do not commit)
-KTPActivities/ios/build/
-KTPActivities/ios/Pods/
-KTPActivities/android/.gradle/
-KTPActivities/android/build/
+KTPActivities/ios/
+KTPActivities/android/
+
+# Python bytecode
+__pycache__/
+**/__pycache__/
+*.pyc
