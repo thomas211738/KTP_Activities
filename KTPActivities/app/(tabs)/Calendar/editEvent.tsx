@@ -4,8 +4,14 @@ import axios from 'axios';
 import { useLocalSearchParams, router } from 'expo-router';
 import { BACKEND_URL } from '@env';
 
+const INPUT_BG    = { light: '#e2e2e2', dark: '#252525' };
+const INPUT_TEXT  = { light: '#000',    dark: '#f0f0f0' };
+const LABEL_TEXT  = { light: '#111',    dark: '#d0d0d0' };
+const PLACEHOLDER = { light: '#888',    dark: '#666'    };
+
 const editEvent = () => {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const params = useLocalSearchParams();
   const eventID = params.eventID as string;
 
@@ -16,96 +22,104 @@ const editEvent = () => {
   const [eventDescription, setEventDescription] = useState((params.description as string) || '');
   const [eventPosition, setEventPosition] = useState((params.position as string) || '');
 
-  // If not passed via params, fetch from backend
+  const inputStyle = [styles.boxEntry, {
+    backgroundColor: isDark ? INPUT_BG.dark   : INPUT_BG.light,
+    color:           isDark ? INPUT_TEXT.dark : INPUT_TEXT.light,
+  }];
+  const labelStyle = [styles.boxTitle, { color: isDark ? LABEL_TEXT.dark : LABEL_TEXT.light }];
+  const ph = isDark ? PLACEHOLDER.dark : PLACEHOLDER.light;
+
   React.useEffect(() => {
     if (!params.name && eventID) {
       axios.get(`${BACKEND_URL}/events/${eventID}`)
-        .then((response) => {
-          setEventName(response.data.Name || '');
-          setEventDay(response.data.Day || '');
-          setEventTime(response.data.Time || '');
-          setEventLocation(response.data.Location || '');
-          setEventDescription(response.data.Description || '');
-          setEventPosition(response.data.Position?.toString() || '');
+        .then((r) => {
+          setEventName(r.data.Name || '');
+          setEventDay(r.data.Day || '');
+          setEventTime(r.data.Time || '');
+          setEventLocation(r.data.Location || '');
+          setEventDescription(r.data.Description || '');
+          setEventPosition(r.data.Position?.toString() || '');
         })
-        .catch((error) => {
-          console.error("Error fetching event data:", error.response ? error.response.data : error.message);
-        });
+        .catch((e) => console.error('Error fetching event:', e.response ? e.response.data : e.message));
     }
   }, [eventID]);
 
   const validateDate = (date) => {
     const regex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!regex.test(date)) {
-      return false;
-    }
-
+    if (!regex.test(date)) return false;
     const [year, month, day] = date.split('-').map(Number);
-    const parsedDate = new Date(year, month - 1, day);
-
-    if (
-      parsedDate.getFullYear() !== year ||
-      parsedDate.getMonth() + 1 !== month ||
-      parsedDate.getDate() !== day
-    ) {
-      return false;
-    }
-
-    return true;
+    const parsed = new Date(year, month - 1, day);
+    return parsed.getFullYear() === year && parsed.getMonth() + 1 === month && parsed.getDate() === day;
   };
 
   const handleEditEvent = () => {
     if (!eventName || !eventDay || !eventTime || !eventLocation || !eventDescription || !eventPosition) {
-      Alert.alert('Validation Error', 'All fields are required and must be at least one character long.');
+      Alert.alert('Validation Error', 'All fields are required.');
       return;
     }
-
     if (!validateDate(eventDay)) {
-      Alert.alert('Invalid Date', 'Please enter a valid date in the format yyyy-mm-dd');
+      Alert.alert('Invalid Date', 'Please enter a valid date in the format YYYY-MM-DD.');
       return;
     }
-
-    const data = {
-      Name: eventName,
-      Day: eventDay,
-      Time: eventTime,
-      Location: eventLocation,
-      Description: eventDescription,
-      Position: eventPosition
-    };
-
-    axios
-      .put(`${BACKEND_URL}/events/${eventID}`, data)
-      .then(() => {
-        router.back();
-      })
-      .catch((error) => {
-        console.error("Error updating event:", error.response ? error.response.data : error.message);
+    axios.put(`${BACKEND_URL}/events/${eventID}`, {
+      Name: eventName, Day: eventDay, Time: eventTime,
+      Location: eventLocation, Description: eventDescription, Position: eventPosition,
+    })
+      .then(() => router.back())
+      .catch((e) => {
+        console.error('Error updating event:', e.response ? e.response.data : e.message);
+        Alert.alert('Error', 'Failed to save event. Please try again.');
       });
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#fff' }]}>
-      <ScrollView contentInsetAdjustmentBehavior='automatic' automaticallyAdjustKeyboardInsets>
-        <View style={styles.scrollContainer}>
-          <View style={styles.top}>
-            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Name</Text>
-            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventName} value={eventName} placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
-            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Date (yyyy-mm-dd)</Text>
-            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventDay} value={eventDay} placeholder="e.g. 2026-09-15" placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
-            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Time</Text>
-            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventTime} value={eventTime} placeholder="e.g. 7:00 - 9:00 PM" placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
-            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Location</Text>
-            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventLocation} value={eventLocation} placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
-            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Position</Text>
-            <TextInput style={[styles.boxEntry, { backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} onChangeText={setEventPosition} value={eventPosition} keyboardType="numeric" placeholder="e.g. 2" placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
-            <Text style={[styles.boxTitle, { color: colorScheme === 'dark' ? '#ccc' : '#1a1a1a' }]}>Description</Text>
-            <TextInput style={[styles.boxEntry, { height: 80, backgroundColor: colorScheme === 'dark' ? '#2c2c2c' : '#f0f0f0', color: colorScheme === 'dark' ? '#fff' : '#000' }]} multiline onChangeText={setEventDescription} value={eventDescription} placeholderTextColor={colorScheme === 'dark' ? '#888' : '#aaa'} />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button} onPress={handleEditEvent}>
-                <Text style={styles.buttonText}>Save Event</Text>
-              </TouchableOpacity>
-            </View>
+    <View style={[styles.container, { backgroundColor: isDark ? '#1a1a1a' : '#fff' }]}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled">
+        <View style={styles.form}>
+          <View style={styles.field}>
+            <Text style={labelStyle} accessibilityRole="text">Name</Text>
+            <TextInput style={inputStyle} value={eventName} onChangeText={setEventName}
+              placeholder="e.g. Rush Night" placeholderTextColor={ph}
+              returnKeyType="next" accessibilityLabel="Event name" accessibilityHint="Enter the name of the event" />
+          </View>
+          <View style={styles.field}>
+            <Text style={labelStyle} accessibilityRole="text">Date</Text>
+            <TextInput style={inputStyle} value={eventDay} onChangeText={setEventDay}
+              placeholder="YYYY-MM-DD  e.g. 2026-09-15" placeholderTextColor={ph}
+              keyboardType="numbers-and-punctuation" returnKeyType="next"
+              accessibilityLabel="Event date" accessibilityHint="Enter the date in YYYY-MM-DD format" />
+          </View>
+          <View style={styles.field}>
+            <Text style={labelStyle} accessibilityRole="text">Time</Text>
+            <TextInput style={inputStyle} value={eventTime} onChangeText={setEventTime}
+              placeholder="e.g. 7:00 - 9:00 PM" placeholderTextColor={ph}
+              returnKeyType="next" accessibilityLabel="Event time" accessibilityHint="Enter the start and end time" />
+          </View>
+          <View style={styles.field}>
+            <Text style={labelStyle} accessibilityRole="text">Location</Text>
+            <TextInput style={inputStyle} value={eventLocation} onChangeText={setEventLocation}
+              placeholder="e.g. Photonics Center 206" placeholderTextColor={ph}
+              returnKeyType="next" accessibilityLabel="Event location" accessibilityHint="Enter the location or room" />
+          </View>
+          <View style={styles.field}>
+            <Text style={labelStyle} accessibilityRole="text">Position (visibility)</Text>
+            <TextInput style={inputStyle} value={eventPosition} onChangeText={setEventPosition}
+              placeholder="0=Rushees  2=Brothers  3=Eboard" placeholderTextColor={ph}
+              keyboardType="numeric" returnKeyType="next"
+              accessibilityLabel="Position visibility level" accessibilityHint="0 shows to rushees, 2 to brothers, 3 to Eboard" />
+          </View>
+          <View style={styles.field}>
+            <Text style={labelStyle} accessibilityRole="text">Description</Text>
+            <TextInput style={[inputStyle, styles.multiline]} value={eventDescription} onChangeText={setEventDescription}
+              placeholder="What should attendees know about this event?" placeholderTextColor={ph}
+              multiline returnKeyType="done"
+              accessibilityLabel="Event description" accessibilityHint="Enter a short description of the event" />
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={handleEditEvent}
+              accessibilityRole="button" accessibilityLabel="Save event" accessibilityHint="Saves changes to this event">
+              <Text style={styles.buttonText}>Save Event</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -114,55 +128,15 @@ const editEvent = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContainer: {
-    paddingBottom: 20,
-  },
-  top: {
-    margin: 20,
-  },
-  box: {
-    marginVertical: 10,
-  },
-  boxTitle: {
-    fontWeight: 'bold',
-    marginTop: 14,
-    fontSize: 15,
-  },
-  boxEntry: {
-    height: 40,
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 4,
-    width: '100%',
-  },
-  bottom: {
-    alignItems: 'center',
-    padding: 12,
-  },
-  buttonContainer: {
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  button: {
-    marginTop: 20,
-    borderRadius: 8,
-    backgroundColor: '#86ebba',
-    width: 200,
-    height: 40,
-    padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonDisabled: {
-    backgroundColor: 'darkgray',
-  },
-  buttonText: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
+  container: { flex: 1 },
+  form: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 48 },
+  field: { marginBottom: 20 },
+  boxTitle: { fontWeight: '600', fontSize: 14, marginBottom: 6, letterSpacing: 0.2 },
+  boxEntry: { height: 46, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, fontSize: 15, width: '100%' },
+  multiline: { height: 96, paddingTop: 12, textAlignVertical: 'top' },
+  buttonContainer: { alignItems: 'center', marginTop: 8 },
+  button: { borderRadius: 10, backgroundColor: '#86ebba', width: '100%', height: 48, alignItems: 'center', justifyContent: 'center' },
+  buttonText: { color: '#000', fontWeight: '700', fontSize: 16 },
 });
 
 export default editEvent;
