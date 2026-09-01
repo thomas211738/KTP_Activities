@@ -104,8 +104,8 @@ export default function usersRoute(db) {
         Major,
         Position,
       };
-      await usersCollection.add(newUser);
-      return response.status(200).send({ message: 'User added successfully' });
+      const docRef = await usersCollection.add(newUser);
+      return response.status(200).send({ message: 'User added successfully', id: docRef.id, user: { id: docRef.id, ...newUser } });
     } catch (error) {
       console.log(error.message);
       response.status(500).send({ message: error.message });

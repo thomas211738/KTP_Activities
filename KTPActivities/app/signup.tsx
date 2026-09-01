@@ -10,7 +10,8 @@ import { gradyears } from './components/buinfo';
 import { useLocalSearchParams, router } from 'expo-router';
 import axios from 'axios';
 import {BACKEND_URL} from '@env';
-import { setUserInfo } from './components/userInfoManager'; 
+import { setUserInfo } from './components/userInfoManager';
+import { registerForPushNotificationsAsync } from './components/notificationStatus';
 
 
 
@@ -48,11 +49,10 @@ const SignupPage = () => {
   };
 
   const handleFinishPress = async () => {
-
     let postedMinor = [];
     if (userMinor.length > 0) {
       postedMinor.push(userMinor);
-    } 
+    }
     if (isFormValid) {
       const new_user = {
         BUEmail: email,
@@ -66,16 +66,34 @@ const SignupPage = () => {
         Interests: [],
       };
 
-      setUserInfo(new_user);
+      try {
+        // Create user and get the Firestore doc ID back
+        const res = await axios.post(`${BACKEND_URL}/users`, new_user);
+        const userId = res.data.id;
 
+        // Store user info with real ID so push token registration works correctly
+        setUserInfo({ ...new_user, id: userId });
 
-      axios
-      .post(`${BACKEND_URL}/users`, new_user)
-      .catch((error) => {
+        // Register push token immediately so this new user receives notifications
+        try {
+          const registration = await registerForPushNotificationsAsync();
+          if (registration.status === 'registered' && registration.token) {
+            await axios.post(`${BACKEND_URL}/notifications`, {
+              userID: userId,
+              token: registration.token,
+            });
+            console.log('[signup] Push token registered for new user:', userId);
+          }
+        } catch (tokenErr) {
+          // Non-fatal — user can still use the app, they just won't get push notifications
+          console.warn('[signup] Push token registration failed (non-fatal):', tokenErr?.message || tokenErr);
+        }
+
+      } catch (error) {
         console.error("Error creating user:", error.response ? error.response.data : error.message);
-      });
-      router.replace("/(tabs)/Calendar");
+      }
 
+      router.replace("/(tabs)/Calendar");
     }
   };
 
