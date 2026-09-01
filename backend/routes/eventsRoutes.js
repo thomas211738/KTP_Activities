@@ -46,13 +46,18 @@ export default function eventsRoute(db) {
     router.post("/", async (request, response) => {
         try {
             const { Name, Day, Time, Location, Description, Position } = request.body;
-            if (!Name || !Day || !Time || !Location || !Description || !Position) {
-                return response.status(400).send({
-                    message: "Send all required fields: Name, Day, Time, Location, Description, Position",
-                });
+            if (!Name || !Name.trim()) {
+                return response.status(400).send({ message: "Name is required." });
             }
             const eventsCollection = db.collection('events');
-            const newEvent = { Name, Day, Time, Location, Description, Position };
+            const newEvent = {
+                Name: Name.trim(),
+                Day: Day || '',
+                Time: Time || '',
+                Location: Location || '',
+                Description: Description || '',
+                Position: Position !== undefined ? Number(Position) : 0,
+            };
             await eventsCollection.add(newEvent);
             return response.status(200).send({ message: "event added successfully" });
         } catch (error) {
@@ -65,14 +70,19 @@ export default function eventsRoute(db) {
     router.put("/:id", async (request, response) => {
         try {
             const { Name, Day, Time, Location, Description, Position } = request.body;
-            if (!Name || !Day || !Time || !Location || !Description || !Position) {
-                return response.status(400).send({
-                    message: "Send all required fields: Name, Day, Time, Location, Description, Position",
-                });
+            if (!Name || !Name.trim()) {
+                return response.status(400).send({ message: "Name is required." });
             }
             const { id } = request.params;
             const eventDoc = db.collection('events').doc(id);
-            await eventDoc.update({ Name, Day, Time, Location, Description, Position });
+            await eventDoc.update({
+                Name: Name.trim(),
+                Day: Day || '',
+                Time: Time || '',
+                Location: Location || '',
+                Description: Description || '',
+                Position: Position !== undefined ? Number(Position) : 0,
+            });
             return response.status(200).send({ message: "event updated successfully" });
         } catch (error) {
             console.log(error.message);

@@ -53,17 +53,17 @@ const editEvent = () => {
   };
 
   const handleEditEvent = () => {
-    if (!eventName || !eventDay || !eventTime || !eventLocation || !eventDescription || !eventPosition) {
-      Alert.alert('Validation Error', 'All fields are required.');
+    if (!eventName.trim()) {
+      Alert.alert('Name Required', 'Please enter a name for the event.');
       return;
     }
-    if (!validateDate(eventDay)) {
+    if (eventDay && !validateDate(eventDay)) {
       Alert.alert('Invalid Date', 'Please enter a valid date in the format YYYY-MM-DD.');
       return;
     }
     axios.put(`${BACKEND_URL}/events/${eventID}`, {
       Name: eventName, Day: eventDay, Time: eventTime,
-      Location: eventLocation, Description: eventDescription, Position: eventPosition,
+      Location: eventLocation, Description: eventDescription, Position: eventPosition || '0',
     })
       .then(() => router.back())
       .catch((e) => {
