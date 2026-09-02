@@ -744,10 +744,20 @@ module.exports.pollAllCalendars = async function pollAllCalendars() {
 
       const docRef = db.collection('events').doc(ev.id);
       const existingSnap = await docRef.get();
-      const isNew = !existingSnap.exists;
       await docRef.set(ktpDoc, { merge: true });
 
-      console.log(`[pollAllCalendars] ${isNew ? 'Created' : 'Updated'} event ${ev.id} (${ktpDoc.Name})`);
+      // Determine new vs updated using Google's own timestamps.
+      // A brand-new event has created ≈ updated (within 10 seconds).
+      // We can't rely solely on existingSnap.exists because the webhook may
+      // have already written the doc before the poller runs.
+      let isNew = !existingSnap.exists;
+      if (!isNew && ev.created && ev.updated) {
+        const createdMs = new Date(ev.created).getTime();
+        const updatedMs = new Date(ev.updated).getTime();
+        isNew = Math.abs(updatedMs - createdMs) <= 10000;
+      }
+
+      console.log(`[pollAllCalendars] ${isNew ? 'Created' : 'Updated'} event ${ev.id} (${ktpDoc.Name})`)
 
       // Notify on both new and updated events.
       // The poller uses incremental sync tokens — it only sees events that actually

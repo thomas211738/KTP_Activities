@@ -61,9 +61,6 @@ const EventCard = ({ event, isEboard = false, onEdit, onDelete, onPress }: Props
         )}
       </View>
 
-      <Text style={[styles.date, { color: isDark ? '#aaa' : '#444' }]}>
-        {event.Day} • {event.Time}
-      </Text>
       {!!event.Location && (
         <Text style={[styles.location, { color: isDark ? '#999' : '#555' }]}>📍 {event.Location}</Text>
       )}

@@ -3,17 +3,21 @@
     "owner": "boston-ktp",
     "name": "KTPActivities",
     "slug": "KTPActivities",
-    "version": "1.0.8",
+    "version": "1.0.10",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png"
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
     "plugins": [
       "expo-router",
       "expo-image-picker",
-      "@react-native-google-signin/google-signin"
+      "expo-camera",
+      "@react-native-google-signin/google-signin",
+      "@react-native-community/datetimepicker"
     ],
     "assetBundlePatterns": [
       "**/*"
@@ -28,7 +32,7 @@
         ],
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "37"
+      "buildNumber": "39"
     },
     "android": {
       "adaptiveIcon": {
@@ -37,7 +41,7 @@
       },
       "package": "com.KTPActivities",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 6,
+      "versionCode": 8,
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]

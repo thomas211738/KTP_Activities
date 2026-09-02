@@ -62,7 +62,11 @@ const index = () => {
     try {
       const response = await axios.get(`${BACKEND_URL}/alerts`, { params: { position: userPos } });
       const now = new Date().toISOString();
-      const allAlerts: AlertItem[] = (response.data.data || []).filter((a: AlertItem) => !a.expireAt || a.expireAt > now);
+      // Only show alerts that have a valid expireAt in the future.
+      // Legacy docs without expireAt are treated as expired and filtered out.
+      const allAlerts: AlertItem[] = (response.data.data || []).filter(
+        (a: AlertItem) => a.expireAt && a.expireAt > now
+      );
       setAlerts(allAlerts);
       setLoading(false);
     } catch (err: any) {

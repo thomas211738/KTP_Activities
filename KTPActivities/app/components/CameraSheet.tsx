@@ -1,13 +1,12 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, Animated, TouchableOpacity,
-  Dimensions, ActivityIndicator, Image, Platform, useColorScheme,
+  Dimensions, ActivityIndicator, Image, useColorScheme,
 } from 'react-native';
-import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import type { FlashMode } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { GestureHandlerRootView, PinchGestureHandler } from 'react-native-reanimated';
-import Animated2, { useAnimatedGestureHandler, useSharedValue, useAnimatedProps } from 'react-native-reanimated';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
 
@@ -33,10 +32,8 @@ const CameraSheet = ({ visible, eventId, eventName, eventDay, uploadedBy, onClos
   const [state, setState] = useState<State>('idle');
   const [capturedUri, setCapturedUri] = useState<string | null>(null);
   const [flash, setFlash] = useState<FlashModeType>('off');
-  const zoom = useSharedValue(0);
   const cameraRef = useRef<any>(null);
   const slideAnim = useRef(new Animated.Value(SCREEN_H)).current;
-  const lastZoom = useRef(0);
 
   React.useEffect(() => {
     if (visible) {
@@ -98,13 +95,7 @@ const CameraSheet = ({ visible, eventId, eventName, eventDay, uploadedBy, onClos
       setState('previewing');
     }
   };
-const onPinchEvent = useAnimatedGestureHandler({
-    onStart: () => { lastZoom.current = zoom.value; },
-    onActive: (e: any) => {
-      const newZoom = lastZoom.current + (e.scale - 1) * 0.3;
-      zoom.value = Math.min(1, Math.max(0, newZoom));
-    },
-  });
+
 
   if (!visible) return null;
 
@@ -113,7 +104,7 @@ const onPinchEvent = useAnimatedGestureHandler({
 
   return (
     <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.headerBtn}>
@@ -138,17 +129,14 @@ const onPinchEvent = useAnimatedGestureHandler({
               )}
             </View>
           ) : permission?.granted ? (
-            <PinchGestureHandler onGestureEvent={onPinchEvent}>
-              <View style={{ flex: 1 }}>
-                <CameraView
-                  ref={cameraRef}
-                  style={StyleSheet.absoluteFill}
-                  facing="back"
-                  flash={flash}
-                  zoom={zoom.value}
-                />
-              </View>
-            </PinchGestureHandler>
+            <View style={{ flex: 1 }}>
+              <CameraView
+                ref={cameraRef}
+                style={StyleSheet.absoluteFill}
+                facing="back"
+                flash={flash}
+              />
+            </View>
           ) : (
             <View style={styles.permissionBox}>
               <Ionicons name="camera-outline" size={48} color="white" />
@@ -188,7 +176,7 @@ const onPinchEvent = useAnimatedGestureHandler({
             </>
           )}
         </View>
-      </GestureHandlerRootView>
+      </View>
     </Animated.View>
   );
 };

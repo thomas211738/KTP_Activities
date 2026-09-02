@@ -24,7 +24,6 @@ export default function EventDetail() {
   const eventId       = params.eventId as string || '';
   const eventName     = params.eventName as string || 'Event';
   const eventDay      = params.eventDay as string || '';
-  const eventTime     = params.eventTime as string || '';
   const eventLocation = params.eventLocation as string || '';
   const eventDesc     = params.eventDescription as string || '';
 
@@ -65,7 +64,6 @@ const bg = isDark ? '#1a1a1a' : '#fff';
         {/* Event metadata card */}
         <View style={[styles.metaCard, { backgroundColor: isDark ? '#1e1e1e' : '#f5f5f5', borderColor: isDark ? '#2e2e2e' : '#e0e0e0' }]}>
           <Text style={[styles.metaTitle, { color: textColor }]}>{eventName}</Text>
-          {!!eventDay && <Text style={[styles.metaRow, { color: subColor }]}>\U0001F4C5 {eventDay}{eventTime ? ' \u2022 ' + eventTime : ''}</Text>}
           {!!eventLocation && <Text style={[styles.metaRow, { color: subColor }]}>\U0001F4CD {eventLocation}</Text>}
           {!!eventDesc && <Text style={[styles.metaDesc, { color: isDark ? '#ccc' : '#444' }]}>{eventDesc}</Text>}
         </View>
