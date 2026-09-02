@@ -74,6 +74,15 @@ export default function Layout() {
           headerTintColor: colorScheme === 'light' ? "#134b91" : "#86ebba",
         }}
       />
+      <Stack.Screen
+        name="eventDetail"
+        options={({ route }) => ({
+          headerTitle: (route.params as any)?.eventName || 'Event',
+          headerTitleStyle: { color: colorScheme === 'light' ? '#1a1a1a' : 'white' },
+          headerStyle: { backgroundColor: colorScheme === 'light' ? 'white' : '#1a1a1a' },
+          headerTintColor: colorScheme === 'light' ? '#134b91' : '#86ebba',
+        })}
+      />
     </Stack>
   );
 }

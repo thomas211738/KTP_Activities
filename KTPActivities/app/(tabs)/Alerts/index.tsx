@@ -1,327 +1,134 @@
 import axios from 'axios';
-import React, { useCallback } from 'react';
-import { Alert, ScrollView, Image, View, Text, StyleSheet, Pressable, useColorScheme} from 'react-native';
+import React from 'react';
+import { Alert, ScrollView, View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { BACKEND_URL } from '@env';
-import AddAlertModal from '../../components/addAlertModal';
 import EditAlertModal from '../../components/editAlertModal';
 import { getUserInfo } from '../../components/userInfoManager';
 import AlertsLoader from '../../components/loaders/alertsLoader';
 
-const AlertComponent = (props) => {
-  const raw = getUserInfo() || {};
-  const userInfo = { ...raw, Position: Number(raw.Position ?? 0) };
-  const colorScheme = useColorScheme();
+type AlertItem = { id: string; AlertName: string; Description: string; updatedAt: string; expireAt?: string; Position: number; };
+type AlertCardProps = { alert: AlertItem; isEboard: boolean; onEdit: () => void; onDelete: () => void; };
 
-  const themeTextStyle = colorScheme === 'light' ? styles.darkText :  styles.lightText ;
-  const themeEventStyle = colorScheme === 'light' ? styles.lightEvent : styles.darkEvent;
-
-    
+const AlertCard = ({ alert, isEboard, onEdit, onDelete }: AlertCardProps) => {
+  const isDark = useColorScheme() === 'dark';
+  const formattedTime = (() => {
+    try { return format(parseISO(alert.updatedAt), 'MMM d, yyyy • h:mm a'); } catch { return alert.updatedAt || ''; }
+  })();
+  const handleDelete = () => Alert.alert('Delete Alert', 'Are you sure?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: onDelete }]);
   return (
-    <>
-      <View style={[styles.alertContainer,themeEventStyle ]}>
-        <Image source={require("../../../img/ktplogopng.png")} style={styles.alertImage} />
-        <View style={styles.alertTextContainer}>
-          <Text style={[styles.alertName, themeTextStyle]}>{props.alertName}</Text>
-          <Text style={themeTextStyle} > {props.description}</Text>
-        </View>
-        <Text style={styles.alertTime}>{props.time}</Text>
-        {userInfo.Position.toString() === '3' || userInfo.Position.toString() === '5' ? (
-          <View style={styles.alertButtons}>
-            <Feather name="edit" size={24} color={colorScheme === 'light' ? "black" : "white"} style={styles.editIcon} onPress={props.onEdit} />
-            <MaterialIcons name="delete" size={25} color="#B22222" style={styles.deleteIcon} onPress={props.onDelete} />
-          </View>
-        ): ""}
+    <View style={[cardStyles.card, { backgroundColor: isDark ? '#1e1e1e' : '#f5f5f5', borderColor: isDark ? '#2e2e2e' : '#e0e0e0', shadowColor: isDark ? '#000' : '#888' }]}>
+      <View style={cardStyles.titleRow}>
+        <Text style={[cardStyles.title, { color: isDark ? '#f0f0f0' : '#1a1a1a' }, isEboard && cardStyles.titleWithActions]} numberOfLines={2}>{alert.AlertName}</Text>
+        {isEboard && (<View style={cardStyles.actions}>
+          <TouchableOpacity onPress={onEdit} style={cardStyles.actionBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }} accessibilityRole='button' accessibilityLabel='Edit alert'>
+            <Ionicons name='pencil' size={17} color={isDark ? '#86ebba' : '#134b91'} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDelete} style={cardStyles.actionBtn} hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }} accessibilityRole='button' accessibilityLabel='Delete alert'>
+            <Ionicons name='trash-outline' size={17} color='#cc3333' />
+          </TouchableOpacity>
+        </View>)}
       </View>
-    </>
-    
-    
+      <Text style={[cardStyles.description, { color: isDark ? '#ccc' : '#444' }]}>{alert.Description}</Text>
+      <Text style={[cardStyles.time, { color: isDark ? '#666' : '#999' }]}>{formattedTime}</Text>
+    </View>
   );
-}
+};
+
+const cardStyles = StyleSheet.create({
+  card: { borderRadius: 16, marginHorizontal: 16, marginVertical: 8, padding: 16, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 8, elevation: 3, borderWidth: 1 },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 },
+  title: { fontSize: 18, fontWeight: '600', flex: 1 },
+  titleWithActions: { paddingRight: 8 },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  actionBtn: { padding: 4 },
+  description: { fontSize: 15, lineHeight: 22, marginBottom: 10 },
+  time: { fontSize: 12, textAlign: 'right' },
+});
 
 const index = () => {
-  const [alerts, setAlerts] = useState([]);
-  // const [addModalVisible, setAddModalVisible] = useState(false);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [alertID, setAlertID] = useState('');
+  const [editingAlert, setEditingAlert] = useState<AlertItem | null>(null);
   const [loading, setLoading] = useState(true);
-  const rawUser = getUserInfo() || {};
-  const userInfo = { ...rawUser, Position: Number(rawUser.Position ?? 0) };
-  const colorScheme = useColorScheme();
+  const rawUser: any = getUserInfo() || {};
+  const userPos = Number(rawUser.Position ?? 0);
+  const isDark = useColorScheme() === 'dark';
+  const isEboard = userPos === 3 || userPos === 5;
 
   const fetchAlerts = async () => {
     try {
-      const response = await axios.get(`${BACKEND_URL}/alerts`, {
-        params: { position: userInfo.Position }
-      });
-      const allAlerts = response.data.data || [];
-      setAlerts(allAlerts); // already filtered + sorted by backend
+      const response = await axios.get(`${BACKEND_URL}/alerts`, { params: { position: userPos } });
+      const now = new Date().toISOString();
+      const allAlerts: AlertItem[] = (response.data.data || []).filter((a: AlertItem) => !a.expireAt || a.expireAt > now);
+      setAlerts(allAlerts);
       setLoading(false);
-    } catch (err) {
-      console.error("Error fetching alerts:", err.response ? err.response.data : err.message);
+    } catch (err: any) {
+      console.error('Error fetching alerts:', err.response ? err.response.data : err.message);
+      setLoading(false);
     }
-  }
-
-  /*
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-        headerRight: userInfo.Position.toString() === "3" || userInfo.Position.toString() === "5" ? () => (
-            <Pressable
-              onPress={async () => 
-                setAddModalVisible(true)
-              }
-              style={({ pressed }) => ({
-                flexDirection: 'row',
-                alignItems: 'center',
-                opacity: pressed ? 0.5 : 1,
-              })}
-            >
-              <Ionicons name="add" size={35} color={colorScheme === "light" ? "#134b91" : "#86ebba"} />
-            </Pressable>
-          ) : undefined,
-    });
-  }, [navigation, userInfo.Position, colorScheme]);
-*/
-  useEffect(() => {
-    fetchAlerts();
-  }, []);
-
-  const formatTime = (dateString) => {
-    const date = parseISO(dateString);
-    return format(date, 'h:mm a');
-  }
-
-  const formatDate = (dateString) => {
-    const date = parseISO(dateString);
-    return format(date, 'EEEE, MMMM d');
   };
 
-  const groupAlertsByDate = (alerts) => {
-    const alertGroups = alerts.reduce((groups, alert) => {
-      const date = formatDate(alert.updatedAt);
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(alert);
-      return groups;
-    }, {});
-  
-    // Sort descending order of dates based on original alert timestamps
-    const sortedDates = Object.keys(alertGroups).sort((a, b) => {
-      const dateA = alerts.find(alert => formatDate(alert.updatedAt) === a).updatedAt;
-      const dateB = alerts.find(alert => formatDate(alert.updatedAt) === b).updatedAt;
-      return new Date(dateB).getTime() - new Date(dateA).getTime();
-    });
-  
-    // New object with sorted dates
-    const sortedAlertGroups = {};
-    sortedDates.forEach(date => {
-      sortedAlertGroups[date] = alertGroups[date];
-    });
-  
-    return sortedAlertGroups;
+  useEffect(() => { fetchAlerts(); }, []);
+
+  const confirmDeleteAlert = async (alertId: string, position: number) => {
+    try {
+      await axios.delete(`${BACKEND_URL}/alerts/${position}/${alertId}`);
+      setAlerts(prev => prev.filter(a => a.id !== alertId));
+    } catch (err: any) {
+      Alert.alert('Error', 'Failed to delete alert.');
+    }
   };
 
-  const putAlert = async (alertName, alertDescription) => {
+  const handleEditSave = async (alertName: string, description: string) => {
+    if (!editingAlert) return;
     try {
-      const alert = alerts.find((a: any) => a.id === alertID);
-      const pos = alert?.Position ?? 0;
-      await axios.put(`${BACKEND_URL}/alerts/${pos}/${alertID}`, {
-        "AlertName": alertName,
-        "Description": alertDescription
-      });
-      setEditModalVisible(false);
-      fetchAlerts();
-    } catch (err) {
-      console.error("Error updating alert:", err.response ? err.response.data : err.message);
-    }
-  }
+      await axios.put(`${BACKEND_URL}/alerts/${editingAlert.Position}/${editingAlert.id}`, { AlertName: alertName, Description: description });
+      setEditModalVisible(false); setEditingAlert(null); fetchAlerts();
+    } catch (err: any) { console.error('Edit alert error:', err.message); }
+  };
 
-  const confirmDeleteAlert = (id, position) => {
-    Alert.alert('Are you sure you want to delete this alert?', '', [
-      { text: 'Cancel' },
-      { text: 'Delete', onPress: () => deleteAlert(id, position), style: 'destructive' }
-    ]);
-  }
-
-  const deleteAlert = async (id, position) => {
-    try {
-      await axios.delete(`${BACKEND_URL}/alerts/${position}/${id}`);
-      const updatedAlerts = alerts.filter((alert: any) => alert.id !== id);
-      setAlerts(updatedAlerts);
-    } catch (err) {
-      console.error("Error deleting alert:", err.response ? err.response.data : err.message);
-    }
-  }
-
-  const groupedAlerts = groupAlertsByDate(alerts);
-  const themeContainerStyle = colorScheme === 'light' ? styles.lightcontainer : styles.darkcontainer;
-  const themeTextStyle = colorScheme === 'light' ? styles.bluetext : styles.greentext;
-
-
+  const groupByDate = (items: AlertItem[]): Record<string, AlertItem[]> => {
+    const groups: Record<string, AlertItem[]> = {};
+    items.forEach(a => {
+      let dateKey = 'Unknown Date';
+      try { dateKey = format(parseISO(a.updatedAt), 'MMMM d, yyyy'); } catch {}
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(a);
+    });
+    return groups;
+  };
+  const grouped = groupByDate(alerts);
 
   return (
-    <View style={[styles.container, themeContainerStyle]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentInsetAdjustmentBehavior='automatic' >
-      
-      {loading ? (<AlertsLoader/>) : (
-        <>
-        {userInfo.Position.toString() === '3' || userInfo.Position.toString() === '5' ? <EditAlertModal visible={editModalVisible} onCancel={() => setEditModalVisible(false)} onPut={putAlert} alertID={alertID}/> : ''}
-        {Object.keys(groupedAlerts).map((date, index) => (
-          <View key={index + date} style={styles.dateContainer}>
-            <View style={styles.alertDateContainer}>
-              <Text style={[styles.alertDateText,themeTextStyle ]}>{date}</Text>
-            </View>
-            {groupedAlerts[date].map((alert) => (
-              <View key={alert.id} style={styles.alertWrapper}>
-                <AlertComponent
-                  alertName={alert.AlertName}
-                  description={alert.Description}
-                  time={formatTime(alert.updatedAt)}
-                  onEdit={() => {
-                    setAlertID(alert.id);
-                    setEditModalVisible(true);
-                  }}
-                  onDelete={() => confirmDeleteAlert(alert.id, alert.Position)}
-                />
-              </View>
+    <ScrollView style={{ flex: 1, backgroundColor: isDark ? '#1a1a1a' : '#fff' }} contentInsetAdjustmentBehavior='automatic'>
+      {loading ? (<AlertsLoader />) : alerts.length === 0 ? (
+        <View style={styles.emptyContainer}><Text style={[styles.emptyText, { color: isDark ? '#888' : '#666' }]}>No alerts at this time</Text></View>
+      ) : (
+        Object.entries(grouped).map(([date, dayAlerts]) => (
+          <View key={date} style={styles.dateGroup}>
+            <Text style={[styles.dateHeader, { backgroundColor: isDark ? '#252525' : '#f0f0f0', color: isDark ? '#d0d0d0' : '#333' }]}>{date}</Text>
+            {dayAlerts.map(alert => (
+              <AlertCard key={alert.id} alert={alert} isEboard={isEboard}
+                onEdit={() => { setEditingAlert(alert); setEditModalVisible(true); }}
+                onDelete={() => confirmDeleteAlert(alert.id, alert.Position)} />
             ))}
           </View>
-        ))}
-        
-        </>
+        ))
       )}
-      </ScrollView>
-    </View>
+      {editingAlert && (<EditAlertModal visible={editModalVisible} alertName={editingAlert.AlertName} description={editingAlert.Description}
+        onCancel={() => { setEditModalVisible(false); setEditingAlert(null); }} onSave={handleEditSave} />)}
+    </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  lightcontainer: {
-    backgroundColor:  'white',
-  },
-  darkcontainer: {
-      backgroundColor:  '#1a1a1a',
-  },
-  lightText: {
-      color: 'white',
-  },
-  darkText: {
-      color: 'black',
-  },
-  lightEvent:{
-      backgroundColor: '#dedede',
-  },
-  darkEvent: {
-      backgroundColor: '#363636',
-  },
-  bluetext:{
-    color: '#134b91',
-  },
-  greentext: {
-      color: '#86ebba',
-  },
-  container: {
-    flex: 1,
-    padding: 5,
-  },
-  alertPageHeader: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 5,
-
-  },
-  alertsContainer: {
-    flex: 1,
-    width: '100%',
-  },
-  alertPageTitle: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    marginLeft: 15,
-  },
-  alertPageSubheading: {
-    marginLeft: 15,
-    fontSize: 16,
-  },
-  alertDateContainer: {
-    marginLeft: 10,
-    marginRight: 10,
-    marginTop: 5,
-    marginBottom: 5,
-    borderBottomColor: '#b0b0b0',
-    borderBottomWidth: 1,
-  },
-  alertDateText: {
-    color: '#134b91',
-    fontWeight: 'bold',
-    fontSize: 20,
-  },
-  alertContainer: {
-    flexDirection: 'row',
-    margin: 10,
-    marginTop: 5,
-    borderRadius: 10,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
-    elevation: 3,
-    alignItems: 'center',
-  },
-  alertTextContainer: {
-    flex: 1,
-  },
-  alertImage: {
-    width: 45,
-    height: 45,
-    borderRadius: 15,
-    marginRight: 10,
-  },
-  alertName: {
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  alertTime: {
-    color: 'gray',
-    fontSize: 12,
-    position: 'absolute',
-    top: 10, 
-    right: 10,
-  },
-  alertWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  alertButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 20,
-
-  },
-  addIcon: {
-    marginRight: 12,
-  },
-  deleteIcon: {
-    marginLeft: 10,
-  },
-  editIcon: {
-    marginLeft: 10,
-  },
-  dateSection: {
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  dateContainer: {
-    padding: 5,
-    borderRadius: 5,
-    marginBottom: 5,
-  },
+  dateGroup: { marginBottom: 24 },
+  dateHeader: { fontSize: 15, fontWeight: '700', paddingHorizontal: 16, paddingVertical: 8, marginBottom: 4 },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
+  emptyText: { fontSize: 18, textAlign: 'center' },
 });
 
 export default index;

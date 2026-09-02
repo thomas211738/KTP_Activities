@@ -51,114 +51,15 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const path = require('path');
 
+// Shared notification utility (extracted from this file to backend/utils/notifyEvent.js)
+const { notifyEventChange } = require('../../utils/notifyEvent');
+
 // ---------------------------------------------------------------------------
 // Send push notifications via the Expo Push API.
 // Only sends to users whose Position >= the event's Position (same visibility
 // rule the Calendar tab uses: eventPos <= userPos).
 // Reads tokens + positions from Firestore, fans out in batches of 100.
 // ---------------------------------------------------------------------------
-async function notifyEventChange(eventData, action = 'created') {
-  try {
-    const eventPos = Number.isFinite(Number(eventData.Position)) ? Number(eventData.Position) : 0;
-
-    // 1. Load all users to get their Position
-    const usersSnap = await db.collection('users').get();
-    const userPositionMap = {};
-    usersSnap.docs.forEach(d => {
-      userPositionMap[d.id] = Number.isFinite(Number(d.data().Position)) ? Number(d.data().Position) : 0;
-    });
-
-    // 2. Load all push tokens
-    const tokensSnap = await db.collection('notifications').get();
-    if (tokensSnap.empty) {
-      console.log('[calendarWebhook] No push tokens found, skipping notifications.');
-      return;
-    }
-
-    // 3. Filter tokens to users who can see this event (userPos >= eventPos)
-    const eligibleTokens = tokensSnap.docs
-      .filter(d => {
-        const { userID, token } = d.data();
-        if (typeof token !== 'string' || !token.startsWith('ExponentPushToken')) return false;
-        const userPos = userPositionMap[userID];
-        if (userPos === undefined) return false; // orphan token — no matching user
-        return userPos >= eventPos;
-      })
-      .map(d => d.data().token);
-
-    if (eligibleTokens.length === 0) {
-      console.log(`[calendarWebhook] No eligible tokens for eventPos=${eventPos}. Skipping.`);
-      return;
-    }
-
-    console.log(`[calendarWebhook] Sending to ${eligibleTokens.length} device(s) with position >= ${eventPos}`);
-
-    const title = action === 'created' ? '🗓 New Event Added' : '🗓 Event Updated';
-    const body = [
-      eventData.Name || 'Calendar Event',
-      eventData.Day  || '',
-      eventData.Time || '',
-    ].filter(Boolean).join(' • ');
-
-    // 4. Build Expo push messages
-    const messages = eligibleTokens.map(token => ({
-      to: token,
-      sound: 'default',
-      title,
-      body,
-      data: {
-        type: 'calendar_event',
-        action,
-        eventId:  eventData.googleEventId || '',
-        name:     eventData.Name          || '',
-        day:      eventData.Day           || '',
-        time:     eventData.Time          || '',
-        location: eventData.Location      || '',
-      },
-      badge: 1,
-    }));
-
-    // 5. Fan out in batches of 100 (Expo's per-request limit)
-    const BATCH_SIZE = 100;
-    const https = require('https');
-
-    for (let i = 0; i < messages.length; i += BATCH_SIZE) {
-      const batch = messages.slice(i, i + BATCH_SIZE);
-      const payload = JSON.stringify(batch);
-
-      await new Promise((resolve, reject) => {
-        const options = {
-          hostname: 'exp.host',
-          path:     '/--/api/v2/push/send',
-          method:   'POST',
-          headers:  {
-            'Content-Type':    'application/json',
-            'Accept':          'application/json',
-            'Accept-Encoding': 'gzip, deflate',
-          },
-        };
-
-        const req = https.request(options, (res) => {
-          let data = '';
-          res.on('data', chunk => { data += chunk; });
-          res.on('end', () => {
-            console.log(`[calendarWebhook] Expo push batch ${Math.floor(i / BATCH_SIZE) + 1}: HTTP ${res.statusCode}`);
-            resolve();
-          });
-        });
-
-        req.on('error', reject);
-        req.write(payload);
-        req.end();
-      });
-    }
-
-    console.log(`[calendarWebhook] ✅ Sent push notifications to ${eligibleTokens.length} device(s): "${title}"`);
-  } catch (error) {
-    console.error('[calendarWebhook] Failed to send push notifications:', error.message || error);
-    // Do not fail the webhook if notifications fail — calendar sync is more important
-  }
-}
 
 // Robust Firebase Admin initialization for the Cloud Function module.
 // This file can be required by index.js (local dev) or deployed as a v2 function.
@@ -639,10 +540,8 @@ exports.calendarWebhook = async (req, res) => {
       await docRef.set(ktpDoc, { merge: true });
 
       console.log(`[calendarWebhook] ${isNew ? 'Created' : 'Updated'} event ${ev.id} (Name: ${ktpDoc.Name})`);
-      // Only notify users when an event is newly created, not on every edit
-      if (isNew) {
-        await notifyEventChange(ktpDoc, 'created');
-      }
+      // Notifications are sent exclusively by pollAllCalendars (poller)
+      // to prevent double-notifications from both webhook + poller firing on the same change.
     }
 
     return res.status(200).send('OK');
@@ -850,11 +749,10 @@ module.exports.pollAllCalendars = async function pollAllCalendars() {
 
       console.log(`[pollAllCalendars] ${isNew ? 'Created' : 'Updated'} event ${ev.id} (${ktpDoc.Name})`);
 
-      // Only notify on new events from the poller to avoid spamming users
-      // every 5 minutes with "updated" notifications for unchanged events
-      if (isNew) {
-        await notifyEventChange(ktpDoc, 'created');
-      }
+      // Notify on both new and updated events.
+      // The poller uses incremental sync tokens — it only sees events that actually
+      // changed since last run, so 'updated' notifications only fire on real changes.
+      await notifyEventChange(ktpDoc, isNew ? 'created' : 'updated');
     }
   }
 };

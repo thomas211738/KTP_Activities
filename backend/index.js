@@ -18,6 +18,7 @@ import websitePicsRoute from './routes/websitePicsRoutes.js';
 import { onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import appphotosRoute from './routes/appphotosRoute.js';
+import eventPhotosRoute from './routes/eventPhotosRoute.js';
 
 // Calendar webhook and watch renewal imports
 import { createRequire } from 'module';
@@ -95,8 +96,13 @@ if (storageBucket) {
   } catch (err) {
     console.warn('[backend] /photo2 (image uploads) disabled:', err.message);
   }
+  try {
+    app.use('/event-photos', eventPhotosRoute(db, storage));
+  } catch (err) {
+    console.warn('[backend] /event-photos disabled:', err.message);
+  }
 } else {
-  console.log('[backend] Skipping /photo2 (image uploads) — no storage bucket configured.');
+  console.log('[backend] Skipping /photo2 and /event-photos — no storage bucket configured.');
 }
 
 app.use(express.json());
@@ -228,6 +234,46 @@ export const renewCalendarWatches = onSchedule(
  * calendarSync incremental token, so it only fetches changes since the
  * last sync — not the full calendar every time.
  */
+
+
+/**
+ * cleanExpiredAlerts — Weekly cleanup of expired alert documents.
+ *
+ * Scans all alerts/{0-5}/items/ subcollections and deletes documents
+ * where expireAt < now. Also set a Firestore TTL policy as primary:
+ *   Firebase Console → Firestore → TTL policies
+ *   Collection group: items  |  TTL field: expireAt
+ */
+export const cleanExpiredAlerts = onSchedule(
+  {
+    schedule: '0 0 * * 1', // Every Monday at midnight UTC
+    region: 'us-central1',
+    timeoutSeconds: 120,
+    memory: '256MiB',
+  },
+  async () => {
+    const now = new Date().toISOString();
+    const ALL_POSITIONS = ['0', '1', '2', '3', '4', '5'];
+    let deleted = 0;
+    try {
+      for (const pos of ALL_POSITIONS) {
+        const snap = await db
+          .collection('alerts')
+          .doc(pos)
+          .collection('items')
+          .where('expireAt', '<', now)
+          .get();
+        for (const doc of snap.docs) {
+          await doc.ref.delete();
+          deleted++;
+        }
+      }
+      console.log(`[cleanExpiredAlerts] Deleted ${deleted} expired alert(s)`);
+    } catch (err) {
+      console.error('[cleanExpiredAlerts] Error:', err.message || err);
+    }
+  }
+);
 export const pollCalendarEvents = onSchedule(
   {
     schedule: 'every 1 minutes',

@@ -55,15 +55,18 @@ export default function alertsRoute(db) {
     // Add an alert: POST /alerts  body: { AlertName, Description, Position }
     router.post("/", async (request, response) => {
         try {
-            const { AlertName, Description, Position } = request.body;
+            const { AlertName, Description, Position, expireAt } = request.body;
             if (!AlertName || !Description) {
                 return response.status(400).send({ message: "AlertName and Description are required." });
             }
             const pos = Position !== undefined ? Number(Position) : 0;
+            // Default expiry: 30 days from now. Caller can pass an ISO string override.
+            const defaultExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
             const newAlert = {
                 AlertName,
                 Description,
                 updatedAt: new Date().toISOString(),
+                expireAt: expireAt || defaultExpiry,
             };
             const docRef = await db.collection('alerts').doc(String(pos)).collection('items').add(newAlert);
             return response.status(201).send({ id: docRef.id, Position: pos, ...newAlert });

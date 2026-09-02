@@ -17,9 +17,10 @@ type Props = {
   isEboard?: boolean;
   onEdit?: (event: Event) => void;
   onDelete?: (event: Event) => void;
+  onPress?: (event: Event) => void;
 };
 
-const EventCard = ({ event, isEboard = false, onEdit, onDelete }: Props) => {
+const EventCard = ({ event, isEboard = false, onEdit, onDelete, onPress }: Props) => {
   const isDark = useColorScheme() === 'dark';
 
   const handleDelete = () => {
@@ -33,8 +34,10 @@ const EventCard = ({ event, isEboard = false, onEdit, onDelete }: Props) => {
     );
   };
 
+  const CardWrapper = onPress ? TouchableOpacity : View;
+
   return (
-    <View style={[
+    <CardWrapper onPress={onPress ? () => onPress(event) : undefined} activeOpacity={0.85} style={[
       styles.card,
       {
         backgroundColor: isDark ? '#1e1e1e' : '#f5f5f5',
@@ -69,7 +72,7 @@ const EventCard = ({ event, isEboard = false, onEdit, onDelete }: Props) => {
           {event.Description}
         </Text>
       )}
-    </View>
+    </CardWrapper>
   );
 };
 

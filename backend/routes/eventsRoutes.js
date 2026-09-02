@@ -1,4 +1,8 @@
 import express from "express";
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const { notifyEventChange } = require('../utils/notifyEvent.js');
 
 const router = express.Router();
 
@@ -10,7 +14,6 @@ export default function eventsRoute(db) {
             const eventsSnapshot = await eventsCollection.get();
             const eventsList = eventsSnapshot.docs.map(d => {
                 const data = d.data();
-                // Coerce Position to Number — some legacy docs stored it as a string
                 if (data.Position !== undefined) {
                     data.Position = Number(data.Position);
                 }
@@ -58,8 +61,12 @@ export default function eventsRoute(db) {
                 Description: Description || '',
                 Position: Position !== undefined ? Number(Position) : 0,
             };
-            await eventsCollection.add(newEvent);
-            return response.status(200).send({ message: "event added successfully" });
+            const docRef = await eventsCollection.add(newEvent);
+            // Fire-and-forget push notification — non-blocking
+            notifyEventChange(newEvent, 'created').catch(err =>
+                console.error('[eventsRoute] notifyEvent (create) error:', err.message)
+            );
+            return response.status(200).send({ message: "event added successfully", id: docRef.id });
         } catch (error) {
             console.log(error.message);
             response.status(500).send({ message: error.message });
@@ -75,14 +82,19 @@ export default function eventsRoute(db) {
             }
             const { id } = request.params;
             const eventDoc = db.collection('events').doc(id);
-            await eventDoc.update({
+            const updatedFields = {
                 Name: Name.trim(),
                 Day: Day || '',
                 Time: Time || '',
                 Location: Location || '',
                 Description: Description || '',
                 Position: Position !== undefined ? Number(Position) : 0,
-            });
+            };
+            await eventDoc.update(updatedFields);
+            // Fire-and-forget push notification — non-blocking
+            notifyEventChange(updatedFields, 'updated').catch(err =>
+                console.error('[eventsRoute] notifyEvent (update) error:', err.message)
+            );
             return response.status(200).send({ message: "event updated successfully" });
         } catch (error) {
             console.log(error.message);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Alert, ScrollView, StyleSheet, SafeAreaView, useColorScheme } from 'react-native';
+import { View, Text, Alert, ScrollView, StyleSheet, useColorScheme } from 'react-native';
 import axios from 'axios';
 import Entypo from '@expo/vector-icons/Entypo';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -141,6 +141,21 @@ const index = () => {
         }
     };
 
+    // Navigate to event detail / photos screen
+    const openEventDetail = (event: any) => {
+        router.push({
+            pathname: '/(tabs)/Calendar/eventDetail',
+            params: {
+                eventId:   event.id,
+                eventName: event.Name  || '',
+                eventDay:  event.Day   || '',
+                eventTime: event.Time  || '',
+                eventLocation: event.Location || '',
+                eventDescription: event.Description || '',
+            },
+        });
+    };
+
     // Edit event — navigate to editEvent screen, passing current values as params for instant pre-population
     const editEvent = (event: any) => {
         router.push({
@@ -158,8 +173,10 @@ const index = () => {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#fff' }]}>
-            <ScrollView style={styles.scrollView}>
+        <ScrollView
+            style={{ flex: 1, backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#fff' }}
+            contentInsetAdjustmentBehavior="automatic"
+        >
                 {loading ? (
                     <CalendarLoader />
                 ) : Object.keys(groupedEvents).length === 0 ? (
@@ -180,13 +197,13 @@ const index = () => {
                                     isEboard={isEboard}
                                     onEdit={editEvent}
                                     onDelete={deleteEvent}
+                                    onPress={openEventDetail}
                                 />
                             ))}
                         </View>
                     ))
                 )}
-            </ScrollView>
-        </SafeAreaView>
+        </ScrollView>
     );
 };
 
