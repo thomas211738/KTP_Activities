@@ -2,7 +2,7 @@ import express from "express";
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
-const { notifyEventChange } = require('../utils/notifyEvent.js');
+const { notifyEventChange } = require('../utils/notifyEvent.cjs');
 
 const router = express.Router();
 

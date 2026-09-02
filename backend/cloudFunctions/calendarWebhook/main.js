@@ -52,7 +52,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Shared notification utility (extracted from this file to backend/utils/notifyEvent.js)
-const { notifyEventChange } = require('../../utils/notifyEvent');
+const { notifyEventChange } = require('../../utils/notifyEvent.cjs');
 
 // ---------------------------------------------------------------------------
 // Send push notifications via the Expo Push API.
