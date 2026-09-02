@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   StyleSheet,
   useColorScheme,
   ActivityIndicator,
-  Modal,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +16,9 @@ import { getUserInfo } from '../../components/userInfoManager';
 import PhotoGrid, { Photo } from '../../components/PhotoGrid';
 import FullscreenImage from '../../components/FullscreenImage';
 import CameraSheet from '../../components/CameraSheet';
+import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+import { BACKEND_URL } from '@env';
 
 export default function EventDetail() {
   const isDark = useColorScheme() === 'dark';
@@ -34,6 +36,37 @@ export default function EventDetail() {
   const [fullscreenUri, setFullscreenUri] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [photosLoading, setPhotosLoading] = useState(true);
+  const [libraryUploading, setLibraryUploading] = useState(false);
+
+  const pickFromLibrary = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.85,
+      allowsMultipleSelection: true,
+      allowsEditing: false,
+    });
+    if (result.canceled || !result.assets?.length) return;
+    setLibraryUploading(true);
+    try {
+      await Promise.all(
+        result.assets.map(async (asset) => {
+          const formData = new FormData();
+          formData.append('image', { uri: asset.uri, type: 'image/jpeg', name: 'photo.jpg' } as any);
+          formData.append('eventId', eventId);
+          formData.append('eventName', eventName);
+          formData.append('eventDay', eventDay);
+          formData.append('uploadedBy', userId);
+          await axios.post(`${BACKEND_URL}/event-photos`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        })
+      );
+    } catch (e: any) {
+      console.error('[eventDetail] library upload error:', e.message);
+    } finally {
+      setLibraryUploading(false);
+    }
+  };
 
   // Real-time photo subscription via Firestore onSnapshot
   useEffect(() => {
@@ -71,15 +104,30 @@ const bg = isDark ? '#1a1a1a' : '#fff';
         {/* Photos section header */}
         <View style={styles.photosHeader}>
           <Text style={[styles.photosTitle, { color: textColor }]}>Photos{photos.length > 0 ? ` (${photos.length})` : ''}</Text>
-          <TouchableOpacity
-            style={[styles.addPhotoBtn, { backgroundColor: isDark ? '#86ebba' : '#134b91' }]}
-            onPress={() => setCameraOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Add photo"
-          >
-            <Ionicons name="camera" size={20} color={isDark ? '#000' : '#fff'} />
-            <Text style={[styles.addPhotoBtnText, { color: isDark ? '#000' : '#fff' }]}>Add Photo</Text>
-          </TouchableOpacity>
+          <View style={styles.photoActions}>
+            {/* Library upload button */}
+            <TouchableOpacity
+              style={[styles.addPhotoBtn, { backgroundColor: isDark ? '#86ebba' : '#134b91' }]}
+              onPress={pickFromLibrary}
+              disabled={libraryUploading}
+              accessibilityRole="button"
+              accessibilityLabel="Upload photos from library"
+            >
+              {libraryUploading
+                ? <ActivityIndicator size="small" color={isDark ? '#000' : '#fff'} />
+                : <Ionicons name="images-outline" size={20} color={isDark ? '#000' : '#fff'} />}
+            </TouchableOpacity>
+            {/* Camera button */}
+            <TouchableOpacity
+              style={[styles.addPhotoBtn, { backgroundColor: isDark ? '#86ebba' : '#134b91' }]}
+              onPress={() => setCameraOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Take photo"
+            >
+              <Ionicons name="camera" size={20} color={isDark ? '#000' : '#fff'} />
+              <Text style={[styles.addPhotoBtnText, { color: isDark ? '#000' : '#fff' }]}>Take Photo</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Photo grid */}
@@ -122,6 +170,7 @@ const styles = StyleSheet.create({
   metaDesc: { fontSize: 14, lineHeight: 20, marginTop: 8 },
   photosHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, marginTop: 8, marginBottom: 4 },
   photosTitle: { fontSize: 18, fontWeight: '600' },
+  photoActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   addPhotoBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
   addPhotoBtnText: { fontSize: 14, fontWeight: '600' },
 });
