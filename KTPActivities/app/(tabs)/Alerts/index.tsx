@@ -53,16 +53,11 @@ const index = () => {
 
   const fetchAlerts = async () => {
     try {
-      const response = await axios.get(`${BACKEND_URL}/alerts`);
-      const allAlerts = response.data.data || [];
-      // Filter by position: same rule as Calendar — alertPos <= userPos
-      const filtered = allAlerts.filter((alert: any) => {
-        const alertPos = Number(alert.Position ?? 0);
-        return alertPos <= userInfo.Position;
+      const response = await axios.get(`${BACKEND_URL}/alerts`, {
+        params: { position: userInfo.Position }
       });
-      // Sort newest first
-      filtered.sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-      setAlerts(filtered);
+      const allAlerts = response.data.data || [];
+      setAlerts(allAlerts); // already filtered + sorted by backend
       setLoading(false);
     } catch (err) {
       console.error("Error fetching alerts:", err.response ? err.response.data : err.message);
@@ -131,7 +126,9 @@ const index = () => {
 
   const putAlert = async (alertName, alertDescription) => {
     try {
-      await axios.put(`${BACKEND_URL}/alerts/${alertID}`, {
+      const alert = alerts.find((a: any) => a.id === alertID);
+      const pos = alert?.Position ?? 0;
+      await axios.put(`${BACKEND_URL}/alerts/${pos}/${alertID}`, {
         "AlertName": alertName,
         "Description": alertDescription
       });
@@ -142,23 +139,17 @@ const index = () => {
     }
   }
 
-  const confirmDeleteAlert = (id) => {
+  const confirmDeleteAlert = (id, position) => {
     Alert.alert('Are you sure you want to delete this alert?', '', [
-      {
-        text: 'Cancel'
-      },
-      {
-        text: 'Delete',
-        onPress: () => deleteAlert(id),
-        style: 'destructive'
-      }
+      { text: 'Cancel' },
+      { text: 'Delete', onPress: () => deleteAlert(id, position), style: 'destructive' }
     ]);
   }
 
-  const deleteAlert = async (id) => {
+  const deleteAlert = async (id, position) => {
     try {
-      await axios.delete(`${BACKEND_URL}/alerts/${id}`);
-      const updatedAlerts = alerts.filter(alert => alert.id != id);
+      await axios.delete(`${BACKEND_URL}/alerts/${position}/${id}`);
+      const updatedAlerts = alerts.filter((alert: any) => alert.id !== id);
       setAlerts(updatedAlerts);
     } catch (err) {
       console.error("Error deleting alert:", err.response ? err.response.data : err.message);
@@ -193,7 +184,7 @@ const index = () => {
                     setAlertID(alert.id);
                     setEditModalVisible(true);
                   }}
-                  onDelete={() => confirmDeleteAlert(alert.id)}
+                  onDelete={() => confirmDeleteAlert(alert.id, alert.Position)}
                 />
               </View>
             ))}

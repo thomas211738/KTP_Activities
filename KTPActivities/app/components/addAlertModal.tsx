@@ -3,8 +3,11 @@ import { StyleSheet, Text, TextInput, Modal, View, Pressable, TouchableOpacity }
 
 const POSITION_OPTIONS = [
   { label: 'Everyone (Rushees+)', value: 0 },
-  { label: 'Brothers+', value: 2 },
-  { label: 'Eboard only', value: 3 },
+  { label: 'Pledges+',            value: 1 },
+  { label: 'Brothers+',          value: 2 },
+  { label: 'Eboard+',            value: 3 },
+  { label: 'Alumni+',            value: 4 },
+  { label: 'SuperAdmin only',    value: 5 },
 ];
 
 const AddAlertModal = (props) => {
