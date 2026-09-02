@@ -225,7 +225,7 @@ const config = {
         LSApplicationQueriesSchemes: ['instagram', 'linkedin'],
         ITSAppUsesNonExemptEncryption: false,
       },
-      buildNumber: '39',
+      buildNumber: '40',
     },
     android: {
       adaptiveIcon: {
@@ -234,7 +234,7 @@ const config = {
       },
       package: 'com.KTPActivities',
       googleServicesFile: './google-services.json',
-      versionCode: 8,
+      versionCode: 9,
       permissions: ['android.permission.RECORD_AUDIO'],
     },
     web: {
