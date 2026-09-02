@@ -194,15 +194,15 @@ const config = {
 
     name: 'KTPActivities',
     slug: 'KTPActivities',
-    version: '1.0.10',
+    version: '1.0.11',
     // runtimeVersion only matters if you enable OTA updates later.
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'automatic',
     splash: {
       image: './assets/splash.png',
-      resizeMode: 'contain',
-      backgroundColor: '#ffffff',
+      resizeMode: 'cover',
+      backgroundColor: '#192e52',
     },
     plugins: [
       'expo-router',
@@ -225,7 +225,7 @@ const config = {
         LSApplicationQueriesSchemes: ['instagram', 'linkedin'],
         ITSAppUsesNonExemptEncryption: false,
       },
-      buildNumber: '38',
+      buildNumber: '39',
     },
     android: {
       adaptiveIcon: {

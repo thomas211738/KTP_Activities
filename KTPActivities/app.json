@@ -3,14 +3,14 @@
     "owner": "boston-ktp",
     "name": "KTPActivities",
     "slug": "KTPActivities",
-    "version": "1.0.10",
+    "version": "1.0.11",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "resizeMode": "cover",
+      "backgroundColor": "#192e52"
     },
     "plugins": [
       "expo-router",
@@ -41,7 +41,7 @@
       },
       "package": "com.KTPActivities",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 8,
+      "versionCode": 9,
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]
