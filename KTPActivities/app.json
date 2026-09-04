@@ -3,7 +3,7 @@
     "owner": "boston-ktp",
     "name": "KTPActivities",
     "slug": "KTPActivities",
-    "version": "1.0.12",
+    "version": "1.0.13",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
