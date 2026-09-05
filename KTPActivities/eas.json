@@ -29,7 +29,15 @@
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "APP_ENV": "production"
+        "APP_ENV": "production",
+        "BACKEND_URL": "https://us-central1-kappa-theta.cloudfunctions.net/api",
+        "FIREBASE_API_KEY": "AIzaSyD4i-P_we79TljSDxvuDguqEQOgYZ_HCX0",
+        "FIREBASE_AUTH_DOMAIN": "kappa-theta.firebaseapp.com",
+        "FIREBASE_PROJECT_ID": "kappa-theta",
+        "FIREBASE_STORAGE_BUCKET": "kappa-theta.appspot.com",
+        "FIREBASE_MESSAGING_SENDER_ID": "771690908503",
+        "FIREBASE_APP_ID": "1:771690908503:web:a4fdca1dfe351931568c12",
+        "FIREBASE_MEASUREMENT_ID": "G-3BSTLSL0Y6"
       },
       "ios": {
         "image": "macos-sequoia-15.6-xcode-26.0"
