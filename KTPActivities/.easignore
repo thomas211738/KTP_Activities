@@ -1,0 +1,57 @@
+# .easignore — Controls what gets included in EAS Build archives.
+# This is a copy of .gitignore with .env.production UN-ignored
+# so that local builds (and EAS cloud builds) can read production secrets.
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.keystore
+credentials.json
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# Local environment files and secrets — but INCLUDE .env.production for builds
+.env
+.env.development
+!.env.production
+!.env.example
+
+# Firebase / Google service account keys
+serviceAccountKey.json
+serviceAccountKey*.json
+*firebase-adminsdk*.json
+GoogleService-Info.plist.local
+google-services.local.json
+
+# Large reproducible build directories
+ios/build/
+ios/Pods/
+android/.gradle/
+android/build/
+
+# typescript
+*.tsbuildinfo
+
+ios/.xcode.env.local
