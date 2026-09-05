@@ -1,4 +1,8 @@
 import express from "express";
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const { notifyAlertCreated } = require('../utils/notifyAlert.cjs');
 
 const router = express.Router();
 
@@ -69,6 +73,10 @@ export default function alertsRoute(db) {
                 expireAt: expireAt || defaultExpiry,
             };
             const docRef = await db.collection('alerts').doc(String(pos)).collection('items').add(newAlert);
+            // Fire-and-forget push notification to eligible users — non-blocking
+            notifyAlertCreated({ AlertName, Description, Position: pos }).catch(err =>
+                console.error('[alertsRoute] notifyAlert error:', err.message)
+            );
             return response.status(201).send({ id: docRef.id, Position: pos, ...newAlert });
         } catch (error) {
             console.log(error.message);
