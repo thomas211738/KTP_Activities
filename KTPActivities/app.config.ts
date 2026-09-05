@@ -194,7 +194,7 @@ const config = {
 
     name: 'KTPActivities',
     slug: 'KTPActivities',
-    version: '1.0.13',
+    version: '1.0.14',
     // runtimeVersion only matters if you enable OTA updates later.
     orientation: 'portrait',
     icon: './assets/icon.png',
