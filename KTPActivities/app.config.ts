@@ -194,7 +194,7 @@ const config = {
 
     name: 'KTPActivities',
     slug: 'KTPActivities',
-    version: '1.0.15',
+    version: '1.0.16',
     // runtimeVersion only matters if you enable OTA updates later.
     orientation: 'portrait',
     icon: './assets/icon.png',
@@ -225,7 +225,7 @@ const config = {
         LSApplicationQueriesSchemes: ['instagram', 'linkedin'],
         ITSAppUsesNonExemptEncryption: false,
       },
-      buildNumber: '41',
+      buildNumber: '42',
     },
     android: {
       adaptiveIcon: {
