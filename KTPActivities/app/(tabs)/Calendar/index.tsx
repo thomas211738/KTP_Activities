@@ -150,6 +150,7 @@ const index = () => {
                 eventName: event.Name  || '',
                 eventDay:  event.Day   || '',
                 eventTime: event.Time  || '',
+                eventPosition: String(event.Position ?? 3),
                 eventLocation: event.Location || '',
                 eventDescription: event.Description || '',
             },

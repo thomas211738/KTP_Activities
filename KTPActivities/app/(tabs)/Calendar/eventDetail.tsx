@@ -15,9 +15,13 @@ import { getUserInfo } from '../../components/userInfoManager';
 import PhotoGrid, { Photo } from '../../components/PhotoGrid';
 import FullscreenImage from '../../components/FullscreenImage';
 import CameraSheet from '../../components/CameraSheet';
+import AttendanceScanner from '../../components/AttendanceScanner';
+import AttendanceQrModal from '../../components/AttendanceQrModal';
+import AttendanceListModal from '../../components/AttendanceListModal';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
+import { auth } from '../../firebaseConfig';
 
 export default function EventDetail() {
   const isDark = useColorScheme() === 'dark';
@@ -27,15 +31,83 @@ export default function EventDetail() {
   const eventDay      = params.eventDay as string || '';
   const eventLocation = params.eventLocation as string || '';
   const eventDesc     = params.eventDescription as string || '';
+  const eventPosition = Number(params.eventPosition ?? 3);
 
   const rawUser: any = getUserInfo() || {};
   const userId = rawUser.id || '';
+  const userPosition = Number(rawUser.Position ?? 0);
+  const canManageAttendance = userPosition === 3;
+  const canScanAttendance = userPosition >= eventPosition;
 
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [fullscreenUri, setFullscreenUri] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [photosLoading, setPhotosLoading] = useState(true);
   const [libraryUploading, setLibraryUploading] = useState(false);
+  const [attendanceSession, setAttendanceSession] = useState<{ status: 'active' | 'ended'; payload?: string } | null>(null);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [attendanceScannerOpen, setAttendanceScannerOpen] = useState(false);
+  const [attendanceQrOpen, setAttendanceQrOpen] = useState(false);
+  const [attendanceListOpen, setAttendanceListOpen] = useState(false);
+  const [attendanceList, setAttendanceList] = useState({ present: [], notCheckedIn: [] });
+
+  const authHeaders = async () => {
+    const token = await auth?.currentUser?.getIdToken();
+    if (!token) throw new Error('Please sign in again to use attendance.');
+    return { Authorization: `Bearer ${token}` };
+  };
+
+  const loadAttendanceSession = useCallback(async () => {
+    if (!canManageAttendance || !eventId) return;
+    try {
+      const response = await axios.get(`${BACKEND_URL}/events/${eventId}/attendance-sessions/current`, { headers: await authHeaders() });
+      setAttendanceSession(response.data?.session || null);
+    } catch (error: any) {
+      console.error('[eventDetail] attendance session load error:', error?.message || error);
+    }
+  }, [canManageAttendance, eventId]);
+
+  const startAttendance = async () => {
+    setAttendanceLoading(true);
+    try {
+      const response = await axios.post(`${BACKEND_URL}/events/${eventId}/attendance-sessions`, {}, { headers: await authHeaders() });
+      setAttendanceSession(response.data.session);
+      setAttendanceQrOpen(true);
+    } catch (error: any) {
+      Alert.alert('Unable to start attendance', error?.response?.data?.message || error?.message || 'Please try again.');
+    } finally {
+      setAttendanceLoading(false);
+    }
+  };
+
+  const endAttendance = () => Alert.alert('End Attendance?', 'Members will no longer be able to scan this QR code.', [
+    { text: 'Cancel', style: 'cancel' },
+    { text: 'End Attendance', style: 'destructive', onPress: async () => {
+      setAttendanceLoading(true);
+      try {
+        await axios.post(`${BACKEND_URL}/events/${eventId}/attendance-sessions/end`, {}, { headers: await authHeaders() });
+        setAttendanceSession({ status: 'ended' });
+        setAttendanceQrOpen(false);
+      } catch (error: any) {
+        Alert.alert('Unable to end attendance', error?.response?.data?.message || error?.message || 'Please try again.');
+      } finally {
+        setAttendanceLoading(false);
+      }
+    } },
+  ]);
+
+  const viewAttendance = async () => {
+    setAttendanceLoading(true);
+    try {
+      const response = await axios.get(`${BACKEND_URL}/events/${eventId}/attendees`, { headers: await authHeaders() });
+      setAttendanceList({ present: response.data?.present || [], notCheckedIn: response.data?.notCheckedIn || [] });
+      setAttendanceListOpen(true);
+    } catch (error: any) {
+      Alert.alert('Attendance unavailable', error?.response?.data?.message || error?.message || 'Please try again.');
+    } finally {
+      setAttendanceLoading(false);
+    }
+  };
 
   const loadPhotos = useCallback(async () => {
     if (!eventId) {
@@ -104,6 +176,10 @@ export default function EventDetail() {
   useEffect(() => {
     void loadPhotos();
   }, [loadPhotos]);
+
+  useEffect(() => {
+    void loadAttendanceSession();
+  }, [loadAttendanceSession]);
 const bg = isDark ? '#1a1a1a' : '#fff';
   const textColor = isDark ? '#f0f0f0' : '#1a1a1a';
   const subColor = isDark ? '#aaa' : '#555';
@@ -116,6 +192,37 @@ const bg = isDark ? '#1a1a1a' : '#fff';
           <Text style={[styles.metaTitle, { color: textColor }]}>{eventName}</Text>
           {!!eventLocation && <Text style={[styles.metaRow, { color: subColor }]}>{eventLocation}</Text>}
           {!!eventDesc && <Text style={[styles.metaDesc, { color: isDark ? '#ccc' : '#444' }]}>{eventDesc}</Text>}
+        </View>
+
+        <View style={styles.attendanceSection}>
+          {canManageAttendance ? (
+            attendanceSession?.status === 'active' ? (
+              <>
+                <TouchableOpacity style={[styles.attendanceButton, styles.primaryAttendance]} onPress={() => setAttendanceQrOpen(true)} disabled={attendanceLoading}>
+                  <Ionicons name="qr-code-outline" size={20} color="#fff" /><Text style={styles.primaryAttendanceText}>View Attendance Session QR Code</Text>
+                </TouchableOpacity>
+                <View style={styles.attendanceRow}>
+                  <TouchableOpacity style={styles.secondaryAttendance} onPress={viewAttendance} disabled={attendanceLoading}><Text style={styles.secondaryAttendanceText}>View Attendance</Text></TouchableOpacity>
+                  <TouchableOpacity style={styles.endAttendance} onPress={endAttendance} disabled={attendanceLoading}><Text style={styles.endAttendanceText}>End Attendance</Text></TouchableOpacity>
+                </View>
+              </>
+            ) : attendanceSession?.status === 'ended' ? (
+              <>
+                <TouchableOpacity style={[styles.attendanceButton, styles.primaryAttendance]} onPress={startAttendance} disabled={attendanceLoading}>
+                  {attendanceLoading ? <ActivityIndicator color="#fff" /> : <><Ionicons name="people-outline" size={20} color="#fff" /><Text style={styles.primaryAttendanceText}>Start Attendance Again</Text></>}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.secondaryAttendance} onPress={viewAttendance} disabled={attendanceLoading}><Text style={styles.secondaryAttendanceText}>View Attendance</Text></TouchableOpacity>
+              </>
+            ) : (
+              <TouchableOpacity style={[styles.attendanceButton, styles.primaryAttendance]} onPress={startAttendance} disabled={attendanceLoading}>
+                {attendanceLoading ? <ActivityIndicator color="#fff" /> : <><Ionicons name="people-outline" size={20} color="#fff" /><Text style={styles.primaryAttendanceText}>Start Attendance</Text></>}
+              </TouchableOpacity>
+            )
+          ) : canScanAttendance ? (
+            <TouchableOpacity style={[styles.attendanceButton, styles.primaryAttendance]} onPress={() => setAttendanceScannerOpen(true)}>
+              <Ionicons name="scan-outline" size={20} color="#fff" /><Text style={styles.primaryAttendanceText}>Scan Attendance</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         {/* Photos section header */}
@@ -164,6 +271,10 @@ const bg = isDark ? '#1a1a1a' : '#fff';
         onClose={() => setFullscreenUri(null)}
       />
 
+      <AttendanceScanner visible={attendanceScannerOpen} onClose={() => setAttendanceScannerOpen(false)} onCheckedIn={() => undefined} />
+      <AttendanceQrModal visible={attendanceQrOpen} eventName={eventName} payload={attendanceSession?.payload || ''} onClose={() => setAttendanceQrOpen(false)} />
+      <AttendanceListModal visible={attendanceListOpen} present={attendanceList.present} notCheckedIn={attendanceList.notCheckedIn} onClose={() => setAttendanceListOpen(false)} />
+
       {/* Camera sheet */}
       {cameraOpen && (
         <CameraSheet
@@ -185,6 +296,15 @@ const styles = StyleSheet.create({
   metaTitle: { fontSize: 22, fontWeight: '700', marginBottom: 10 },
   metaRow: { fontSize: 14, marginBottom: 5 },
   metaDesc: { fontSize: 14, lineHeight: 20, marginTop: 8 },
+  attendanceSection: { marginHorizontal: 16, marginBottom: 12, gap: 9 },
+  attendanceButton: { minHeight: 46, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, paddingHorizontal: 14 },
+  primaryAttendance: { backgroundColor: '#134b91' },
+  primaryAttendanceText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  attendanceRow: { flexDirection: 'row', gap: 9 },
+  secondaryAttendance: { flex: 1, minHeight: 42, borderWidth: 1, borderColor: '#134b91', borderRadius: 11, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
+  secondaryAttendanceText: { color: '#134b91', fontSize: 14, fontWeight: '700' },
+  endAttendance: { minHeight: 42, borderRadius: 11, backgroundColor: '#fff0f0', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14 },
+  endAttendanceText: { color: '#b42318', fontSize: 14, fontWeight: '700' },
   photosHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, marginTop: 8, marginBottom: 4 },
   photosTitle: { fontSize: 18, fontWeight: '600' },
   photoActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },

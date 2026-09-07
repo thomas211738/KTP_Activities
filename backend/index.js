@@ -19,6 +19,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import appphotosRoute from './routes/appphotosRoute.js';
 import eventPhotosRoute from './routes/eventPhotosRoute.js';
+import attendanceRoute from './routes/attendanceRoutes.js';
 
 // Calendar webhook and watch renewal imports
 import { createRequire } from 'module';
@@ -97,7 +98,7 @@ if (storageBucket) {
     console.warn('[backend] /photo2 (image uploads) disabled:', err.message);
   }
   try {
-    app.use('/event-photos', eventPhotosRoute(db, storage));
+app.use('/event-photos', eventPhotosRoute(db, storage));
   } catch (err) {
     console.warn('[backend] /event-photos disabled:', err.message);
   }
@@ -137,6 +138,7 @@ app.use('/completed-tasks', completedTaskRoute(db));
 app.use('/photo', userphotosRoute(db));
 app.use('/notifications', notificationRoute(db));
 app.use('/websitePics', websitePicsRoute(db));
+app.use('/', attendanceRoute(db));
 // app.use('/api/email', emailRoute); // No db needed
 
 app.get('/', (request, response) => {
