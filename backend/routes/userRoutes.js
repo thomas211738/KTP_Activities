@@ -9,7 +9,10 @@ export default function usersRoute(db) {
       const usersCollection = db.collection('users');
       const q = usersCollection.orderBy('FirstName', 'asc');
       const userSnapshot = await q.get();
-      const userList = userSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Archived profiles remain in Firestore but are never returned to the app.
+      const userList = userSnapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(user => Number(user.Position) >= 0);
 
       return response.status(200).json({
         count: userList.length,
@@ -27,7 +30,9 @@ export default function usersRoute(db) {
       const usersCollection = db.collection('users');
       const q = usersCollection.orderBy('Clout', 'desc');
       const userSnapshot = await q.get();
-      const userList = userSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      const userList = userSnapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(user => Number(user.Position) >= 0);
 
       return response.status(200).json({
         count: userList.length,
