@@ -170,9 +170,9 @@ export const api = onRequest(
 );
 
 /**
- * Google Calendar push notification webhook (receives events.watch calls from Google)
- * Now enabled — syncs public calendar (via calendarTokens/main config) to Firestore `events` collection.
- * The mobile app now reads from /events endpoint (populated by this function).
+ * Google Calendar push acknowledgment endpoint (receives events.watch calls).
+ * The one-minute pollCalendarEvents job is the sole path that syncs Google
+ * Calendar changes into Firestore `events` and sends push notifications.
  */
 
 export const calendarWebhook = onRequest(
@@ -221,14 +221,10 @@ export const renewCalendarWatches = onSchedule(
 );
 
 /**
- * pollCalendarEvents — Scheduled Cloud Function (safety net)
+ * pollCalendarEvents — Scheduled Cloud Function (sole sync path)
  *
- * Google Calendar push notifications are NOT guaranteed to be immediate.
- * They can be delayed by up to 15 minutes or occasionally missed entirely.
- *
- * This scheduled function runs every 5 minutes and pulls any changes from
- * Google Calendar directly, ensuring Firestore (and therefore the app) is
- * always up to date even if a push notification was delayed or dropped.
+ * This scheduled function runs every minute, pulls changed Google Calendar
+ * events, writes them to Firestore, and sends the matching Expo notifications.
  *
  * It reuses the exact same poll logic as pollGoogleCalendars.js and the
  * calendarSync incremental token, so it only fetches changes since the

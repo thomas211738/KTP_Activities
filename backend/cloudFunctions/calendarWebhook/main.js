@@ -4,7 +4,8 @@
  * Purpose:
  *   - Receives push notifications from the Google Calendar API (events.watch).
  *   - Supports **multiple calendars** via channel token or calendar ID (personal test calendar ↔ Eboard/president calendar, etc.).
- *   - Syncs events into the Firestore `events` collection using the existing schema.
+ *   - Acknowledges watches only. `pollAllCalendars`, invoked by the one-minute
+ *     `pollCalendarEvents` schedule, is the sole Calendar-to-Firestore sync path.
  *
  * Schema compatibility (matches backend/routes/eventsRoutes.js and the mobile app):
  *   Core fields we always write:
@@ -263,36 +264,6 @@ async function loadCalendarConfig() {
 }
 
 /**
- * Resolve which calendar + defaultPosition to use for this notification.
- * Priority inside the resolved map:
- *   1. Exact match on x-goog-channel-token against config keys (recommended when registering watches).
- *   2. If the token itself looks like a calendar ID, use it directly.
- *   3. Fall back to the first (or "default") config entry.
- */
-function resolveConfig(token, configs) {
-  const keys = Object.keys(configs || {});
-
-  if (token && configs[token]) {
-    return { key: token, ...configs[token] };
-  }
-
-  // Allow stuffing the calendarId (or "primary") directly into the channel token
-  if (token && (token.includes('@') || token === 'primary' || token.length > 3)) {
-    const safeKey = token.replace(/[^a-zA-Z0-9_-]/g, '_');
-    return {
-      key: safeKey,
-      calendarId: token,
-      defaultPosition: 3,
-    };
-  }
-
-  // Final fallback
-  const firstKey = keys[0] || 'default';
-  const entry = configs[firstKey] || { calendarId: 'primary', defaultPosition: 3 };
-  return { key: firstKey, ...entry };
-}
-
-/**
  * Strict schema enforcement.
  * Takes a Google Calendar event + a Position and returns a document that
  * exactly matches what the existing Express routes and mobile app expect.
@@ -300,10 +271,28 @@ function resolveConfig(token, configs) {
 function toKtpEventSchema(googleEvent, position) {
   // Day: prefer date (all-day) or extract date from dateTime
   let day = '';
+  let endDay = '';
   if (googleEvent.start?.date) {
     day = googleEvent.start.date; // already YYYY-MM-DD
   } else if (googleEvent.start?.dateTime) {
     day = googleEvent.start.dateTime.split('T')[0];
+  }
+
+  if (googleEvent.end?.date) {
+    // Google all-day end dates are exclusive (Sept 13-14 event → end.date = Sept 15)
+    // Subtract one day to get the actual last day
+    const endExclusive = new Date(googleEvent.end.date + 'T00:00:00');
+    endExclusive.setDate(endExclusive.getDate() - 1);
+    const actualEnd = endExclusive.toISOString().split('T')[0];
+    // Only set EndDay if it differs from Day (multi-day event)
+    if (actualEnd !== day) {
+      endDay = actualEnd;
+    }
+  } else if (googleEvent.end?.dateTime) {
+    const endDate = googleEvent.end.dateTime.split('T')[0];
+    if (endDate !== day) {
+      endDay = endDate;
+    }
   }
 
   // Time: best effort human-readable string.
@@ -324,6 +313,13 @@ function toKtpEventSchema(googleEvent, position) {
   const location = googleEvent.location || '';
   const description = googleEvent.description || '';
 
+  // Visibility: if title or description contains "PRIVATE" keyword, set to private; else public.
+  // This overrides Google Calendar's native visibility attribute.
+  // Strip the keyword from name and description after detection.
+  const isPrivate = /PRIVATE/i.test(name) || /PRIVATE/i.test(description);
+  const cleanName = name.replace(/\s*PRIVATE\s*/gi, ' ').trim() || name;
+  const cleanDescription = description.replace(/\s*PRIVATE\s*/gi, ' ').trim();
+
   // ============================================================
   // FIRESTORE SCHEMA (follows the existing one used by the app)
   //
@@ -338,13 +334,22 @@ function toKtpEventSchema(googleEvent, position) {
   //   - Final fallback = 3 (E-board level).
   // ============================================================
   const ktpEvent = {
-    Name: name,
+    Name: cleanName,
     Day: day,
     Time: time,
     Location: location,
-    Description: description,
+    Description: cleanDescription,
     Position: Number.isFinite(Number(position)) ? Number(position) : 3,
   };
+
+  // Multi-day events: store explicit start and end dates
+  if (endDay) {
+    ktpEvent.StartDay = day;
+    ktpEvent.EndDay = endDay;
+  }
+
+  // Set visibility based on PRIVATE keyword detection
+  ktpEvent.visibility = isPrivate ? 'private' : 'public';
 
   // Internal sync metadata
   ktpEvent.source = 'google';
@@ -387,7 +392,7 @@ function extractPosition(googleEvent, defaultPosition = 3) {
 }
 
 /**
- * Main HTTP handler for Google Calendar push notifications.
+ * HTTP acknowledgment handler for Google Calendar push notifications.
  *
  * Deploy this as a Cloud Function (recommended: Firebase Functions v2).
  *
@@ -406,151 +411,15 @@ function extractPosition(googleEvent, defaultPosition = 3) {
  *   );
  *
  * Then register a Google Calendar watch pointing at the deployed HTTPS URL.
+ * Watches are optional acceleration signals only: this handler deliberately
+ * does not read Google events or update sync tokens. The scheduled poller owns
+ * both operations so a webhook can never consume a change before it is sent as
+ * a push notification.
  */
 exports.calendarWebhook = async (req, res) => {
-  try {
-    const headers = req.headers || {};
-    const channelId = headers['x-goog-channel-id'];
-    const resourceState = headers['x-goog-resource-state']; // 'sync', 'exists', 'not_exists'
-    const resourceId = headers['x-goog-resource-id'];
-    const token = headers['x-goog-channel-token']; // optional verification token you set when creating the watch
-
-    console.log('[calendarWebhook] Notification received', {
-      channelId,
-      resourceState,
-      resourceId,
-    });
-
-    // Always respond quickly to Google
-    if (resourceState === 'sync') {
-      console.log('[calendarWebhook] Initial sync notification');
-      return res.status(200).send('OK');
-    }
-
-    // Optional: verify token if you set one when creating the watch
-    // if (token && token !== process.env.CALENDAR_WEBHOOK_TOKEN) {
-    //   return res.status(403).send('Forbidden');
-    // }
-
-    // Load calendar configuration from Firestore (calendarTokens/main) with env fallback.
-    // This is the single source of truth for which Google Calendar(s) to pull from and their Position defaults.
-    const calendarConfigMap = await loadCalendarConfig();
-
-    // Resolve the specific calendar for this notification using the channel token.
-    // Different watches (personal vs Eboard/president) use different tokens so the same function can handle many calendars.
-    const cfg = resolveConfig(token, calendarConfigMap);
-    const calendarId = cfg.calendarId || 'primary';
-    const defaultPositionForThisCal = Number.isFinite(Number(cfg.defaultPosition)) ? Number(cfg.defaultPosition) : 3;
-
-    console.log('[calendarWebhook] Using calendar config', {
-      key: cfg.key,
-      calendarId,
-      defaultPosition: defaultPositionForThisCal,
-    });
-
-    // Auth for Calendar API using Application Default Credentials (works in Cloud Functions)
-    const auth = new google.auth.GoogleAuth({
-      scopes: ['https://www.googleapis.com/auth/calendar.readonly'],
-    });
-    const calendar = google.calendar({ version: 'v3', auth });
-
-    // Per-calendar sync token document (sanitized key so it works for "primary" and email-style IDs)
-    const syncDocId = (cfg.key || calendarId).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const syncDocRef = db.collection('calendarSync').doc(syncDocId);
-    const syncDoc = await syncDocRef.get();
-    let syncToken = syncDoc.exists ? syncDoc.data().syncToken : null;
-
-    let eventsToProcess = [];
-
-    if (resourceState === 'exists' || resourceState === 'not_exists') {
-      try {
-        const listParams = {
-          calendarId,
-          singleEvents: true, // expand recurring events into instances (simpler for now)
-          maxResults: 250,
-        };
-
-        if (syncToken) {
-          listParams.syncToken = syncToken;
-        } else {
-          // First time after watch creation — get recent events
-          const now = new Date();
-          const past = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000); // ~90 days
-          listParams.timeMin = past.toISOString();
-        }
-
-        const listRes = await calendar.events.list(listParams);
-
-        eventsToProcess = listRes.data.items || [];
-
-        // Save the new sync token for next time (per calendar)
-        if (listRes.data.nextSyncToken) {
-          await syncDocRef.set(
-            {
-              syncToken: listRes.data.nextSyncToken,
-              lastSyncedAt: admin.firestore.FieldValue.serverTimestamp(),
-              calendarId,
-            },
-            { merge: true }
-          );
-        }
-      } catch (err) {
-        // If the sync token is invalid/expired, Google returns 410
-        if (err.code === 410 || (err.response && err.response.status === 410)) {
-          console.warn('[calendarWebhook] Sync token expired for calendar', calendarId, '. Clearing and doing full sync next time.');
-          await syncDocRef.delete().catch(() => {});
-          // Re-trigger a full sync by responding OK; on next change we will do a full pull.
-          return res.status(200).send('Sync token expired - will full sync on next change');
-        }
-        throw err;
-      }
-    }
-
-    // Process each changed event
-    for (const ev of eventsToProcess) {
-      const position = extractPosition(ev, defaultPositionForThisCal);
-
-      if (ev.status === 'cancelled') {
-        // Event was deleted — remove from Firestore
-        if (ev.id) {
-          // Use the googleEventId as the doc ID (idempotent), so delete is a direct ref
-          const docRef = db.collection('events').doc(ev.id);
-          const snap = await docRef.get();
-          if (snap.exists) {
-            await docRef.delete();
-            console.log(`[calendarWebhook] Deleted event ${ev.id}`);
-          }
-        }
-        continue;
-      }
-
-      // Normal create / update
-      const ktpDoc = toKtpEventSchema(ev, position);
-      ktpDoc.calendarId = calendarId;
-
-      // Use googleEventId as the Firestore doc ID.
-      // This makes all writes idempotent — concurrent webhook invocations
-      // always set() the same doc rather than racing to add() duplicates.
-      const docRef = db.collection('events').doc(ev.id);
-
-      // Check existence BEFORE writing to correctly determine create vs update
-      const existingSnap = await docRef.get();
-      const isNew = !existingSnap.exists;
-
-      await docRef.set(ktpDoc, { merge: true });
-
-      console.log(`[calendarWebhook] ${isNew ? 'Created' : 'Updated'} event ${ev.id} (Name: ${ktpDoc.Name})`);
-      // Notifications are sent exclusively by pollAllCalendars (poller)
-      // to prevent double-notifications from both webhook + poller firing on the same change.
-    }
-
-    return res.status(200).send('OK');
-  } catch (error) {
-    console.error('[calendarWebhook] Error handling notification:', error);
-    // Always return 200 to Google so it doesn't keep retrying forever on our bugs.
-    // Log the error so we can investigate.
-    return res.status(200).send('Error logged');
-  }
+  const resourceState = req.headers?.['x-goog-resource-state'] || 'unknown';
+  console.log(`[calendarWebhook] Received ${resourceState}; pollCalendarEvents owns sync.`);
+  return res.status(200).send('OK');
 };
 
 
@@ -766,4 +635,3 @@ module.exports.pollAllCalendars = async function pollAllCalendars() {
     }
   }
 };
-

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, Animated, TouchableOpacity,
-  Dimensions, ActivityIndicator, Image, PanResponder,
+  Dimensions, ActivityIndicator, Image, PanResponder, Alert,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import type { FlashMode } from 'expo-camera';
@@ -10,7 +10,9 @@ import axios from 'axios';
 import { BACKEND_URL } from '@env';
 
 const { height: SCREEN_H } = Dimensions.get('window');
-const SHEET_HEIGHT = SCREEN_H * 0.82;
+// Leave enough space above the sheet for its rounded edge and drag handle to
+// remain visible beneath the native event header.
+const SHEET_HEIGHT = SCREEN_H * 0.76;
 
 type FlashModeType = FlashMode;
 type State = 'idle' | 'capturing' | 'uploading';
@@ -31,20 +33,22 @@ const CameraSheet = ({ visible, eventId, eventName, eventDay, uploadedBy, onClos
   const [capturedUri, setCapturedUri] = useState<string | null>(null);
   const [flash, setFlash] = useState<FlashModeType>('off');
   const cameraRef = useRef<any>(null);
-  const slideAnim = useRef(new Animated.Value(SCREEN_H)).current;
+  // This view is already anchored to the bottom. Its visible position is 0;
+  // screen coordinates would push its lower controls below the viewport.
+  const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const previewOpacity = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx),
       onPanResponderMove: (_, g) => {
-        if (g.dy > 0) slideAnim.setValue(SCREEN_H - SHEET_HEIGHT + g.dy);
+        if (g.dy > 0) slideAnim.setValue(Math.min(SHEET_HEIGHT, g.dy));
       },
       onPanResponderRelease: (_, g) => {
         if (g.dy > 80 || g.vy > 0.5) {
-          Animated.timing(slideAnim, { toValue: SCREEN_H, duration: 200, useNativeDriver: true }).start(() => onClose());
+          Animated.timing(slideAnim, { toValue: SHEET_HEIGHT, duration: 200, useNativeDriver: true }).start(() => onClose());
         } else {
-          Animated.spring(slideAnim, { toValue: SCREEN_H - SHEET_HEIGHT, useNativeDriver: true, bounciness: 0 }).start();
+          Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, bounciness: 0 }).start();
         }
       },
     })
@@ -56,9 +60,9 @@ const CameraSheet = ({ visible, eventId, eventName, eventDay, uploadedBy, onClos
       setState('idle');
       setCapturedUri(null);
       previewOpacity.setValue(0);
-      Animated.spring(slideAnim, { toValue: SCREEN_H - SHEET_HEIGHT, useNativeDriver: true, bounciness: 0 }).start();
+      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, bounciness: 0 }).start();
     } else {
-      Animated.timing(slideAnim, { toValue: SCREEN_H, duration: 250, useNativeDriver: true }).start();
+      Animated.timing(slideAnim, { toValue: SHEET_HEIGHT, duration: 250, useNativeDriver: true }).start();
     }
   }, [visible]);
 
@@ -80,7 +84,10 @@ const CameraSheet = ({ visible, eventId, eventName, eventDay, uploadedBy, onClos
           doUpload(uri);
         });
       }, 700);
-    } catch (e) { setState('idle'); }
+    } catch (e) {
+      setState('idle');
+      Alert.alert('Camera error', 'Unable to take the photo. Please try again.');
+    }
   };
 
   const doUpload = async (uri: string) => {
@@ -96,6 +103,7 @@ const CameraSheet = ({ visible, eventId, eventName, eventDay, uploadedBy, onClos
       onPhotoUploaded();
     } catch (e: any) {
       console.error('[CameraSheet] upload error:', e.message);
+      Alert.alert('Upload failed', 'Your photo was not uploaded. Please try again.');
     } finally { setState('idle'); }
   };
 
@@ -109,7 +117,7 @@ const CameraSheet = ({ visible, eventId, eventName, eventDay, uploadedBy, onClos
           <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" flash={flash} />
         ) : (
           <View style={styles.permissionBox}>
-            <Ionicons name="camera-off-outline" size={48} color="white" />
+            <Ionicons name="camera-outline" size={48} color="white" />
             <Text style={styles.permissionText}>Camera permission required</Text>
             <TouchableOpacity style={styles.permBtn} onPress={requestPermission}>
               <Text style={styles.permBtnText}>Grant Permission</Text>

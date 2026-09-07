@@ -21,7 +21,7 @@ const index = () => {
 
     const freshUser = getUserInfo() || { Position: 0, id: null };
     const userPos = Number(freshUser.Position ?? 0);
-    const isEboard = userPos === 3 || userPos === 5 || freshUser.BUEmail === 'ander010@bu.edu';
+    const canManageEvents = userPos >= 3;
 
     const fetchEvents = async () => {
         try {
@@ -194,7 +194,7 @@ const index = () => {
                                 <EventCard
                                     key={event.id}
                                     event={event}
-                                    isEboard={isEboard}
+                                    canManageEvents={canManageEvents}
                                     onEdit={editEvent}
                                     onDelete={deleteEvent}
                                     onPress={openEventDetail}

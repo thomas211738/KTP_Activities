@@ -1,8 +1,8 @@
-# KTP Google Calendar Webhook Cloud Function
+# KTP Google Calendar Poller
 
-This Cloud Function receives push notifications from the Google Calendar API (via `events.watch`) whenever Eboard updates a source calendar.
+The scheduled `pollCalendarEvents` Cloud Function is the sole Google Calendar sync path. It runs every minute, reads changed events, writes them to Firestore using the KTP app's schema, and sends matching Expo notifications.
 
-It syncs those changes into Firestore using **exactly** the same schema the KTP app already uses for events.
+`calendarWebhook` may still receive Google `events.watch` calls, but it only acknowledges them. It never reads Calendar events or changes a sync token, eliminating races with the poller.
 
 ## Enforced Firestore Schema (`events` collection)
 
@@ -65,7 +65,7 @@ Example direct map (recommended):
 
 **Why this location?**
 - Easy to edit from the Firebase Console without redeploying the Cloud Function.
-- Supports your workflow: start with your personal Gmail calendar for testing, later point at the official Eboard/president calendar by updating this single document + registering one extra watch.
+- Supports your workflow: start with a personal Gmail calendar for testing, later point at the official Eboard/president calendar by updating this single document.
 - No environment variable changes or app updates needed when you switch calendars.
 
 The function still falls back to `CALENDAR_CONFIGS` / `GOOGLE_CALENDAR_ID` env vars **only** if the `calendarTokens/main` document is missing or empty. Once the Firestore document exists, those env vars are unnecessary.
@@ -91,7 +91,6 @@ The function still falls back to `CALENDAR_CONFIGS` / `GOOGLE_CALENDAR_ID` env v
    }
    ```
 
-   Keys become the `token` values you use when registering watches.
    `calendarId` can be `primary`, a Gmail address, or a group calendar ID.
    Each entry can have its own `defaultPosition`.
 
@@ -108,15 +107,15 @@ The function still falls back to `CALENDAR_CONFIGS` / `GOOGLE_CALENDAR_ID` env v
    CALENDAR_CONFIGS={"personal":{"calendarId":"primary","defaultPosition":3},"eboard":{"calendarId":"eboard-ktp@group.calendar.google.com","defaultPosition":3}}
    ```
 
-4. Deploy the function (example using Firebase CLI):
+4. Deploy the poller and its supporting functions:
 
    ```bash
-   firebase deploy --only functions:calendarWebhook
+   firebase deploy --only functions:pollCalendarEvents,functions:calendarWebhook
    ```
 
    Or if using the folder structure here, you may need a small wrapper that re-exports via `onRequest`.
 
-5. Register one or more watches.
+5. Registering watches is optional; the poller does not depend on them and a webhook callback never triggers synchronization.
 
    Call Google Calendar API `events.watch` (or a small script) for each calendar. Point `address` at the deployed HTTPS URL of the function.
 
@@ -140,9 +139,9 @@ The function still falls back to `CALENDAR_CONFIGS` / `GOOGLE_CALENDAR_ID` env v
    }
    ```
 
-   Store the returned `resourceId` + `expiration`. You can have many watches pointing at the same function.
+   Store the returned `resourceId` + `expiration` only if you choose to retain these acknowledgement-only watches.
 
-6. The function stores the latest `syncToken` per calendar in Firestore under:
+6. The poller stores the latest `syncToken` per calendar in Firestore under:
    `calendarSync/{sanitizedKeyOrCalendarId}`
 
    This keeps incremental syncs separate and efficient when you have multiple calendars.
@@ -175,9 +174,9 @@ The function already requests the `https://www.googleapis.com/auth/calendar.read
 - Recurring events are expanded (`singleEvents: true`) for simplicity.
 - This is **one-way**: Google Calendar → Firestore. The app reads from Firestore as before.
 
-## Local testing (fake notification)
+## Testing
 
-You can invoke the function locally with a fake Google notification payload:
+The webhook is intentionally acknowledgment-only, so a fake webhook request tests only that it returns `200`:
 
 ```bash
 curl -X POST http://localhost:8080 \
@@ -187,11 +186,11 @@ curl -X POST http://localhost:8080 \
   -d '{}'
 ```
 
-Then check Firestore for new/updated documents in the `events` collection.
+To test a sync, create or update a real Calendar event and wait for the next one-minute `pollCalendarEvents` run. Then check Firestore and the poller logs.
 
-## The Webhook URL is STATIC (very important)
+## Optional webhook URL
 
-**Yes — the webhook URL is the same fixed address no matter how many times you change which Google Calendar you are listening to.**
+If you retain optional Google watches, the webhook URL is fixed no matter how many calendars you configure. It only acknowledges Google; it does not sync Calendar data.
 
 Example URL (after you deploy):
 
@@ -204,12 +203,10 @@ This URL:
 - Does **not** change when you switch from your personal Gmail to the official Eboard/president calendar.
 - Does **not** change when you add more calendars.
 
-You simply:
+For Calendar synchronization, you simply:
 1. Share the new calendar with the service account.
 2. Update (or add to) the config in Firestore at `calendarTokens/main`.
-3. Register **another watch** for that key (using `registerCalendarWatch.js`).
-
-The function uses the `x-goog-channel-token` header + the Firestore config to decide which calendar to sync.
+3. Wait for the one-minute poller to sync it.
 
 The only things that make the URL change are:
 - Deleting the function and redeploying it with a different name
@@ -226,13 +223,12 @@ It covers:
 - Finding the service account email
 - Sharing your personal calendar (critical step)
 - Enabling the Calendar API
-- Deploying the `calendarWebhook` function
-- Using `registerCalendarWatch.js` with the `"personal"` key
+- Deploying the `pollCalendarEvents` function
 - Testing end-to-end
 - Re-registering when watches expire
 
 Quick summary of the flow:
 1. Share calendar with service account (see all event details).
-2. `firebase deploy --only functions:calendarWebhook`
-3. `WEBHOOK_URL=... node registerCalendarWatch.js personal`
-4. Create an event in your personal Google Calendar → watch it appear in Firestore `events`.
+2. `firebase deploy --only functions:pollCalendarEvents`
+3. Create an event in the configured Google Calendar.
+4. Wait up to one minute for it to appear in Firestore `events`.

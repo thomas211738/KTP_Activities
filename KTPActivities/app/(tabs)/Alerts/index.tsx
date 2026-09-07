@@ -8,6 +8,7 @@ import { BACKEND_URL } from '@env';
 import EditAlertModal from '../../components/editAlertModal';
 import { getUserInfo } from '../../components/userInfoManager';
 import AlertsLoader from '../../components/loaders/alertsLoader';
+import { subscribeToAlertsChanged } from '../../components/alertsManager';
 
 type AlertItem = { id: string; AlertName: string; Description: string; updatedAt: string; expireAt?: string; Position: number; };
 type AlertCardProps = { alert: AlertItem; isEboard: boolean; onEdit: () => void; onDelete: () => void; };
@@ -75,7 +76,12 @@ const index = () => {
     }
   };
 
-  useEffect(() => { fetchAlerts(); }, []);
+  useEffect(() => {
+    void fetchAlerts();
+    return subscribeToAlertsChanged(() => {
+      void fetchAlerts();
+    });
+  }, []);
 
   const confirmDeleteAlert = async (alertId: string, position: number) => {
     try {

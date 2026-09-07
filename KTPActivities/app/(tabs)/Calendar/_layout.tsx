@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router/stack';
-import { Pressable, Platform, useColorScheme } from 'react-native';
+import { Pressable, useColorScheme } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -16,27 +16,27 @@ export default function Layout() {
   }, []);
 
   const pos = Number((userInfo as any).Position ?? 0);
-  const canManageEvents = pos === 3 || pos === 5 || (userInfo as any).BUEmail === 'ander010@bu.edu';
+  const canManageEvents = pos >= 3;
 
   return (
     <Stack>
       <Stack.Screen
         name="index"
         options={{
+          headerShown: true,
           headerTitleStyle: {
-            color: colorScheme === 'light' ? "black" : "white",
+            color: colorScheme === 'light' ? "#1a1a1a" : "white",
           },
           headerStyle: {
             backgroundColor: colorScheme === 'light' ? "white" : "#1a1a1a",
           },
           headerTitle: "Calendar",
-          headerBlurEffect: "regular",
-          headerLargeTitle: true,
-          ...(Platform.OS === "ios" && colorScheme === 'light' && { headerTransparent: true }),
-          headerLargeTitleShadowVisible: false,
+          // Keep the title visible at the top from the initial render.
+          headerTransparent: false,
+          headerLargeTitle: false,
           headerRight: canManageEvents ? () => (
             <Pressable
-              onPress={() => router.push("(tabs)/Calendar/createEvent")}
+              onPress={() => router.push("/(tabs)/Calendar/createEvent")}
               style={({ pressed }) => ({
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -86,4 +86,3 @@ export default function Layout() {
     </Stack>
   );
 }
-

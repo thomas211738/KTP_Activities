@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AddAlertModal from '../../components/addAlertModal';
 import axios from 'axios';
 import { BACKEND_URL } from '@env';
+import { notifyAlertsChanged } from '../../components/alertsManager';
 
 export default function Layout() {
   const raw = getUserInfo() || {};
@@ -22,6 +23,7 @@ export default function Layout() {
         "Description": alertDescription,
         "Position": position,
       });
+      notifyAlertsChanged();
       setAddModalVisible(false);
     } catch (err) {
       console.error("Error posting alert:", err.response ? err.response.data : err.message);

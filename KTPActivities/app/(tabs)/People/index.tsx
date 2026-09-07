@@ -2,7 +2,7 @@
 import { View, Text, ScrollView, StyleSheet, Image, Pressable, TouchableOpacity, Platform, useColorScheme } from 'react-native'
 import { router, useNavigation } from 'expo-router'
 import React, { useEffect, useState } from 'react'
-import { getAllUsersInfo } from '../../components/allUsersManager'
+import { getAllUsersInfo, subscribeToAllUsersInfo } from '../../components/allUsersManager'
 import { getUserInfo } from '../../components/userInfoManager';
 import PeopleLoader from '../../components/loaders/poepleLoader';
 import axios from 'axios';
@@ -43,7 +43,7 @@ const Person = (props) => {
 }
 
 const index = () => {
-    const users = getAllUsersInfo();
+    const [users, setUsers] = React.useState(() => getAllUsersInfo() || []);
 
     // IMPORTANT: Never mutate the shared singleton returned by getUserInfo().
     // In production this can corrupt state across tabs/screens because the object is shared module state.
@@ -51,10 +51,21 @@ const index = () => {
     const user = { ...rawUser, Position: Number(rawUser.Position ?? 0) };
     const [pos, setPos] = React.useState(0);
     const [search, setSearch] = React.useState('');
-    const [filteredUsers, setFilteredUsers] = React.useState(users.filter(user => Number(user.Position) === pos));
+    const [filteredUsers, setFilteredUsers] = React.useState(() => users.filter(user => Number(user.Position) === pos));
     const [loading, setLoading] = React.useState(false);
     const navigation = useNavigation();
     const colorScheme = useColorScheme();
+
+    React.useEffect(() => subscribeToAllUsersInfo(setUsers), []);
+
+    React.useEffect(() => {
+        const matchingUsers = pos === 2
+            ? users.filter(user => Number(user.Position) === 2 || Number(user.Position) === 5)
+            : pos === 0
+                ? users.filter(user => Number(user.Position) === 0 || Number(user.Position) === 0.5)
+                : users.filter(user => Number(user.Position) === pos);
+        setFilteredUsers(matchingUsers);
+    }, [users, pos]);
 
     React.useLayoutEffect(() => {
         navigation.setOptions({

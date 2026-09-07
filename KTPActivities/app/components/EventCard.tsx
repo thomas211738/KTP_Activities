@@ -14,13 +14,13 @@ type Event = {
 
 type Props = {
   event: Event;
-  isEboard?: boolean;
+  canManageEvents?: boolean;
   onEdit?: (event: Event) => void;
   onDelete?: (event: Event) => void;
   onPress?: (event: Event) => void;
 };
 
-const EventCard = ({ event, isEboard = false, onEdit, onDelete, onPress }: Props) => {
+const EventCard = ({ event, canManageEvents = false, onEdit, onDelete, onPress }: Props) => {
   const isDark = useColorScheme() === 'dark';
 
   const handleDelete = () => {
@@ -46,10 +46,10 @@ const EventCard = ({ event, isEboard = false, onEdit, onDelete, onPress }: Props
       }
     ]}>
       <View style={styles.titleRow}>
-        <Text style={[styles.title, { color: isDark ? '#f0f0f0' : '#1a1a1a' }, isEboard && styles.titleWithActions]} numberOfLines={2}>
+        <Text style={[styles.title, { color: isDark ? '#f0f0f0' : '#1a1a1a' }, canManageEvents && styles.titleWithActions]} numberOfLines={2}>
           {event.Name}
         </Text>
-        {isEboard && (
+        {canManageEvents && (
           <View style={styles.actions}>
             <TouchableOpacity onPress={() => onEdit?.(event)} style={styles.actionBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}>
               <Ionicons name="pencil" size={17} color={isDark ? '#86ebba' : '#134b91'} />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,10 @@ import {
   StyleSheet,
   useColorScheme,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
 import { getUserInfo } from '../../components/userInfoManager';
 import PhotoGrid, { Photo } from '../../components/PhotoGrid';
 import FullscreenImage from '../../components/FullscreenImage';
@@ -38,6 +37,25 @@ export default function EventDetail() {
   const [photosLoading, setPhotosLoading] = useState(true);
   const [libraryUploading, setLibraryUploading] = useState(false);
 
+  const loadPhotos = useCallback(async () => {
+    if (!eventId) {
+      setPhotos([]);
+      setPhotosLoading(false);
+      return;
+    }
+
+    setPhotosLoading(true);
+    try {
+      const response = await axios.get(`${BACKEND_URL}/event-photos/${eventId}`);
+      setPhotos(response.data?.data || []);
+    } catch (error) {
+      console.error('[eventDetail] photo load error:', error);
+      Alert.alert('Photos unavailable', 'Unable to load event photos. Please try again.');
+    } finally {
+      setPhotosLoading(false);
+    }
+  }, [eventId]);
+
   const pickFromLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
@@ -46,12 +64,21 @@ export default function EventDetail() {
       allowsEditing: false,
     });
     if (result.canceled || !result.assets?.length) return;
+    if (!eventId) {
+      Alert.alert('Event unavailable', 'Photos can only be added to a saved event.');
+      return;
+    }
+
     setLibraryUploading(true);
     try {
-      await Promise.all(
+      const uploads = await Promise.allSettled(
         result.assets.map(async (asset) => {
           const formData = new FormData();
-          formData.append('image', { uri: asset.uri, type: 'image/jpeg', name: 'photo.jpg' } as any);
+          formData.append('image', {
+            uri: asset.uri,
+            type: asset.mimeType || 'image/jpeg',
+            name: asset.fileName || 'photo.jpg',
+          } as any);
           formData.append('eventId', eventId);
           formData.append('eventName', eventName);
           formData.append('eventDay', eventDay);
@@ -61,32 +88,22 @@ export default function EventDetail() {
           });
         })
       );
+      const failedUploads = uploads.filter(upload => upload.status === 'rejected').length;
+      await loadPhotos();
+      if (failedUploads > 0) {
+        Alert.alert('Some photos were not uploaded', 'Please try the failed photo again.');
+      }
     } catch (e: any) {
       console.error('[eventDetail] library upload error:', e.message);
+      Alert.alert('Upload failed', 'Unable to upload photos. Please try again.');
     } finally {
       setLibraryUploading(false);
     }
   };
 
-  // Real-time photo subscription via Firestore onSnapshot
   useEffect(() => {
-    if (!eventId || !db) {
-      setPhotosLoading(false);
-      return;
-    }
-    const q = query(
-      collection(db, 'eventPhotos', eventId, 'photos'),
-      orderBy('uploadedAt', 'desc')
-    );
-    const unsub = onSnapshot(q, snap => {
-      setPhotos(snap.docs.map(d => ({ id: d.id, ...d.data() })) as Photo[]);
-      setPhotosLoading(false);
-    }, err => {
-      console.error('[eventDetail] onSnapshot error:', err);
-      setPhotosLoading(false);
-    });
-    return unsub;
-  }, [eventId]);
+    void loadPhotos();
+  }, [loadPhotos]);
 const bg = isDark ? '#1a1a1a' : '#fff';
   const textColor = isDark ? '#f0f0f0' : '#1a1a1a';
   const subColor = isDark ? '#aaa' : '#555';
@@ -97,7 +114,7 @@ const bg = isDark ? '#1a1a1a' : '#fff';
         {/* Event metadata card */}
         <View style={[styles.metaCard, { backgroundColor: isDark ? '#1e1e1e' : '#f5f5f5', borderColor: isDark ? '#2e2e2e' : '#e0e0e0' }]}>
           <Text style={[styles.metaTitle, { color: textColor }]}>{eventName}</Text>
-          {!!eventLocation && <Text style={[styles.metaRow, { color: subColor }]}>\U0001F4CD {eventLocation}</Text>}
+          {!!eventLocation && <Text style={[styles.metaRow, { color: subColor }]}>{eventLocation}</Text>}
           {!!eventDesc && <Text style={[styles.metaDesc, { color: isDark ? '#ccc' : '#444' }]}>{eventDesc}</Text>}
         </View>
 
@@ -156,7 +173,7 @@ const bg = isDark ? '#1a1a1a' : '#fff';
           eventDay={eventDay}
           uploadedBy={userId}
           onClose={() => setCameraOpen(false)}
-          onPhotoUploaded={() => { setCameraOpen(false); }}
+          onPhotoUploaded={() => { setCameraOpen(false); void loadPhotos(); }}
         />
       )}
     </>
