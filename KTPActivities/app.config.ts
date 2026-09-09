@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import appManifest from './app.json';
 
 /**
  * Resolve APP_ENV for the current build.
@@ -194,7 +195,7 @@ const config = {
 
     name: 'KTPActivities',
     slug: 'KTPActivities',
-    version: '1.0.16',
+    version: appManifest.expo.version,
     // runtimeVersion only matters if you enable OTA updates later.
     orientation: 'portrait',
     icon: './assets/icon.png',
@@ -225,7 +226,7 @@ const config = {
         LSApplicationQueriesSchemes: ['instagram', 'linkedin'],
         ITSAppUsesNonExemptEncryption: false,
       },
-      buildNumber: '42',
+      buildNumber: appManifest.expo.ios.buildNumber,
     },
     android: {
       adaptiveIcon: {

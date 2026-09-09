@@ -1,7 +1,13 @@
 import axios from "axios"
 import { BACKEND_URL } from "@env"
 import Constants from 'expo-constants';
-import { TEST_MODE_ENABLED, isTestEmail } from '../testConfig';
+import { auth, signOut } from '../firebaseConfig';
+import { setUserInfo } from './userInfoManager';
+import { setAllUsersInfo } from './allUsersManager';
+import { setUserToken } from './userTokenManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { Platform } from 'react-native';
 
 const extra = Constants?.expoConfig?.extra || {};
 const isProduction = extra.isProduction === true || process.env.APP_ENV === 'production' || !__DEV__;
@@ -51,40 +57,40 @@ function assertSafeBackendUrlForProduction() {
 // This ensures we fail fast on app start if someone ships a production build with dev config.
 assertSafeBackendUrlForProduction();
 
-export async function ValidateUser(userEmail) {
-    try {
-        console.log('[ValidateUser] Calling backend at', `${BACKEND_URL}/users`);
-        const response = await axios.get(`${BACKEND_URL}/users`, { timeout: 15000 });
-        const users = response.data.data;
-
-        const user = users.find(u => u.BUEmail && u.BUEmail.toLowerCase() === userEmail.toLowerCase());
-
-        // === TEST MODE FOR APPLE TESTFLIGHT REVIEW ===
-        // This allows bostonktp.review@gmail.com (and other test emails) to bypass
-        // the .edu restriction during App Review.
-        // Controlled by Firebase Remote Config `TEST_MODE_ENABLED`.
-        // THIS IS TEMPORARY — MUST BE TURNED OFF AFTER REVIEW IS APPROVED.
-        if (TEST_MODE_ENABLED && isTestEmail(userEmail)) {
-            console.log(`[TEST MODE] Allowing test email: ${userEmail}`);
-            return { status: 1, user: user || null, allUsers: users };
-        }
-
-        if (user) {
-            return { status: 1, user, allUsers: users };
-        } else {
-            const domain = (userEmail.split('@')[1] || '').toLowerCase();
-            if (domain !== 'bu.edu') {
-                return { status: -1, user: null, allUsers: users };
-            }
-            return { status: 0, user: null, allUsers: users };
-        }
-    } catch (error) {
-        // Axios "Network Error" usually means connection refused / timeout / unreachable backend
-        console.error('[ValidateUser] Network / Axios error:', error?.message || error);
-        if (error?.code) console.error('  code:', error.code);
-        if (error?.config?.url) console.error('  url:', error.config.url);
-        // Return a clear shape so the caller can show a useful message instead of crashing the flow
-        return { status: 'error', message: 'Network error reaching backend', error };
-    }
+export function clearAccountState() {
+  setUserInfo(null);
+  setAllUsersInfo([]);
+  setUserToken(null);
 }
 
+export async function signOutAccount() {
+  await signOut(auth);
+  clearAccountState();
+  await AsyncStorage.removeItem('@user').catch(() => undefined);
+  if (Platform.OS === 'android') await GoogleSignin.signOut().catch(() => undefined);
+}
+
+export async function accountHeaders() {
+  const token = await auth?.currentUser?.getIdToken();
+  if (!token) throw new Error('Please sign in again.');
+  return { Authorization: `Bearer ${token}` };
+}
+
+// Never determine account existence from the filtered People directory.
+export async function loadAccount(firebaseUser) {
+  const token = await firebaseUser.getIdToken();
+  const response = await axios.post(`${BACKEND_URL}/account/session`, {}, {
+    timeout: 15000, headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.data?.user?.id) throw new Error('Your account could not be loaded. Please try again.');
+  return response.data;
+}
+
+export async function refreshPeople(firebaseUser) {
+  try {
+    const response = await axios.get(`${BACKEND_URL}/users`, { timeout: 15000 });
+    if (auth.currentUser === firebaseUser) setAllUsersInfo(response.data?.data || []);
+  } catch {
+    console.warn('[account] People could not be refreshed.');
+  }
+}

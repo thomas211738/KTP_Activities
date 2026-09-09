@@ -1,109 +1,87 @@
-
 import React from 'react';
-import { ActivityIndicator, Platform, View} from 'react-native';
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-import {
-  auth,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithCredential,
-  signOut
-} from "./firebaseConfig";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+import { auth, GoogleAuthProvider, onAuthStateChanged, signInWithCredential } from './firebaseConfig';
+import { router } from 'expo-router';
+import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID } from '@env';
 import SignInScreen from './signin';
-import { Redirect, router} from 'expo-router';
-import { GOOGLE_AUTH_IOS_CLIENT_ID, GOOGLE_AUTH_ANDROID_CLIENT_ID, BACKEND_URL } from '@env';
-import { ValidateUser } from './components/auth';
-import Toast from 'react-native-root-toast';
-import { RootSiblingParent } from 'react-native-root-siblings';
-import { setUserInfo } from './components/userInfoManager'; 
-import { setAllUsersInfo } from './components/allUsersManager';
+import { clearAccountState, loadAccount, refreshPeople, signOutAccount } from './components/auth';
+import { setUserInfo } from './components/userInfoManager';
 
 WebBrowser.maybeCompleteAuthSession();
 
-//HOME SCREEN
-const HomeScreen = () => {
+export default function HomeScreen() {
   const [loading, setLoading] = React.useState(true);
-  const [validation, setValidation] = React.useState(0);
-
-  // When validation becomes 1, force navigation to the main app.
-  // This is more reliable than only relying on <Redirect> during the auth flow.
-  React.useEffect(() => {
-    if (validation === 1) {
-      router.replace('(tabs)/Calendar');
-    }
-  }, [validation]);
-  
+  const [error, setError] = React.useState('');
+  const [retry, setRetry] = React.useState(0);
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    selectAccount: true,
     iosClientId: GOOGLE_AUTH_IOS_CLIENT_ID,
     androidClientId: GOOGLE_AUTH_ANDROID_CLIENT_ID,
   });
 
-  // Always call hooks (never conditionally).
-  // The previous if(Platform.OS === "ios") around useEffect was invalid React hook usage.
+  // One account/navigation coordinator for both platforms, including restored sessions.
   React.useEffect(() => {
-    if (Platform.OS !== "ios") return;
+    let disposed = false;
+    let attempt = 0;
+    const unsubscribe = onAuthStateChanged(auth, async user => {
+      const currentAttempt = ++attempt;
+      clearAccountState();
+      setError('');
+      if (!user) { setLoading(false); return; }
+      setLoading(true);
+      try {
+        const result = await loadAccount(user);
+        if (disposed || currentAttempt !== attempt || auth.currentUser !== user) return;
+        setUserInfo(result.user);
+        void refreshPeople(user);
+        router.replace('/(tabs)/Calendar');
+      } catch (err: any) {
+        if (!disposed && currentAttempt === attempt) {
+          setError(err?.response?.data?.message || err?.message || 'Unable to sign in. Please try again.');
+        }
+      } finally {
+        if (!disposed && currentAttempt === attempt) setLoading(false);
+      }
+    });
+    return () => { disposed = true; attempt++; unsubscribe(); };
+  }, [retry]);
 
-    if (response?.type === "success") {
-      const {id_token} = response.params;
-      const credential = GoogleAuthProvider.credential(id_token);
-      signInWithCredential(auth, credential);
+  React.useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    if (response?.type === 'success') {
+      const token = response.params.id_token;
+      if (!token) { setError('Google did not return a sign-in token. Please try again.'); return; }
+      setLoading(true);
+      signInWithCredential(auth, GoogleAuthProvider.credential(token)).catch(() => {
+        setError('Google sign-in could not be completed. Please try again.');
+        setLoading(false);
+      });
+    } else if (response?.type === 'error') {
+      setError('Google sign-in could not be completed. Please try again.');
     }
   }, [response]);
 
-  React.useEffect(() => {
-    if (Platform.OS !== "ios") return;
+  if (loading) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', gap: 16 }}>
+    <ActivityIndicator size="large" color="#134b91" />
+    <Text style={{ color: '#333' }}>Getting your account ready…</Text>
+  </View>;
 
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      console.log('[HomeScreen] onAuthStateChanged fired. user?', !!user);
+  if (error) return <View style={{ flex: 1, justifyContent: 'center', padding: 28, backgroundColor: '#fff', gap: 20 }}>
+    <Text accessibilityRole="alert" style={{ color: '#222', fontSize: 17, textAlign: 'center' }}>{error}</Text>
+    <TouchableOpacity onPress={() => { setError(''); setRetry(value => value + 1); }} style={{ padding: 16, backgroundColor: '#134b91', borderRadius: 12 }}>
+      <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '700' }}>Try Again</Text>
+    </TouchableOpacity>
+    <TouchableOpacity onPress={async () => {
+      try { await signOutAccount(); setError(''); setRetry(value => value + 1); }
+      catch { setError('Unable to sign out. Please try again.'); }
+    }} style={{ padding: 16 }}><Text style={{ color: '#134b91', textAlign: 'center' }}>Use Another Account</Text></TouchableOpacity>
+  </View>;
 
-      if (user) {
-        console.log('[HomeScreen] Firebase user email:', user.providerData?.[0]?.email);
-
-        await AsyncStorage.setItem("@user", JSON.stringify(user));
-
-        // IMPORTANT: Navigate immediately on successful Firebase auth.
-        // Do not wait for ValidateUser to finish. This was causing the "stuck after Google login".
-        setLoading(false);
-        setValidation(1);
-
-        console.log('[HomeScreen] Firebase auth succeeded — navigating to main app NOW');
-        router.replace('(tabs)/Calendar');
-
-        // Fire ValidateUser in the background to populate user info / allUsers.
-        // We ignore its result for the purpose of showing the main app.
-        ValidateUser(user.providerData[0].email)
-          .then(result => {
-            console.log('[HomeScreen] background ValidateUser finished:', result?.status);
-            if (result && result.user) setUserInfo(result.user);
-            if (result && result.allUsers) setAllUsersInfo(result.allUsers);
-          })
-          .catch(err => {
-            console.warn('[HomeScreen] background ValidateUser failed (non-fatal):', err?.message || err);
-          });
-      } else {
-        setLoading(false);
-      }
-    });
-    return () => unsub();
-  }, []);
-
-  // For this debug session we make the main app reachable as soon as Firebase auth succeeds.
-  // We still keep the old redirect line but we also have explicit router.replace() calls above.
-  // Once we have a Firebase-authenticated user we consider the user "logged in"
-  // for UI purposes. We no longer require a specific status from ValidateUser.
-  const showMainApp = validation === 1;
-
-  return loading ? 
-  <>
-    <RootSiblingParent>
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator size={"large"} />
-      </View>
-    </RootSiblingParent>
-  </> :
-  (showMainApp ? <Redirect href={'(tabs)/Calendar'} /> : <SignInScreen promptAsync={promptAsync} />);
-  
+  return <SignInScreen promptAsync={async () => {
+    if (!request) { setError('Google sign-in is still loading. Please try again.'); return; }
+    try { await promptAsync(); }
+    catch { setError('Unable to open Google sign-in. Please try again.'); }
+  }} />;
 }
-export default HomeScreen

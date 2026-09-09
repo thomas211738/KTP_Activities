@@ -1,5 +1,7 @@
 import {FontAwesome} from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
+import { auth } from '../firebaseConfig';
+import { getUserInfo, subscribeToUserInfo } from '../components/userInfoManager';
 import React from 'react';
 import { Entypo } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +9,9 @@ import { useColorScheme } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const [member, setMember] = React.useState(() => getUserInfo());
+  React.useEffect(() => subscribeToUserInfo(setMember), []);
+  if (!auth.currentUser || !member?.id) return <Redirect href="/" />;
   return (
     <Tabs screenOptions={{ tabBarActiveTintColor: colorScheme === 'light' ? 'royalblue' : '#86ebba' }}>
       <Tabs.Screen

@@ -26,7 +26,7 @@
       }
     },
     "production": {
-      "autoIncrement": true,
+      "autoIncrement": false,
       "channel": "production",
       "env": {
         "APP_ENV": "production"

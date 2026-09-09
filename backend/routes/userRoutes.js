@@ -76,45 +76,10 @@ export default function usersRoute(db) {
     }
   });
 
-  // Add a User
-  router.post('/', async (request, response) => {
-    try {
-      const {
-        BUEmail,
-        FirstName,
-        LastName,
-        GradYear,
-        Colleges,
-        Major,
-        Position,
-      } = request.body;
-
-      if (!BUEmail || !FirstName || !LastName || !GradYear || !Colleges || !Major || !Position) {
-        return response.status(400).send({
-          message: 'Send all required fields: BUEmail, FirstName, LastName, GradYear, Colleges, Major, Position',
-        });
-      } else if (Position > 4 || Position < 0) {
-        return response.status(401).send({
-          message: 'Position must be an integer 0 through 4',
-        });
-      }
-
-      const usersCollection = db.collection('users');
-      const newUser = {
-        BUEmail,
-        FirstName,
-        LastName,
-        GradYear,
-        Colleges,
-        Major,
-        Position,
-      };
-      const docRef = await usersCollection.add(newUser);
-      return response.status(200).send({ message: 'User added successfully', id: docRef.id, user: { id: docRef.id, ...newUser } });
-    } catch (error) {
-      console.log(error.message);
-      response.status(500).send({ message: error.message });
-    }
+  // Retire the form-based, unauthenticated creator. Account creation now verifies
+  // identity and reuses existing profiles through POST /account/session.
+  router.post('/', (_request, response) => {
+    response.status(410).json({ message: 'Please update the app and sign in with Google to create your account.' });
   });
 
   // Update a User

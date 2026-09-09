@@ -1,13 +1,10 @@
 
 // React Imports
-import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, useColorScheme, Switch, Appearance} from 'react-native';
+import { View, Button, StyleSheet, ScrollView, Text,Image, TouchableOpacity, useColorScheme, Switch, Appearance, Alert} from 'react-native';
 import React, { useState, useEffect } from 'react';
 
 // Sign Out Functionality
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth, signOut } from "../../firebaseConfig";
 import { router } from 'expo-router';
-import { GoogleSignin} from '@react-native-google-signin/google-signin';
 
 // Icons
 import Octicons from '@expo/vector-icons/Octicons';
@@ -19,7 +16,9 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 // Other Imports
-import { getUserInfo } from '../../components/userInfoManager'; 
+import { getUserInfo, setUserInfo, subscribeToUserInfo } from '../../components/userInfoManager';
+import { signOutAccount } from '../../components/auth';
+import EditProfileModal from '../../components/EditProfileModal';
 import colleges from '../../components/buinfo';
 import AddInterestModal from '../../components/addInterestModal';
 import EditInterestModal from '../../components/editInterestModal';
@@ -34,7 +33,9 @@ import ProfileLoader from '../../components/loaders/profileLoader';
 import { add, set } from 'date-fns';
 
 const Index = () => {
-    const rawUser = getUserInfo() || {};
+    const [rawUser, setRawUser] = useState(() => getUserInfo() || {});
+    const [editProfileOpen, setEditProfileOpen] = useState(false);
+    useEffect(() => subscribeToUserInfo(info => setRawUser(info || {})), []);
     // Defensive defaults for fields that may be missing/undefined from backend
     const userInfo = {
         ...rawUser,
@@ -56,7 +57,7 @@ const Index = () => {
     const [linkedinModalVisible, setLinkedinModalVisible] = useState(false);
     const [instagram, setInstagram] = useState(userInfo.Instagram);
     const [linkedIn, setLinkedIn] = useState(userInfo.LinkedIn);
-    const [userClass, setUserClass] = useState(`(${userInfo.Class})` || "");
+    const userClass = userInfo.Class ? `(${userInfo.Class})` : '';
     const colorScheme = useColorScheme();
     const [isEnabled, setIsEnabled] = useState((colorScheme === 'light') ? false : true);
     const [loading, setLoading] = useState(true);
@@ -66,6 +67,7 @@ const Index = () => {
 
     
     const fetchProfile = async () => {
+        if (!userInfo.id) { setImageLoading(false); return; }
         try {
 
             let response;
@@ -77,6 +79,8 @@ const Index = () => {
             }
 
             
+            if (getUserInfo()?.id !== response.data.id) return;
+            setUserInfo(response.data);
             if (Array.isArray(response.data.Interests)) {
                 setUserInterests(response.data.Interests);
             }
@@ -89,6 +93,8 @@ const Index = () => {
 
         } catch (err) {
             console.error("Error fetching profile:", err.response ? err.response.data : err.message);
+        } finally {
+            setImageLoading(false);
         }
     }
 
@@ -104,7 +110,7 @@ const Index = () => {
 
     function getLabelByValue(value) {
         const college = colleges.find(college => college.value === value);
-        return college ? college.label : 'Value not found';
+        return college ? college.label : '';
     }
     const college = getLabelByValue((userInfo.Colleges && userInfo.Colleges[0]) || '');
 
@@ -369,15 +375,20 @@ const Index = () => {
                 {userInfo ? (
                 <>
                     <View style={[styles.card, eventTheme]}>
-                    <Text style={[styles.name, textTheme]}>{userInfo.FirstName} {userInfo.LastName}</Text>
-                    <Text style={styles.status}>{posName} { userClass != "(undefined)" ? userClass : ""}</Text>
+                    <Text style={[styles.name, textTheme]}>{[userInfo.FirstName, userInfo.LastName].filter(Boolean).join(' ') || 'Welcome to KTP'}</Text>
+                    <Text style={styles.status}>{posName} {userClass}</Text>
                     <View style={[styles.divider, dividerTheme]} />
-                    <Text style={[styles.faculty, textTheme]}>{college}</Text>
-                    <Text style={[styles.details, textTheme]}>
+                    {!!college && <Text style={[styles.faculty, textTheme]}>{userInfo.Colleges.map(getLabelByValue).filter(Boolean).join(' · ')}</Text>}
+                    {userInfo.Major.length > 0 && <Text style={[styles.details, textTheme]}>
                         Major in {userInfo.Major.join(' and')}
                         {userInfo.Minor.length > 0 && ` | Minor in ${userInfo.Minor.join(' and')}`}
-                    </Text>
-                    <Text style={[styles.details, textTheme]}>{grade} ({userInfo.GradYear})</Text>
+                    </Text>}
+                    {!!userInfo.GradYear && <Text style={[styles.details, textTheme]}>{grade} ({userInfo.GradYear})</Text>}
+                    {(!userInfo.FirstName || !userInfo.LastName || !userInfo.Major.length || !userInfo.GradYear || !userInfo.Colleges.length) &&
+                      <Text style={[styles.details, textTheme]}>Complete your profile so other members can get to know you.</Text>}
+                    <TouchableOpacity accessibilityRole="button" onPress={() => setEditProfileOpen(true)} style={{ paddingVertical: 14 }}>
+                      <Text style={[textTheme, { fontWeight: '700', fontSize: 16 }]}>Edit Profile</Text>
+                    </TouchableOpacity>
                     <View style={[styles.divider, dividerTheme]} />
                     <View style={[styles.interestsContainer]}>
                         <View style={styles.interestTitlerow}>
@@ -444,10 +455,8 @@ const Index = () => {
                 <TouchableOpacity 
                     style={[styles.signOutCard, eventTheme]}
                     onPress={async () => {
-                        await signOut(auth);
-                        await AsyncStorage.removeItem("@user");
-                        await GoogleSignin.signOut()
-                        router.replace("/");
+                        try { await signOutAccount(); router.replace('/'); }
+                        catch { Alert.alert('Unable to sign out', 'Please try again.'); }
                     }}
                 >
                     <Text style={styles.signOutButtonText}>Sign Out</Text>
@@ -455,6 +464,7 @@ const Index = () => {
                 </TouchableOpacity>
 
                 </>) : (<ProfileLoader/>)}
+                <EditProfileModal visible={editProfileOpen} user={userInfo} onClose={() => setEditProfileOpen(false)} />
 
 
                 

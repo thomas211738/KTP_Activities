@@ -20,6 +20,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import appphotosRoute from './routes/appphotosRoute.js';
 import eventPhotosRoute from './routes/eventPhotosRoute.js';
 import attendanceRoute from './routes/attendanceRoutes.js';
+import accountRoutes from './routes/accountRoutes.js';
 
 // Calendar webhook and watch renewal imports
 import { createRequire } from 'module';
@@ -121,7 +122,7 @@ const corsOptions = {
     /^http:\/\/192\.168\./,
     /^http:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./,
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 app.use(cors(corsOptions));
@@ -131,6 +132,7 @@ const PORT = process.env.APP_PORT;
 
 // Pass the Firestore db instance to each route
 app.use('/users', usersRoute(db));
+app.use('/account', accountRoutes(db));
 app.use('/events', eventsRoute(db));
 app.use('/tasks', taskRoute(db));
 app.use('/alerts', alertsRoute(db));
